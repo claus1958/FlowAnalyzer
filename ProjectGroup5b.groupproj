@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{817DA60D-1CDF-43EF-88F2-846B58C8EE71}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="FTAnalyzer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\claus\Documents\Embarcadero\Studio\Projekte\Project45.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="FTAnalyzer">
+        <MSBuild Projects="FTAnalyzer.dproj"/>
+    </Target>
+    <Target Name="FTAnalyzer:Clean">
+        <MSBuild Projects="FTAnalyzer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FTAnalyzer:Make">
+        <MSBuild Projects="FTAnalyzer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Project45">
+        <MSBuild Projects="C:\Users\claus\Documents\Embarcadero\Studio\Projekte\Project45.dproj"/>
+    </Target>
+    <Target Name="Project45:Clean">
+        <MSBuild Projects="C:\Users\claus\Documents\Embarcadero\Studio\Projekte\Project45.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Project45:Make">
+        <MSBuild Projects="C:\Users\claus\Documents\Embarcadero\Studio\Projekte\Project45.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="FTAnalyzer;Project45"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="FTAnalyzer:Clean;Project45:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="FTAnalyzer:Make;Project45:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
