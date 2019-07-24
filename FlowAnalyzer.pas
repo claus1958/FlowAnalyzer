@@ -82,7 +82,6 @@ type
     btnLoadCacheFileCw: TButton;
     btnSaveCacheFileCw: TButton;
     btnShowCacheCw: TButton;
-    Button10: TButton;
     edCacheCwShowMax: TEdit;
     edCacheCwShowStep: TEdit;
     edGetUrlBin: TEdit;
@@ -118,6 +117,7 @@ type
     Panel12: TPanel;
     DynGrid1: TDynGrid;
     Button7: TButton;
+    Button8: TButton;
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean);
@@ -128,7 +128,6 @@ type
     procedure FormCreate(Sender: TObject);
     procedure btnGetBinDataClick(Sender: TObject);
     procedure GetBinData(url, typ: string; lb: TListBox; append: boolean);
-    procedure Button10Click(Sender: TObject);
     procedure btnSaveCacheFileCwClick(Sender: TObject);
     procedure btnLoadCacheFileCwClick(Sender: TObject);
     procedure doCacheGridCwInfo;
@@ -170,6 +169,7 @@ type
     procedure cbStylesChange(Sender: TObject);
     procedure gridHandler(Sender: TObject);
     procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -454,32 +454,30 @@ procedure TForm2.gridHandler(Sender: TObject);
 var
   sg: TDynGrid;
   i, j, k: Integer;
-  row:integer;
-  vCols,vRows,vScroll:integer;
-  rc:integer;
-  vscrollmax:integer;
-  begin
+  row: Integer;
+  vCols, vRows, vScroll: Integer;
+  rc: Integer;
+  vscrollmax: Integer;
+begin
   //
   with Sender as TDynGrid do
   begin
-  rc:=sg.rowcount;
-  vCols := VisibleCols; // cols und rows ändert sich dynamisch
-  vRows := VisibleRows;
-  vScroll := scrollPosition; //
-  maxdatarows := length(cwActions);
+    rc := sg.rowcount;
+    vCols := VisibleCols; // cols und rows ändert sich dynamisch
+    vRows := VisibleRows;
+    vScroll := scrollPosition; //
+    maxdatarows := length(cwActions);
 
-  vscrollmax:=vscroll+vrows;
-  if vscrollmax>maxdatarows then
-    vscrollmax:=maxdatarows;
+    vscrollmax := vScroll + vRows;
+    if vscrollmax > maxdatarows then
+      vscrollmax := maxdatarows;
+    // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
+    // daher wäre es besser das Sortierarray gehört zum Grid
 
-  doActionsGridCWFast(SG, SGFieldCol, cwActions,vscroll, vscrollmax);
-
+    // doActionsGridCWFast(SG, SGFieldCol, cwActions,vscroll, vscrollmax);
+    doActionsGridCWFast(sg, SGFieldCol, ixSorted, cwActions, vScroll, vscrollmax);
   end;
 end;
-
-
-
-
 
 procedure TForm2.gridMouseLeftClickHandler(grid: FTCommons.TStringGridSorted; col, row: Integer;
   sCell, sCol, sRow: string);
@@ -773,12 +771,12 @@ begin
   begin
     ClearStringGridSorted(SGCacheCwSearch);
     // 5367  msec bei 200000
-    SGCacheCwSearch.RowCount := 1;
+    SGCacheCwSearch.rowcount := 1;
   end
   else
     // StringGridLeer(SGCacheCwSearch);
     // 5414 msec bei 200000
-    SGCacheCwSearch.RowCount := 1;
+    SGCacheCwSearch.rowcount := 1;
   doCacheGridCwInfo;
 end;
 
@@ -798,13 +796,6 @@ begin
   autosizegrid(SGCwCache);
 
   doCacheGridCwInfo;
-end;
-
-procedure TForm2.Button10Click(Sender: TObject);
-begin
-  SetLength(cwActions, 0);
-  lblCwActionsLength.Caption := 'CwActions:' + inttostr(length(cwActions));
-
 end;
 
 procedure TForm2.Button2Click(Sender: TObject);
@@ -828,37 +819,40 @@ begin
   for i := 0 to length(cwActions) - 1 do
   begin
     ia[i] := i;
-    da[i] := cwActions[i].profit;
+    da[i] := cwActions[i].typeId;
+    // cwActions[i].profit;  mit profit sortiert er schneller als mit vielen ähnlichen (Int) Werten !
     sa[i] := cwComments[cwActions[i].commentid].text;
     ia2[i] := cwActions[i].typeId;
   end;
 
   lbCSVError.Items.Add('SortPrepare:' + inttostr(GetTickCount - gt));
 
-  gt := GetTickCount;
-  fastsort2arrayString(sa, ia, 'VUAS');
-  lbCSVError.Items.Add('SortString:' + inttostr(GetTickCount - gt));
+  for i := 1 to 1 do
+  begin
+    gt := GetTickCount;
+    fastsort2arrayString(sa, ia, 'VUAS');
+    lbCSVError.Items.Add('SortString:' + inttostr(GetTickCount - gt));
 
-  gt := GetTickCount;
-  FastSort2ArrayDouble(da, ia, 'VUA');
-  lbCSVError.Items.Add('SortDouble:' + inttostr(GetTickCount - gt));
+    gt := GetTickCount;
+    FastSort2ArrayDouble(da, ia, 'VUA');
+    lbCSVError.Items.Add('SortDouble:' + inttostr(GetTickCount - gt));
 
-  gt := GetTickCount;
-  fastsort2arrayIntInt(ia2, ia, 'VUI'); // VDI
-  lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
+    gt := GetTickCount;
+    fastsort2arrayIntInt(ia2, ia, 'VUI'); // VDI
+    lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
 
-  gt := GetTickCount;
-  fastsort2arrayString(sa, ia, 'VDAS');
-  lbCSVError.Items.Add('SortString:' + inttostr(GetTickCount - gt));
+    gt := GetTickCount;
+    fastsort2arrayString(sa, ia, 'VDAS');
+    lbCSVError.Items.Add('SortString:' + inttostr(GetTickCount - gt));
 
-  gt := GetTickCount;
-  FastSort2ArrayDouble(da, ia, 'VDA');
-  lbCSVError.Items.Add('SortDouble:' + inttostr(GetTickCount - gt));
+    gt := GetTickCount;
+    FastSort2ArrayDouble(da, ia, 'VDA');
+    lbCSVError.Items.Add('SortDouble:' + inttostr(GetTickCount - gt));
 
-  gt := GetTickCount;
-  fastsort2arrayIntInt(ia2, ia, 'VDI'); // VDI
-  lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
-
+    gt := GetTickCount;
+    fastsort2arrayIntInt(ia2, ia, 'VDI'); // VDI
+    lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
+  end
 end;
 
 procedure TForm2.btnDoFilterClick(Sender: TObject);
@@ -960,6 +954,7 @@ begin
 end;
 
 procedure TForm2.Button5Click(Sender: TObject);
+// Balance direkt filtern (zum Geschwindigkeitsvergleich die der Filtersuche)
 var
   i: Integer;
   gt, tg: Cardinal;
@@ -1073,7 +1068,118 @@ end;
 
 procedure TForm2.Button7Click(Sender: TObject);
 begin
-  dyngrid1.initGrid(length(cwactions),20);
+  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
+  //nGrid2.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
+end;
+
+procedure TForm2.Button8Click(Sender: TObject);
+var
+  i, lold, lnew: Integer;
+  merkOpenTime, merkCloseTime: Integer;
+  tt, tnow: Cardinal;
+  p, cnew, cold: Integer;
+  ia: intarray;
+  ia2: int64array;
+  na: intarray;
+  na2: int64array;
+  n: Integer;
+begin
+  // update data
+  merkOpenTime := 0;
+  merkCloseTime := 0;
+  tnow := datetimetounix(now);
+  for i := 0 to length(cwActions) - 1 do
+  begin
+    if cwActions[i].typeId <> 7 then
+    begin
+      if cwActions[i].openTime > merkOpenTime then
+        if cwActions[i].openTime < tnow then
+          merkOpenTime := cwActions[i].openTime;
+      if cwActions[i].closeTime > merkCloseTime then
+        if cwActions[i].closeTime < tnow then
+          merkCloseTime := cwActions[i].closeTime;
+
+    end
+    else
+    begin
+    end;
+    tt := merkOpenTime;
+    if merkCloseTime > tt then
+      tt := merkCloseTime;
+    tt := tt - 0; // 5 Minuten zurück
+  end;
+  lold := length(cwActions);
+  showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
+  GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromOpen=' + inttostr(tt), 'actions', lbCSVError, true);
+  showmessage(' Actions:' + inttostr(length(cwActions)));
+  GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromClose=' + inttostr(tt), 'actions',
+    lbCSVError, true);
+  showmessage(' Actions:' + inttostr(length(cwActions)));
+
+  // btnSaveCacheFileCwClick(nil);
+  lnew := length(cwActions);
+  cnew := lnew - lold;
+  SetLength(na2, cnew);
+  SetLength(na, cnew);
+  p := -1;
+  for i := lold to lnew - 1 do
+  begin
+    inc(p);
+    na2[p] := cwActions[i].actionId;
+    na[p] := i;
+  end;
+
+  fastsort2arrayInt64Int(na2, na, 'VUI'); // VDI
+  // doppelte daraus entfernen
+  for i := 1 to cnew - 1 do
+  begin
+    if na2[i] = na2[i - 1] then
+      cwActions[na[i - 1]].actionId := 0;
+  end;
+
+  // jetzt sieht cwactions so aus: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa nnn0nn0nn0nn0n0n0nnn     a=die alten Action n=die neuen 0 dir doppelten
+
+  // jetzt noch die binäre Suche in den alten Actions ermöglich
+  SetLength(ia2, lold);
+  SetLength(ia, lold);
+  for i := 0 to lold - 1 do
+  begin
+    ia2[i] := cwActions[i].actionId;
+    ia[i] := i;
+  end;
+  fastsort2arrayInt64Int(ia2, ia, 'VUI'); // VDI
+
+  // das ist das sortierte alte cwactions array vor den Neuanfügungen
+  //
+  for i := lold to lnew - 1 do
+  begin
+    if cwActions[i].actionId <> 0 then
+    begin
+      n := binsearchint64(ia2, cwActions[i].actionId);
+      if (n = -1) then
+      begin
+        // nicht gefunden
+      end
+      else
+      begin
+        // gefunden - austauschen
+        cwActions[ia[n]] := cwActions[i];
+        cwActions[i].actionId := 0;
+      end;
+    end;
+  end;
+  p := lold - 1; // zeiger auf den letzten alten index
+  for i := lold to lnew - 1 do
+  begin
+    // das sind jetzt die neuen Actions !
+    if cwActions[i].actionId <> 0 then
+    begin
+      inc(p);
+      cwActions[p] := cwActions[i];
+    end;
+  end;
+  setlength(cwactions,p+1);
+  //fertig
 end;
 
 procedure TForm2.btnSample1Click(Sender: TObject);
@@ -1469,8 +1575,6 @@ end;
 // end;
 // end;
 procedure TForm2.SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-// Live Kurse Grid
-// diese proc wird von vielen Grids aufgerufen
 var
   i: Integer;
   grid: FTCommons.TStringGridSorted;
@@ -1506,6 +1610,7 @@ begin
       // Rechtsclick in den Header -> Sortieren
       begin
         header := grid.Cells[col, 0];
+        // speziell bei den Datumsfelder auf eine andere Spalte umlenken
         if header = 'openTime' then
         begin
           for i := 0 to grid.ColCount - 1 do
@@ -1537,7 +1642,7 @@ begin
         if gridsortmethode2 = false then
           SortStringGrid(grid, col, grid.sortTyp[col])
         else
-       // diese Methode kann nur bei Zahlen angewendet werden - nicht für Sortieren von Text !
+          // diese Methode kann nur bei Zahlen angewendet werden - nicht für Sortieren von Text !
           SortStringGridCW(grid, col, grid.sortTyp[col]);
         // Selektion löschen
         grid.Selection := NoSelection;
@@ -1567,7 +1672,7 @@ begin
     gt: Cardinal;
   begin
     // Give the number of rows in the StringGrid
-    CountItem := genstrgrid.RowCount;
+    CountItem := genstrgrid.rowcount;
     // Create the List
     MyList := TStringList.Create;
     MyList.Sorted := false;
@@ -1632,7 +1737,7 @@ begin
     gt: Cardinal;
   begin
     // Give the number of rows in the StringGrid
-    CountItem := genstrgrid.RowCount;
+    CountItem := genstrgrid.rowcount;
     // Create the List
     MyList := TStringList.Create;
     MyList.Sorted := false;
@@ -1680,7 +1785,7 @@ begin
           if (j = 50) then // schonmal anzeigen !
             genstrgrid.Repaint;
         end;
-        genstrgrid.RowCount := CountItem;
+        genstrgrid.rowcount := CountItem;
 
         LbDebug('Sort ->Grid:' + inttostr(timegettime - gt));
       end;

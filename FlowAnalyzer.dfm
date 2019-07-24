@@ -3,7 +3,7 @@ object Form2: TForm2
   Top = 0
   Caption = 'Flow Analyzer'
   ClientHeight = 940
-  ClientWidth = 1356
+  ClientWidth = 1473
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,16 +17,17 @@ object Form2: TForm2
   object StatusBar1: TStatusBar
     Left = 0
     Top = 907
-    Width = 1356
+    Width = 1473
     Height = 33
     Panels = <>
+    ExplicitWidth = 1356
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 1356
+    Width = 1473
     Height = 907
-    ActivePage = TabSheet1
+    ActivePage = TabSheet3
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -36,6 +37,7 @@ object Form2: TForm2
     ParentFont = False
     TabHeight = 26
     TabOrder = 1
+    ExplicitWidth = 1356
     object TabSheet2: TTabSheet
       Caption = 'Start'
       Font.Charset = DEFAULT_CHARSET
@@ -46,6 +48,7 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
+      ExplicitWidth = 1348
       object Panel10: TPanel
         AlignWithMargins = True
         Left = 568
@@ -131,7 +134,7 @@ object Form2: TForm2
         end
         object cbLoadActionsFromCache: TCheckBox
           Left = 33
-          Top = 518
+          Top = 546
           Width = 209
           Height = 17
           Caption = 'Get Actions from Cache'
@@ -212,6 +215,15 @@ object Form2: TForm2
             TabOrder = 0
           end
         end
+        object Button8: TButton
+          Left = 36
+          Top = 516
+          Width = 205
+          Height = 25
+          Caption = 'Update Data'
+          TabOrder = 13
+          OnClick = Button8Click
+        end
       end
     end
     object TabSheet6: TTabSheet
@@ -223,10 +235,11 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 5
       ParentFont = False
+      ExplicitWidth = 1348
       object CategoryPanelGroup1: TCategoryPanelGroup
         Left = 177
         Top = 0
-        Width = 1171
+        Width = 1288
         Height = 871
         VertScrollBar.Tracking = True
         Align = alClient
@@ -238,6 +251,7 @@ object Form2: TForm2
         HeaderHeight = 20
         TabOrder = 0
         OnResize = CategoryPanel1Expand
+        ExplicitWidth = 1171
         object CategoryPanel4: TCategoryPanel
           Top = 588
           Height = 241
@@ -245,11 +259,12 @@ object Form2: TForm2
           TabOrder = 0
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
+          ExplicitWidth = 1169
           object SGCwComments: TStringGridSorted
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1161
+            Width = 1278
             Height = 213
             Align = alClient
             DefaultColWidth = 80
@@ -258,6 +273,7 @@ object Form2: TForm2
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
             OnMouseDown = SGMouseDown
+            ExplicitWidth = 1161
           end
         end
         object CategoryPanel3: TCategoryPanel
@@ -267,11 +283,12 @@ object Form2: TForm2
           TabOrder = 1
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
+          ExplicitWidth = 1169
           object SGCwUsers: TStringGridSorted
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1161
+            Width = 1278
             Height = 168
             Align = alClient
             DefaultColWidth = 80
@@ -280,6 +297,7 @@ object Form2: TForm2
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
             OnMouseDown = SGMouseDown
+            ExplicitWidth = 1161
           end
         end
         object CategoryPanel2: TCategoryPanel
@@ -289,11 +307,12 @@ object Form2: TForm2
           TabOrder = 2
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
+          ExplicitWidth = 1169
           object SGCwSymbols: TStringGridSorted
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1161
+            Width = 1278
             Height = 168
             Align = alClient
             DefaultColWidth = 80
@@ -302,6 +321,7 @@ object Form2: TForm2
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
             OnMouseDown = SGMouseDown
+            ExplicitWidth = 1161
           end
         end
         object CategoryPanel1: TCategoryPanel
@@ -317,11 +337,12 @@ object Form2: TForm2
           TabOrder = 3
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
+          ExplicitWidth = 1169
           object SGCwCache: TStringGridSorted
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1161
+            Width = 1278
             Height = 168
             Align = alClient
             ColCount = 1
@@ -332,6 +353,7 @@ object Form2: TForm2
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
             OnMouseDown = SGMouseDown
+            ExplicitWidth = 1161
           end
         end
       end
@@ -366,13 +388,15 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 4
       ParentFont = False
+      ExplicitWidth = 1348
       object Panel6: TPanel
         Left = 0
         Top = 0
-        Width = 1348
+        Width = 1465
         Height = 871
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1348
         object Panel7: TPanel
           Left = 1
           Top = 1
@@ -426,18 +450,20 @@ object Form2: TForm2
         object Panel8: TPanel
           Left = 322
           Top = 1
-          Width = 1025
+          Width = 1142
           Height = 869
           Align = alClient
           Caption = 'Panel8'
           TabOrder = 1
+          ExplicitWidth = 1025
           object Panel9: TPanel
             Left = 1
             Top = 1
-            Width = 1023
+            Width = 1140
             Height = 41
             Align = alTop
             TabOrder = 0
+            ExplicitWidth = 1023
             object lblSingleUserActions: TLabel
               Left = 392
               Top = 8
@@ -456,7 +482,7 @@ object Form2: TForm2
             AlignWithMargins = True
             Left = 4
             Top = 45
-            Width = 1017
+            Width = 1134
             Height = 820
             Align = alClient
             DefaultColWidth = 80
@@ -475,13 +501,15 @@ object Form2: TForm2
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ExplicitWidth = 1348
       object Panel26: TPanel
         Left = 0
         Top = 0
-        Width = 1348
+        Width = 1465
         Height = 871
         Align = alClient
         TabOrder = 0
+        ExplicitWidth = 1348
         object Panel34: TPanel
           Left = 1
           Top = 1
@@ -669,21 +697,23 @@ object Form2: TForm2
         object Panel4: TPanel
           Left = 525
           Top = 1
-          Width = 822
+          Width = 939
           Height = 869
           Align = alClient
           TabOrder = 1
+          ExplicitWidth = 822
           object Panel5: TPanel
             Left = 1
             Top = 1
-            Width = 820
+            Width = 937
             Height = 41
             Align = alTop
             TabOrder = 0
+            ExplicitWidth = 820
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 818
+              Width = 935
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -701,7 +731,7 @@ object Form2: TForm2
             AlignWithMargins = True
             Left = 4
             Top = 45
-            Width = 814
+            Width = 931
             Height = 820
             Align = alClient
             ColCount = 1
@@ -713,6 +743,7 @@ object Form2: TForm2
             TabOrder = 1
             Visible = False
             OnMouseDown = SGMouseDown
+            ExplicitWidth = 814
           end
         end
       end
@@ -726,6 +757,7 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 3
       ParentFont = False
+      ExplicitWidth = 1348
       object Panel1: TPanel
         Left = 8
         Top = 24
@@ -867,21 +899,12 @@ object Form2: TForm2
             TabOrder = 11
             OnClick = btnShowCacheCwClick
           end
-          object Button10: TButton
-            Left = 183
-            Top = 144
-            Width = 105
-            Height = 25
-            Caption = 'btnClearCWActions'
-            TabOrder = 12
-            OnClick = Button10Click
-          end
           object edCacheCwShowMax: TEdit
             Left = 119
             Top = 211
             Width = 97
             Height = 22
-            TabOrder = 13
+            TabOrder = 12
             Text = '10000'
           end
           object edCacheCwShowStep: TEdit
@@ -889,7 +912,7 @@ object Form2: TForm2
             Top = 209
             Width = 49
             Height = 22
-            TabOrder = 14
+            TabOrder = 13
             Text = '1'
           end
           object edGetUrlBin: TEdit
@@ -897,7 +920,7 @@ object Form2: TForm2
             Top = 117
             Width = 258
             Height = 22
-            TabOrder = 15
+            TabOrder = 14
             Text = 'http://h2827643.stratoserver.net:8080/bin/actions'
           end
           object edGetUrlCSV: TEdit
@@ -905,7 +928,7 @@ object Form2: TForm2
             Top = 68
             Width = 299
             Height = 22
-            TabOrder = 16
+            TabOrder = 15
             Text = 'http://h2827643.stratoserver.net:8080/csv/symbols'
           end
           object lbCSVError: TListBox
@@ -914,7 +937,7 @@ object Form2: TForm2
             Width = 562
             Height = 170
             ItemHeight = 14
-            TabOrder = 17
+            TabOrder = 16
             OnClick = lbCSVErrorClick
           end
           object lbDebug2: TListBox
@@ -923,7 +946,7 @@ object Form2: TForm2
             Width = 562
             Height = 169
             ItemHeight = 14
-            TabOrder = 18
+            TabOrder = 17
           end
           object chkGetBinAppend: TCheckBox
             Left = 448
@@ -931,7 +954,7 @@ object Form2: TForm2
             Width = 105
             Height = 17
             Caption = 'chkGetBinAppend'
-            TabOrder = 19
+            TabOrder = 18
           end
           object Button2: TButton
             Left = 216
@@ -939,7 +962,7 @@ object Form2: TForm2
             Width = 105
             Height = 21
             Caption = 'Sorttests'
-            TabOrder = 20
+            TabOrder = 19
             OnClick = Button2Click
           end
           object cbStyles: TComboBox
@@ -947,14 +970,14 @@ object Form2: TForm2
             Top = 268
             Width = 119
             Height = 22
-            TabOrder = 21
+            TabOrder = 20
             OnChange = cbStylesChange
           end
         end
       end
     end
     object TabSheet3: TTabSheet
-      Caption = 'TabSheet3'
+      Caption = 'Speed-Grid'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
@@ -962,34 +985,42 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 5
       ParentFont = False
+      ExplicitWidth = 1348
       object Panel12: TPanel
         Left = 0
         Top = 0
-        Width = 1348
+        Width = 1465
         Height = 871
         Align = alClient
         Caption = 'Panel12'
         TabOrder = 0
+        ExplicitWidth = 1348
         inline DynGrid1: TDynGrid
           Left = 1
           Top = 1
-          Width = 1346
+          Width = 1463
           Height = 869
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 1
           ExplicitTop = 1
-          ExplicitWidth = 1346
+          ExplicitWidth = 712
           ExplicitHeight = 869
           inherited Panel1: TPanel
-            Width = 1346
+            Width = 1463
             Align = alTop
             ExplicitWidth = 1346
+            inherited lblTime: TLabel
+              Width = 38
+              Height = 14
+              ExplicitWidth = 38
+              ExplicitHeight = 14
+            end
           end
           inherited Panel2: TPanel
             Left = 0
             Top = 41
-            Width = 1346
+            Width = 1463
             Height = 828
             Align = alClient
             ExplicitLeft = 0
@@ -997,13 +1028,14 @@ object Form2: TForm2
             ExplicitWidth = 1346
             ExplicitHeight = 828
             inherited SG: TStringGridSorted
-              Width = 1328
+              Width = 1445
               Height = 826
+              Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect, goFixedColClick]
               ExplicitWidth = 1328
               ExplicitHeight = 826
             end
             inherited ScrollBar1: TScrollBar
-              Left = 1329
+              Left = 1446
               Height = 826
               ExplicitLeft = 1329
               ExplicitHeight = 826
@@ -1015,7 +1047,7 @@ object Form2: TForm2
           Top = 10
           Width = 69
           Height = 25
-          Caption = 'Button7'
+          Caption = 'Show Grid'
           TabOrder = 1
           OnClick = Button7Click
         end

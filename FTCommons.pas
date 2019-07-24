@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
   RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
-  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze,FTTypes;
+  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes;
 
 const
   BoolStr: Array [Boolean] of AnsiString = ('False', 'True');
@@ -25,7 +25,6 @@ type
     it is not created until the procedure requests it. }
   StringArray = array of string;
 
-
   TFilterParameter = packed record
     active: Boolean;
     topic: string;
@@ -37,9 +36,12 @@ type
 
   TStringGridSorted = class(StringGridSorted.TStringGridSorted)
     procedure WndProc(var Msg: TMessage); override;
+    procedure MoveColumn(FromIndex, ToIndex: Longint);
+    procedure MoveRow(FromIndex, ToIndex: Longint);
   end;
 
   intArray = array of integer;
+  int64Array = array of int64;
 
   doubleArray = array of double;
 
@@ -165,7 +167,7 @@ type
 
   DAcwComment = array of cwComment;
 
-//  byteArray = array of byte;
+  // byteArray = array of byte;
 
 function DateTimeToUnix(ConvDate: TDateTime): Longint;
 function UnixToDateTime(UnixTime: dword): TDateTime;
@@ -201,8 +203,8 @@ function getCwSymbol(id: integer): string;
 function OrderTypes(cmd: integer): string;
 procedure saveCacheFileCw(fname: string; typ: string; lb: TListBox);
 procedure loadCacheFileCw(fname: string; typ: string; lb: TListBox);
-//A=Alpha V=Value U=Up D=Down
-procedure QuicksortAU(low, high: integer; var Ordliste: StringArray);  //StringArray ist Array of String
+// A=Alpha V=Value U=Up D=Down
+procedure QuicksortAU(low, high: integer; var Ordliste: StringArray); // StringArray ist Array of String
 procedure QuicksortAD(low, high: integer; var Ordliste: StringArray);
 procedure QuicksortVU(low, high: integer; var Ordliste: StringArray);
 procedure QuicksortVD(low, high: integer; var Ordliste: StringArray);
@@ -210,32 +212,42 @@ procedure QuicksortVUA(low, high: integer; var dbla: doubleArray; var inta: intA
 procedure QuicksortVDA(low, high: integer; var dbla: doubleArray; var inta: intArray);
 procedure QuicksortVUAS(low, high: integer; var dbla: StringArray; var inta: intArray);
 procedure QuicksortVDAS(low, high: integer; var dbla: StringArray; var inta: intArray);
-procedure QuicksortVUAIntegerString(low, high: integer; var inta: intArray; var stra: stringArray);
+procedure QuicksortVUAIntegerString(low, high: integer; var inta: intArray; var stra: StringArray);
 
 procedure QuicksortVUI(low, high: integer; var dbla: intArray; var inta: intArray);
 procedure QuicksortVDI(low, high: integer; var dbla: intArray; var inta: intArray);
 
+procedure QuicksortVUI64(low, high: integer; var dbla: int64Array; var inta: intArray);
+procedure QuicksortVDI64(low, high: integer; var dbla: int64Array; var inta: intArray);
 
 procedure FastSortStList(Stlist: TStringList; styp: string);
-procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; styp: string);   //sortiert nach value eines double-arrays und zieht integer-array dabei mit
+procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; styp: string);
+// sortiert nach value eines double-arrays und zieht integer-array dabei mit
 procedure FastSort2ArrayString(stra: StringArray; inta: intArray; styp: string);
-procedure FastSort2ArrayIntegerString(inta: intarray; stra: stringArray; styp: string);
-procedure FastSort2ArrayIntInt(dbla: intarray; inta: intArray; styp: string);
+procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; styp: string);
+procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; styp: string);
+procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; styp: string);
 
 function CTime2DateTime(T: time_c): TDateTime;
 function DateTime2CTime(T: TDateTime): time_c;
 procedure swap(var Value1, Value2: string);
 procedure SwapDbl(var Value1, Value2: double);
 procedure SwapInt(var Value1, Value2: integer);
+procedure SwapInt64(var Value1, Value2: int64);
+
 function GetPIndex(lo, hi: integer): integer;
 function strGleichToFloat(s: string): double;
 procedure ClearStringGridSorted(const Grid: FTCommons.TStringGridSorted);
 procedure lbDebug(s: string);
 procedure AutoSizeGrid(Grid: FTCommons.TStringGridSorted);
-procedure dosleep(t: Integer);
+procedure dosleep(T: integer);
 
-procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; datafrom:integer;datato: integer);
-
+procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; sort: intArray; actions: DACwAction;
+  datafrom: integer; datato: integer);
+function BinSearchString(var Strings: StringArray; var v: integer): integer;
+function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
+function BinSearchInt(var Ints: intArray; v: integer): integer;
+function BinSearchInt64(var Ints: int64Array; v: int64): integer;
 
 var
 
@@ -244,9 +256,9 @@ var
 
   cwSymbols: DACwSymbol;
   cwSymbolsCt: integer;
-  cwSymbolsSortIndex:intarray;//sortierter Zugang zu cwsymbols
-  cwUsersSortIndex:stringarray;//sortierter Zugang zu cwsymbols
-  cwUsersSortIndex2:intarray;//sortierter Zugang zu cwsymbols
+  cwSymbolsSortIndex: intArray; // sortierter Zugang zu cwsymbols
+  cwUsersSortIndex: StringArray; // sortierter Zugang zu cwsymbols
+  cwUsersSortIndex2: intArray; // sortierter Zugang zu cwsymbols
   cwUsers: DAcwUser;
   cwUsersCt: integer;
   cwTicks: DACwTick;
@@ -260,8 +272,9 @@ var
   cwRatings: DACwRating;
   lboxDebug: TListBox;
   lboxInfo: TListBox;
-  cwFilterParameter:array of TFilterParameter;
-  brokerShort:array [1..2] of string;
+  cwFilterParameter: array of TFilterParameter;
+  brokerShort: array [1 .. 2] of string;
+
 implementation
 
 uses FlowAnalyzer;
@@ -1083,7 +1096,8 @@ begin
   end;
 end;
 
-procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;total: integer; stp: integer = 1);
+procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
+  total: integer; stp: integer = 1);
 // {$RANGECHECKS OFF}
 var
   k: integer;
@@ -1147,7 +1161,7 @@ begin
         SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[k].symbolId);
         SG.cells[SGFieldCol[4], row] := inttostr(actions[k].symbolId);
         SG.cells[SGFieldCol[5], row] := getCwComment(actions[k].commentId);
-        SG.cells[SGFieldCol[6], row] := OrderTypes(actions[k].typeId-1); //cw statt 0..6 ist 1..7
+        SG.cells[SGFieldCol[6], row] := OrderTypes(actions[k].typeId - 1); // cw statt 0..6 ist 1..7
         SG.cells[SGFieldCol[7], row] := inttostr(actions[k].sourceId);
         SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[k].openTime));
         SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[k].closeTime));
@@ -1211,7 +1225,7 @@ begin
 end;
 
 function getCwSymbol(id: integer): string;
-//Achtung wenn umsortiert ist das der Index aber nicht die symbolId
+// Achtung wenn umsortiert ist das der Index aber nicht die symbolId
 begin
   result := '';
   if id < cwSymbolsCt then
@@ -1526,10 +1540,10 @@ var
   gt: Cardinal;
   FSize: integer;
   ct: integer;
-  cwa:cwaction;
-  cwu:cwuser;
-  cws:cwsymbol;
-  cwc:cwcomment;
+  cwa: cwAction;
+  cwu: cwUser;
+  cws: cwSymbol;
+  cwc: cwComment;
 begin
   try
     gt := GetTickCount();
@@ -1551,8 +1565,8 @@ begin
           begin
             ct := trunc(fstream.Size / SizeOf(cwu));
             SetLength(cwUsers, ct);
-            setlength(cwUserssortindex,0);//zurücksetzen
-            setlength(cwUserssortindex2,0);//zurücksetzen
+            SetLength(cwUsersSortIndex, 0); // zurücksetzen
+            SetLength(cwUsersSortIndex2, 0); // zurücksetzen
             fstream.ReadBuffer(cwUsers[0], ct * SizeOf(cwu)); // nicht die ganze stream.size !
             showmessage(inttostr(fstream.Size) + ' ' + inttostr(ct * SizeOf(cwu)));
           end;
@@ -1560,7 +1574,7 @@ begin
           begin
             ct := trunc(fstream.Size / SizeOf(cws));
             SetLength(cwSymbols, ct);
-            setlength(cwsymbolssortindex,0);//zurücksetzen
+            SetLength(cwSymbolsSortIndex, 0); // zurücksetzen
             fstream.ReadBuffer(cwSymbols[0], ct * SizeOf(cws)); // nicht die ganze stream.size !
 
           end;
@@ -1659,7 +1673,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(dbla[Left], dbla[Right]);
+      swap(dbla[Left], dbla[Right]);
       SwapInt(inta[Left], inta[Right]);
       Inc(Left);
       Dec(Right);
@@ -1677,7 +1691,6 @@ begin
     QuicksortVUAS(Left, high, dbla, inta);
   end;
 end;
-
 
 procedure QuicksortVUA(low, high: integer; var dbla: doubleArray; var inta: intArray);
 // value aufwärts
@@ -1725,7 +1738,7 @@ procedure QuicksortVUI(low, high: integer; var dbla: intArray; var inta: intArra
 //
 var
   pivotIndex: integer;
-  pivotValue: double;
+  pivotValue: integer;
   Left, Right: integer;
 begin
   pivotIndex := GetPIndex(low, high);
@@ -1762,12 +1775,54 @@ begin
   end;
 end;
 
-//procedure QuicksortVUAInteger(low, high: integer; var dbla: intArray; var inta: intArray);
-procedure QuicksortVUAIntegerString(low, high: integer; var inta: intarray; var stra: stringArray);
+procedure QuicksortVUI64(low, high: integer; var dbla: int64Array; var inta: intArray);
+// value aufwärts
+//
+var
+  pivotIndex: integer;
+  pivotValue: int64;
+  Left, Right: integer;
+begin
+  pivotIndex := GetPIndex(low, high);
+  pivotValue := dbla[pivotIndex];
+  Left := low;
+  Right := high;
+  repeat
+    while ((Left <= high) and (dbla[Left] < pivotValue)) do
+    begin
+      Inc(Left);
+    end;
+
+    while ((Right >= low) and (pivotValue < dbla[Right])) do
+    begin
+      Dec(Right);
+    end;
+    if (Left <= Right) then
+    begin
+      SwapInt64(dbla[Left], dbla[Right]);
+      SwapInt(inta[Left], inta[Right]);
+      Inc(Left);
+      Dec(Right);
+    end;
+  until (Left > Right);
+
+  if (low < Right) then
+  begin
+    QuicksortVUI64(low, Right, dbla, inta);
+  end;
+
+  if (Left < high) then
+  begin
+    QuicksortVUI64(Left, high, dbla, inta);
+  end;
+end;
+
+// procedure QuicksortVUAInteger(low, high: integer; var dbla: intArray; var inta: intArray);
+procedure QuicksortVUAIntegerString(low, high: integer; var inta: intArray; var stra: StringArray);
 // value aufwärts
 var
   pivotIndex: integer;
-  pivotValue: double;
+  pivotValue: integer;
   Left, Right: integer;
 begin
 
@@ -1790,7 +1845,7 @@ begin
     if (Left <= Right) then
     begin
       SwapInt(inta[Left], inta[Right]);
-      Swap(stra[Left], stra[Right]);
+      swap(stra[Left], stra[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -1807,7 +1862,6 @@ begin
     QuicksortVUAIntegerString(Left, high, inta, stra);
   end;
 end;
-
 
 procedure QuicksortVDA(low, high: integer; var dbla: doubleArray; var inta: intArray);
 // value abwärts
@@ -1858,7 +1912,7 @@ procedure QuicksortVDI(low, high: integer; var dbla: intArray; var inta: intArra
 // value abwärts
 var
   pivotIndex: integer;
-  pivotValue: double;
+  pivotValue: integer;
   Left, Right: integer;
 begin
 
@@ -1899,6 +1953,51 @@ begin
   end;
 end;
 
+procedure QuicksortVDI64(low, high: integer; var dbla: int64Array; var inta: intArray);
+// value abwärts
+var
+  pivotIndex: integer;
+  pivotValue: int64;
+  Left, Right: integer;
+begin
+
+  pivotIndex := GetPIndex(low, high);
+  pivotValue := dbla[pivotIndex];
+
+  Left := low;
+  Right := high;
+  repeat
+
+    while ((Left <= high) and (dbla[Left] > pivotValue)) do
+    begin
+      Inc(Left);
+    end;
+
+    while ((Right >= low) and (pivotValue > dbla[Right])) do
+    begin
+      Dec(Right);
+    end;
+    if (Left <= Right) then
+    begin
+      SwapInt64(dbla[Left], dbla[Right]);
+      SwapInt(inta[Left], inta[Right]);
+      Inc(Left);
+      Dec(Right);
+    end;
+
+  until (Left > Right);
+
+  if (low < Right) then
+  begin
+    QuicksortVDI64(low, Right, dbla, inta);
+  end;
+
+  if (Left < high) then
+  begin
+    QuicksortVDI64(Left, high, dbla, inta);
+  end;
+end;
+
 procedure QuicksortVDAS(low, high: integer; var dbla: StringArray; var inta: intArray);
 // value abwärts
 var
@@ -1925,7 +2024,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(dbla[Left], dbla[Right]);
+      swap(dbla[Left], dbla[Right]);
       SwapInt(inta[Left], inta[Right]);
       Inc(Left);
       Dec(Right);
@@ -1943,7 +2042,6 @@ begin
     QuicksortVDAS(Left, high, dbla, inta);
   end;
 end;
-
 
 procedure QuicksortVU(low, high: integer; var Ordliste: StringArray);
 // value aufwärts
@@ -2134,7 +2232,7 @@ begin
   gtc := 0;
   SetLength(SortArray, Stlist.count);
   for i := 0 to Stlist.count - 1 do
-    SortArray[i] := Trim(Stlist.strings[i]);
+    SortArray[i] := Trim(Stlist.Strings[i]);
 
   // Now sort
   if (styp = 'AU') then
@@ -2149,8 +2247,8 @@ begin
   // Recast
   for j := low(SortArray) to High(SortArray) do
   begin // Sometimes empty entries abound, get rid of them
-    if Stlist.strings[j] <> '' then
-      Stlist.strings[j] := SortArray[j];
+    if Stlist.Strings[j] <> '' then
+      Stlist.Strings[j] := SortArray[j];
   end;
 
   // Free the array
@@ -2158,17 +2256,17 @@ begin
   // showmessage('gtc:'+inttostr(gtc));
 end;
 
-//procedure FastSort2ArrayInteger(dbla: intArray; inta: intArray; styp: string);
-procedure FastSort2ArrayIntegerString(inta: intarray; stra: stringArray; styp: string);
+// procedure FastSort2ArrayInteger(dbla: intArray; inta: intArray; styp: string);
+procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; styp: string);
 
 begin
   // Cast Stringlist to an array
 
   if (styp = 'VUA') then
     QuicksortVUAIntegerString(Low(inta), High(inta), inta, stra);
-    //abwärts nicht benötigt
-//  if (styp = 'VDA') then
-//    QuicksortVDAInteger(Low(dbla), High(dbla), dbla, inta);
+  // abwärts nicht benötigt
+  // if (styp = 'VDA') then
+  // QuicksortVDAInteger(Low(dbla), High(dbla), dbla, inta);
 
 end;
 
@@ -2184,7 +2282,7 @@ begin
 
 end;
 
-procedure FastSort2ArrayIntInt(dbla: intarray; inta: intArray; styp: string);
+procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; styp: string);
 
 begin
   // Cast Stringlist to an array
@@ -2196,6 +2294,17 @@ begin
 
 end;
 
+procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; styp: string);
+
+begin
+  // Cast Stringlist to an array
+
+  if (styp = 'VUI') then
+    QuicksortVUI64(Low(dbla), High(dbla), dbla, inta);
+  if (styp = 'VDI') then
+    QuicksortVDI64(Low(dbla), High(dbla), dbla, inta);
+
+end;
 
 procedure FastSort2ArrayString(stra: StringArray; inta: intArray; styp: string);
 
@@ -2208,7 +2317,6 @@ begin
     QuicksortVDAS(Low(stra), High(stra), stra, inta);
 
 end;
-
 
 function strGleichToFloat(s: string): double;
 // wie 1231231234234=3465 aufteilen links vom=
@@ -2253,6 +2361,15 @@ begin
   Value2 := temp;
 end;
 
+procedure SwapInt64(var Value1, Value2: int64);
+var
+  temp: int64;
+begin
+  temp := Value1;
+  Value1 := Value2;
+  Value2 := temp;
+end;
+
 function GetPIndex(lo, hi: integer): integer;
 var
   i: integer;
@@ -2271,6 +2388,16 @@ end;
 function DateTime2CTime(T: TDateTime): time_c;
 begin
   result := trunc((T - EncodeDate(1970, 1, 1)) * 86400.0);
+end;
+
+procedure TStringGridSorted.MoveColumn(FromIndex, ToIndex: Longint);
+begin
+  inherited;
+end;
+
+procedure TStringGridSorted.MoveRow(FromIndex, ToIndex: Longint);
+begin
+  inherited;
 end;
 
 procedure TStringGridSorted.WndProc(var Msg: TMessage);
@@ -2326,18 +2453,19 @@ begin
   end;
 end;
 
-procedure dosleep(t: Integer);
-  var
-    gt: Cardinal;
-  begin
-    gt := GetTickCount();
-    repeat
-      Application.ProcessMessages;
-    until (GetTickCount - gt) > t;
-    // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
-  end;
+procedure dosleep(T: integer);
+var
+  gt: Cardinal;
+begin
+  gt := GetTickCount();
+  repeat
+    Application.ProcessMessages;
+  until (GetTickCount - gt) > T;
+  // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
+end;
 
-procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; datafrom:integer;datato: integer);
+procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; sort: intArray; actions: DACwAction;
+  datafrom: integer; datato: integer);
 // {$RANGECHECKS OFF}
 var
   k: integer;
@@ -2351,7 +2479,7 @@ begin
     SG.cells[SGFieldCol[2], 0] := 'accountId';
     SG.cells[SGFieldCol[3], 0] := 'symbol';
     SG.cells[SGFieldCol[4], 0] := 'symbolId';
-    SG.cells[SGFieldCol[5], 0] := 'commentId';
+    SG.cells[SGFieldCol[5], 0] := 'comment';
     SG.cells[SGFieldCol[6], 0] := 'typeId';
     SG.cells[SGFieldCol[7], 0] := 'sourceId';
     SG.cells[SGFieldCol[8], 0] := 'openTime';
@@ -2374,35 +2502,35 @@ begin
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
 
     row := 0;
-    for k:=datafrom to datato  do
+    for k := datafrom to datato do
 
     begin
       row := row + 1;
       begin
-        SG.cells[SGFieldCol[0], row] := inttostr(actions[k].actionId)+' ' +inttostr(k);
-        SG.cells[SGFieldCol[1], row] := inttostr(actions[k].userId);
-        SG.cells[SGFieldCol[2], row] := inttostr(actions[k].accountId);
-        SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[k].symbolId);
-        SG.cells[SGFieldCol[4], row] := inttostr(actions[k].symbolId);
-        SG.cells[SGFieldCol[5], row] := getCwComment(actions[k].commentId);
-        SG.cells[SGFieldCol[6], row] := OrderTypes(actions[k].typeId-1); //cw statt 0..6 ist 1..7
-        SG.cells[SGFieldCol[7], row] := inttostr(actions[k].sourceId);
-        SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[k].openTime));
-        SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[k].closeTime));
-        SG.cells[SGFieldCol[10], row] := inttostr(actions[k].openTime);
-        SG.cells[SGFieldCol[11], row] := inttostr(actions[k].closeTime);
-        SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[k].expirationTime));
-        SG.cells[SGFieldCol[13], row] := floattostr(actions[k].openPrice);
-        SG.cells[SGFieldCol[14], row] := floattostr(actions[k].closePrice);
-        SG.cells[SGFieldCol[15], row] := floattostr(actions[k].stopLoss);
-        SG.cells[SGFieldCol[16], row] := floattostr(actions[k].takeProfit);
-        SG.cells[SGFieldCol[17], row] := floattostr(actions[k].swap);
-        SG.cells[SGFieldCol[18], row] := floattostr(actions[k].profit);
-        SG.cells[SGFieldCol[19], row] := inttostr(actions[k].volume);
-        SG.cells[SGFieldCol[20], row] := inttostr(actions[k].precision);
-        SG.cells[SGFieldCol[21], row] := floattostr(actions[k].conversionRate0);
-        SG.cells[SGFieldCol[22], row] := floattostr(actions[k].conversionRate0);
-        SG.cells[SGFieldCol[23], row] := floattostr(actions[k].marginRate);
+        SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
+        SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
+        SG.cells[SGFieldCol[2], row] := inttostr(actions[sort[k]].accountId);
+        SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
+        SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
+        SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
+        SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1); // cw statt 0..6 ist 1..7
+        SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
+        SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
+        SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
+        SG.cells[SGFieldCol[10], row] := inttostr(actions[sort[k]].openTime);
+        SG.cells[SGFieldCol[11], row] := inttostr(actions[sort[k]].closeTime);
+        SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
+        SG.cells[SGFieldCol[13], row] := floattostr(actions[sort[k]].openPrice);
+        SG.cells[SGFieldCol[14], row] := floattostr(actions[sort[k]].closePrice);
+        SG.cells[SGFieldCol[15], row] := floattostr(actions[sort[k]].stopLoss);
+        SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
+        SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
+        SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
+        SG.cells[SGFieldCol[19], row] := inttostr(actions[sort[k]].volume);
+        SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
+        SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
+        SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
+        SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
       end
     end;
 
@@ -2412,5 +2540,145 @@ begin
   // {$RANGECHECKS ON}
 end;
 
+function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
+// ich nehme zwei Arrays nehmen: eines it 12345=45678 und eines nur 12345 damit man die strtoint-Berechnung spart
+var
+  // spezielle Variante die nach 12345 in 12345=45678 sucht und 45678 liefert
+  first: integer;
+  Last: integer;
+  Pivot: integer;
+  Found: Boolean;
+  substr: string;
+  ps: string;
+  p: integer;
+  pi: integer;
+begin
+  // inttostr ist halb so schnell wie strtoint
+  first := Low(Strings); // Sets the first item of the range
+  Last := High(Strings); // Sets the last item of the range
+  Found := false; // Initializes the Found flag (Not found yet)
+  result := -1; // Initializes the Result
+  // substr := inttostr(v);
+  // If First > Last then the searched item doesn't exist
+  // If the item is found the loop will stop
+  while (first <= Last) and (not Found) do
+  begin
+    // Gets the middle of the selected range
+    Pivot := (first + Last) div 2;
+    // Compares the String in the middle with the searched one
+    // p := pos('=', Strings[Pivot]);
+    // ps := leftstr(Strings[Pivot], p - 1);
+    // pi := strtoint(ps);
+    if index[Pivot] = v then
+    // if ps = substr then
+    begin
+      Found := true;
+      result := Pivot;
+    end
+    // If the Item in the middle has a bigger value than
+    // the searched item, then select the first half
+    else if index[Pivot] > v then
+      Last := Pivot - 1
+      // else select the second half
+    else
+      first := Pivot + 1;
+  end;
+end;
+
+function BinSearchString(var Strings: StringArray; var v: integer): integer;
+var
+  // spezielle Variante die nach 12345 in 12345=45678 sucht und 45678 liefert
+  first: integer;
+  Last: integer;
+  Pivot: integer;
+  Found: Boolean;
+  substr: string;
+  ps: string;
+  p: integer;
+  pi: integer;
+begin
+  // inttostr ist halb so schnell wie strtoint
+  first := Low(Strings); // Sets the first item of the range
+  Last := High(Strings); // Sets the last item of the range
+  Found := false; // Initializes the Found flag (Not found yet)
+  result := -1; // Initializes the Result
+  // substr := inttostr(v);
+  // If First > Last then the searched item doesn't exist
+  // If the item is found the loop will stop
+  while (first <= Last) and (not Found) do
+  begin
+    // Gets the middle of the selected range
+    Pivot := (first + Last) div 2;
+    // Compares the String in the middle with the searched one
+    p := pos('=', Strings[Pivot]);
+    ps := leftstr(Strings[Pivot], p - 1);
+    pi := strtoint(ps);
+    if pi = v then
+    // if ps = substr then
+    begin
+      Found := true;
+      result := Pivot;
+    end
+    // If the Item in the middle has a bigger value than
+    // the searched item, then select the first half
+    else if pi > v then
+      Last := Pivot - 1
+      // else select the second half
+    else
+      first := Pivot + 1;
+  end;
+end;
+
+function BinSearchInt(var Ints: intArray; v: integer): integer;
+var
+  first: integer;
+  Last: integer;
+  Pivot: integer;
+  Found: Boolean;
+begin
+  first := Low(Ints); // Sets the first item of the range
+  Last := High(Ints); // Sets the last item of the range
+  Found := false; // Initializes the Found flag (Not found yet)
+  result := -1; // Initializes the Result
+  while (first <= Last) and (not Found) do
+  begin
+    Pivot := (first + Last) div 2;
+    if Ints[Pivot] = v then
+    begin
+      Found := true;
+      result := Pivot;
+    end
+    else if Ints[Pivot] > v then
+      Last := Pivot - 1
+    else
+      first := Pivot + 1;
+  end;
+end;
+
+function BinSearchInt64(var Ints: int64Array; v: int64): integer;
+var
+  first: integer;
+  Last: integer;
+  Pivot: integer;
+  Found: Boolean;
+begin
+  first := Low(Ints); // Sets the first item of the range
+  Last := High(Ints); // Sets the last item of the range
+  Found := false; // Initializes the Found flag (Not found yet)
+  result := -1; // Initializes the Result
+  while (first <= Last) and (not Found) do
+  begin
+    Pivot := (first + Last) div 2;
+    if Ints[Pivot] = v then
+    begin
+      Found := true;
+      result := Pivot;
+    end
+    else if Ints[Pivot] > v then
+      Last := Pivot - 1
+    else
+      first := Pivot + 1;
+  end;
+end;
 
 end.

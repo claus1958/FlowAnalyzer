@@ -67,8 +67,6 @@ type
     procedure chkLB1Exit(Sender: TObject);
     procedure dtPicker1Change(Sender: TObject);
     procedure edValueChange(Sender: TObject);
-    function BinSearch(var Strings: StringArray; var v: Integer): Integer;
-    function BinSearch2(var Strings: StringArray; var Index: intarray; var v: Integer): Integer;
     procedure btnMoreMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure wegdamit;
     procedure FrameClick(Sender: TObject);
@@ -753,94 +751,7 @@ begin
   end;
 end;
 
-// man könnte zwei Arrays nehmen: eines it 12345=45678 und eines nur 12345 damit man die strtoint spart
-function TFilterElemente.BinSearch2(var Strings: StringArray; var Index: intarray; var v: Integer): Integer;
-var
-  // spezielle Variante die nach 12345 in 12345=45678 sucht und 45678 liefert
-  First: Integer;
-  Last: Integer;
-  Pivot: Integer;
-  Found: boolean;
-  substr: string;
-  ps: string;
-  p: Integer;
-  pi: Integer;
-begin
-  // inttostr ist halb so schnell wie strtoint
-  First := Low(Strings); // Sets the first item of the range
-  Last := High(Strings); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
-  result := -1; // Initializes the Result
-  // substr := inttostr(v);
-  // If First > Last then the searched item doesn't exist
-  // If the item is found the loop will stop
-  while (First <= Last) and (not Found) do
-  begin
-    // Gets the middle of the selected range
-    Pivot := (First + Last) div 2;
-    // Compares the String in the middle with the searched one
-    // p := pos('=', Strings[Pivot]);
-    // ps := leftstr(Strings[Pivot], p - 1);
-    // pi := strtoint(ps);
-    if index[Pivot] = v then
-    // if ps = substr then
-    begin
-      Found := true;
-      result := Pivot;
-    end
-    // If the Item in the middle has a bigger value than
-    // the searched item, then select the first half
-    else if index[Pivot] > v then
-      Last := Pivot - 1
-      // else select the second half
-    else
-      First := Pivot + 1;
-  end;
-end;
 
-function TFilterElemente.BinSearch(var Strings: StringArray; var v: Integer): Integer;
-var
-  // spezielle Variante die nach 12345 in 12345=45678 sucht und 45678 liefert
-  First: Integer;
-  Last: Integer;
-  Pivot: Integer;
-  Found: boolean;
-  substr: string;
-  ps: string;
-  p: Integer;
-  pi: Integer;
-begin
-  // inttostr ist halb so schnell wie strtoint
-  First := Low(Strings); // Sets the first item of the range
-  Last := High(Strings); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
-  result := -1; // Initializes the Result
-  // substr := inttostr(v);
-  // If First > Last then the searched item doesn't exist
-  // If the item is found the loop will stop
-  while (First <= Last) and (not Found) do
-  begin
-    // Gets the middle of the selected range
-    Pivot := (First + Last) div 2;
-    // Compares the String in the middle with the searched one
-    p := pos('=', Strings[Pivot]);
-    ps := leftstr(Strings[Pivot], p - 1);
-    pi := strtoint(ps);
-    if pi = v then
-    // if ps = substr then
-    begin
-      Found := true;
-      result := Pivot;
-    end
-    // If the Item in the middle has a bigger value than
-    // the searched item, then select the first half
-    else if pi > v then
-      Last := Pivot - 1
-      // else select the second half
-    else
-      First := Pivot + 1;
-  end;
-end;
 
 function TFilterElemente.findUserName(userId: Integer): string;
 var
@@ -851,7 +762,7 @@ begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
   // mit Binsearch2 sinds: 850  Super:-)
 
-  i := BinSearch2(cwuserssortindex, cwuserssortindex2, userId);
+  i := BinSearchString2(cwuserssortindex, cwuserssortindex2, userId);
   if (i > -1) then
   begin
     p := pos('=', cwuserssortindex[i]);

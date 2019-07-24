@@ -13,7 +13,7 @@ object DynGrid: TDynGrid
     object lblHeader: TLabel
       Left = 264
       Top = 12
-      Width = 5
+      Width = 45
       Height = 19
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -21,6 +21,13 @@ object DynGrid: TDynGrid
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+    end
+    object lblTime: TLabel
+      Left = 672
+      Top = 12
+      Width = 32
+      Height = 13
+      Caption = 'lblTime'
     end
   end
   object Panel2: TPanel
@@ -36,9 +43,10 @@ object DynGrid: TDynGrid
       Width = 735
       Height = 587
       Align = alClient
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing]
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goRowSelect, goFixedColClick]
       ScrollBars = ssHorizontal
       TabOrder = 0
+      OnMouseDown = SGMouseDown
     end
     object ScrollBar1: TScrollBar
       Left = 736
@@ -47,6 +55,7 @@ object DynGrid: TDynGrid
       Height = 587
       Align = alRight
       Kind = sbVertical
+      LargeChange = 100
       PageSize = 0
       TabOrder = 1
       OnChange = ScrollBar1Change
