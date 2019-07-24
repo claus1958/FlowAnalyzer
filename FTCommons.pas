@@ -36,8 +36,8 @@ type
 
   TStringGridSorted = class(StringGridSorted.TStringGridSorted)
     procedure WndProc(var Msg: TMessage); override;
-    procedure MoveColumn(FromIndex, ToIndex: Longint);
-    procedure MoveRow(FromIndex, ToIndex: Longint);
+    // procedure MoveColumn(FromIndex, ToIndex: Longint);
+    // procedure MoveRow(FromIndex, ToIndex: Longint);
   end;
 
   intArray = array of integer;
@@ -242,7 +242,7 @@ procedure lbDebug(s: string);
 procedure AutoSizeGrid(Grid: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
-procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; sort: intArray; actions: DACwAction;
+procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; sort: intArray; var actions: DACwAction;
   datafrom: integer; datato: integer);
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
@@ -1119,6 +1119,7 @@ begin
     if (SG.RowCount > 1) then
       SG.FixedRows := 1;
 
+    sg.Rows[0].BeginUpdate;
     SG.cells[SGFieldCol[0], 0] := 'actionId';
     SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'userId';
@@ -1144,6 +1145,7 @@ begin
     SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
     SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
     SG.cells[SGFieldCol[23], 0] := 'marginRate';
+    sg.Rows[0].endUpdate;
 
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
 
@@ -1155,6 +1157,8 @@ begin
       row := row + 1;
       if (row < (total + 1)) then
       begin
+        sg.Rows[row].BeginUpdate;
+
         SG.cells[SGFieldCol[0], row] := inttostr(actions[k].actionId);
         SG.cells[SGFieldCol[1], row] := inttostr(actions[k].userId);
         SG.cells[SGFieldCol[2], row] := inttostr(actions[k].accountId);
@@ -1179,7 +1183,7 @@ begin
         SG.cells[SGFieldCol[21], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[22], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[23], row] := floattostr(actions[k].marginRate);
-
+        sg.Rows[row].EndUpdate;
       end
       else
       begin
@@ -2390,15 +2394,15 @@ begin
   result := trunc((T - EncodeDate(1970, 1, 1)) * 86400.0);
 end;
 
-procedure TStringGridSorted.MoveColumn(FromIndex, ToIndex: Longint);
-begin
-  inherited;
-end;
-
-procedure TStringGridSorted.MoveRow(FromIndex, ToIndex: Longint);
-begin
-  inherited;
-end;
+// procedure TStringGridSorted.MoveColumn(FromIndex, ToIndex: Longint);
+// begin
+// inherited;
+// end;
+//
+// procedure TStringGridSorted.MoveRow(FromIndex, ToIndex: Longint);
+// begin
+// inherited;
+// end;
 
 procedure TStringGridSorted.WndProc(var Msg: TMessage);
 var
@@ -2456,6 +2460,7 @@ end;
 procedure dosleep(T: integer);
 var
   gt: Cardinal;
+  er:string;
 begin
   gt := GetTickCount();
   repeat
@@ -2464,15 +2469,16 @@ begin
   // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
 end;
 
-procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; sort: intArray; actions: DACwAction;
+procedure doActionsGridCWFast(SG: TStringGridSorted; SGFieldCol: DAInteger; sort: intArray; var actions: DACwAction;
   datafrom: integer; datato: integer);
 // {$RANGECHECKS OFF}
 var
   k: integer;
   row: integer;
+  fehler:string;
 begin
   try
-
+    sg.Rows[0].BeginUpdate;
     SG.cells[SGFieldCol[0], 0] := 'actionId';
     SG.ColWidths[SGFieldCol[0]] := 140;
     SG.cells[SGFieldCol[1], 0] := 'userId';
@@ -2498,7 +2504,7 @@ begin
     SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
     SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
     SG.cells[SGFieldCol[23], 0] := 'marginRate';
-
+    sg.Rows[0].endUpdate;
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
 
     row := 0;
@@ -2506,36 +2512,39 @@ begin
 
     begin
       row := row + 1;
-      begin
-        SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
-        SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
-        SG.cells[SGFieldCol[2], row] := inttostr(actions[sort[k]].accountId);
-        SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
-        SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
-        SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
-        SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1); // cw statt 0..6 ist 1..7
-        SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
-        SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
-        SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
-        SG.cells[SGFieldCol[10], row] := inttostr(actions[sort[k]].openTime);
-        SG.cells[SGFieldCol[11], row] := inttostr(actions[sort[k]].closeTime);
-        SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
-        SG.cells[SGFieldCol[13], row] := floattostr(actions[sort[k]].openPrice);
-        SG.cells[SGFieldCol[14], row] := floattostr(actions[sort[k]].closePrice);
-        SG.cells[SGFieldCol[15], row] := floattostr(actions[sort[k]].stopLoss);
-        SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
-        SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
-        SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
-        SG.cells[SGFieldCol[19], row] := inttostr(actions[sort[k]].volume);
-        SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
-        SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
-        SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
-        SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
-      end
+      sg.Rows[row].beginUpdate;
+      SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
+      SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
+      SG.cells[SGFieldCol[2], row] := inttostr(actions[sort[k]].accountId);
+      SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
+      SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
+      SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
+      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1); // cw statt 0..6 ist 1..7
+      SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
+      SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
+      SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
+      SG.cells[SGFieldCol[10], row] := inttostr(actions[sort[k]].openTime);
+      SG.cells[SGFieldCol[11], row] := inttostr(actions[sort[k]].closeTime);
+      SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
+      SG.cells[SGFieldCol[13], row] := floattostr(actions[sort[k]].openPrice);
+      SG.cells[SGFieldCol[14], row] := floattostr(actions[sort[k]].closePrice);
+      SG.cells[SGFieldCol[15], row] := floattostr(actions[sort[k]].stopLoss);
+      SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
+      SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
+      SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
+      SG.cells[SGFieldCol[19], row] := inttostr(actions[sort[k]].volume);
+      SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
+      SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
+      SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
+      SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
+      sg.Rows[row].endUpdate;
     end;
+    except
+          on E: Exception do
+          begin
+            fehler:=E.Message;
+          end;
 
-  except
-    // debug('Fehler');
   end;
   // {$RANGECHECKS ON}
 end;

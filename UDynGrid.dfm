@@ -13,7 +13,7 @@ object DynGrid: TDynGrid
     object lblHeader: TLabel
       Left = 264
       Top = 12
-      Width = 45
+      Width = 5
       Height = 19
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -43,10 +43,15 @@ object DynGrid: TDynGrid
       Width = 735
       Height = 587
       Align = alClient
-      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goRowSelect, goFixedColClick]
+      FixedCols = 0
+      RowCount = 2
+      Options = [goRangeSelect, goColSizing, goRowSelect, goFixedColClick, goFixedRowClick]
       ScrollBars = ssHorizontal
       TabOrder = 0
+      OnDrawCell = SGDrawCell
       OnMouseDown = SGMouseDown
+      OnMouseUp = SGMouseUp
+      OnRowMoved = SGRowMoved
     end
     object ScrollBar1: TScrollBar
       Left = 736

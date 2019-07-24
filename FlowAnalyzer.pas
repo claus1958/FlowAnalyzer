@@ -35,14 +35,11 @@ type
     Panel6: TPanel;
     Panel7: TPanel;
     Label2: TLabel;
-    Label4: TLabel;
     btnGetSingleUserActions: TButton;
     edSingleUserActionsId: TEdit;
-    edFZMax: TEdit;
     Panel8: TPanel;
     Panel9: TPanel;
     lblSingleUserActions: TLabel;
-    SGCwSingleUser: FTCommons.TStringGridSorted;
     TabSheet1: TTabSheet;
     Panel26: TPanel;
     Panel34: TPanel;
@@ -97,7 +94,6 @@ type
     CategoryPanel2: TCategoryPanel;
     SGCwSymbols: FTCommons.TStringGridSorted;
     CategoryPanel1: TCategoryPanel;
-    SGCwCache: FTCommons.TStringGridSorted;
     SGCwComments: FTCommons.TStringGridSorted;
     Panel3: TPanel;
     lblAllDataInfo: TLabel;
@@ -118,6 +114,9 @@ type
     DynGrid1: TDynGrid;
     Button7: TButton;
     Button8: TButton;
+    DynGrid2: TDynGrid;
+    DynGrid3: TDynGrid;
+    DynGrid4: TDynGrid;
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean);
@@ -167,9 +166,10 @@ type
     procedure Button2Click(Sender: TObject);
     procedure lbCSVErrorClick(Sender: TObject);
     procedure cbStylesChange(Sender: TObject);
-    procedure gridHandler(Sender: TObject);
+//    procedure gridHandler(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
+
   private
     { Private-Deklarationen }
   public
@@ -450,34 +450,6 @@ begin
 
 end;
 
-procedure TForm2.gridHandler(Sender: TObject);
-var
-  sg: TDynGrid;
-  i, j, k: Integer;
-  row: Integer;
-  vCols, vRows, vScroll: Integer;
-  rc: Integer;
-  vscrollmax: Integer;
-begin
-  //
-  with Sender as TDynGrid do
-  begin
-    rc := sg.rowcount;
-    vCols := VisibleCols; // cols und rows ändert sich dynamisch
-    vRows := VisibleRows;
-    vScroll := scrollPosition; //
-    maxdatarows := length(cwActions);
-
-    vscrollmax := vScroll + vRows;
-    if vscrollmax > maxdatarows then
-      vscrollmax := maxdatarows;
-    // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
-    // daher wäre es besser das Sortierarray gehört zum Grid
-
-    // doActionsGridCWFast(SG, SGFieldCol, cwActions,vscroll, vscrollmax);
-    doActionsGridCWFast(sg, SGFieldCol, ixSorted, cwActions, vScroll, vscrollmax);
-  end;
-end;
 
 procedure TForm2.gridMouseLeftClickHandler(grid: FTCommons.TStringGridSorted; col, row: Integer;
   sCell, sCol, sRow: string);
@@ -519,7 +491,7 @@ var
   max: Integer;
 begin
   id := strtoint(edSingleUserActionsId.text);
-  fzmax := strtoint(edFZMax.text);
+  fzmax := 10000;
   fz := -1;
   SetLength(cwSingleUserActions, fzmax);
   cwactionsct := length(cwActions);
@@ -530,7 +502,7 @@ begin
       fz := fz + 1;
       if fz >= fzmax then
       begin
-        fzmax := fzmax + strtoint(edFZMax.text);
+        fzmax := fzmax + 10000;
         SetLength(cwSingleUserActions, fzmax);
       end;
       cwSingleUserActions[fz] := cwActions[i];
@@ -541,12 +513,17 @@ begin
 
   SetLength(cwSingleUserActions, fz + 1);
   cwsingleuseractionsCt := fz + 1;
-  max := cwsingleuseractionsCt;
-  if max > maxActionsPerGrid then
-    max := maxActionsPerGrid;
 
-  doActionsGridCW(SGCwSingleUser, SGFieldCol, cwSingleUserActions, max, max);
-  autosizegrid(SGCwSingleUser);
+
+  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 23);
+
+
+//  max := cwsingleuseractionsCt;
+//  if max > maxActionsPerGrid then
+//    max := maxActionsPerGrid;
+//
+//  doActionsGridCW(SGCwSingleUser, SGFieldCol, cwSingleUserActions, max, max);
+//  autosizegrid(SGCwSingleUser);
   lblSingleUserActions.Caption := 'Actions: ' + inttostr(cwsingleuseractionsCt);
 end;
 
@@ -686,16 +663,18 @@ begin
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10 +
     ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
-  btnCwSymbolsToGridClick(nil);
-  btnCwusersToGridClick(nil);
-  btnCwCommentsToGridClick(nil);
-  btnCwactionsToGridClick(nil);
 
   TabSheet1.TabVisible := true;
   TabSheet6.TabVisible := true;
   TabSheet5.TabVisible := true;
 
   PageControl1.TabIndex := 1;
+
+  btnCwSymbolsToGridClick(nil);
+  btnCwusersToGridClick(nil);
+  btnCwCommentsToGridClick(nil);
+  btnCwactionsToGridClick(nil);
+
 
   // symbole sortieren in einem extra Feld
   cwSymbolsCt := length(cwSymbols);
@@ -791,11 +770,12 @@ begin
   else;
   // showmessage('Die Darstellung wird auf ' + edCacheShowMax.Text + ' Einträge beschränkt!');
 
-  stp := strtoint(edCacheCwShowStep.text);
-  doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), max, stp);
-  autosizegrid(SGCwCache);
-
-  doCacheGridCwInfo;
+//  stp := strtoint(edCacheCwShowStep.text);
+//  doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), max, stp);
+//  autosizegrid(SGCwCache);
+//
+//  doCacheGridCwInfo;
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 23);
 end;
 
 procedure TForm2.Button2Click(Sender: TObject);
@@ -951,6 +931,7 @@ begin
     lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption + ' Grid:' + inttostr(max);
   end;
 
+  DynGrid2.initGrid('cwactionsselection', 'userId', 1, length(cwActionsSelection), 23);
 end;
 
 procedure TForm2.Button5Click(Sender: TObject);
@@ -1068,8 +1049,8 @@ end;
 
 procedure TForm2.Button7Click(Sender: TObject);
 begin
-  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
-  //nGrid2.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
+  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 23);
+  // nGrid2.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
 end;
 
 procedure TForm2.Button8Click(Sender: TObject);
@@ -1178,8 +1159,8 @@ begin
       cwActions[p] := cwActions[i];
     end;
   end;
-  setlength(cwactions,p+1);
-  //fertig
+  SetLength(cwActions, p + 1);
+  // fertig
 end;
 
 procedure TForm2.btnSample1Click(Sender: TObject);
@@ -1371,8 +1352,9 @@ end;
 
 procedure TForm2.btnCwactionsToGridClick(Sender: TObject);
 begin
-  doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
-  autosizegrid(SGCwCache);
+//  doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
+//  autosizegrid(SGCwCache);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 23);
 end;
 
 procedure TForm2.btnCwCommentsToGridClick(Sender: TObject);
