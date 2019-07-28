@@ -63,7 +63,7 @@ object FilterElemente: TFilterElemente
     Width = 105
     Height = 21
     Date = 43549.000000000000000000
-    Time = 0.616624108799442200
+    Kind = dtkTime
     TabOrder = 3
     Visible = False
     OnChange = dtPicker1Change

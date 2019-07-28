@@ -34,9 +34,6 @@ type
     TabSheet5: TTabSheet;
     Panel6: TPanel;
     Panel7: TPanel;
-    Label2: TLabel;
-    btnGetSingleUserActions: TButton;
-    edSingleUserActionsId: TEdit;
     Panel8: TPanel;
     Panel9: TPanel;
     lblSingleUserActions: TLabel;
@@ -117,6 +114,19 @@ type
     DynGrid2: TDynGrid;
     DynGrid3: TDynGrid;
     DynGrid4: TDynGrid;
+    btnDoPlus: TButton;
+    Splitter1: TSplitter;
+    Panel13: TPanel;
+    Label2: TLabel;
+    btnGetSingleUserActions: TButton;
+    edSingleUserActionsId: TEdit;
+    CategoryPanelGroup2: TCategoryPanelGroup;
+    CategoryPanel5: TCategoryPanel;
+    CategoryPanel6: TCategoryPanel;
+    CategoryPanel7: TCategoryPanel;
+    lbUserInfo: TListBox;
+    Panel14: TPanel;
+    Splitter2: TSplitter;
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean);
@@ -151,7 +161,7 @@ type
     procedure edSingleUserActionsIdChange(Sender: TObject);
     procedure CategoryPanel1Collapse(Sender: TObject);
     procedure CategoryPanel1Expand(Sender: TObject);
-    procedure remeasureCategoryPanels;
+    procedure remeasureCategoryPanels(c1:TCategoryPanelGroup);
     procedure StartHTTPWorker;
     procedure HTTPOnTerminate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -166,9 +176,18 @@ type
     procedure Button2Click(Sender: TObject);
     procedure lbCSVErrorClick(Sender: TObject);
     procedure cbStylesChange(Sender: TObject);
-//    procedure gridHandler(Sender: TObject);
+    // procedure gridHandler(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
+    procedure PageControl1DrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect; Active: boolean);
+    procedure PageControl1Change(Sender: TObject);
+    procedure PageControl1Changing(Sender: TObject; var AllowChange: boolean);
+    procedure btnDoPlusClick(Sender: TObject);
+    procedure CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure zeigUserInfo(id:integer;lb:TListBox);
+    procedure CategoryPanelExpand2(Sender: TObject);
+    procedure CategoryPanelCollapse2(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -246,11 +265,13 @@ begin
     begin
       oldlen := length(cwActions);
       SetLength(cwActions, length(cwActions) + sz);
+      SetLength(cwActionsPlus, length(cwActionsPlus) + sz);
       move(bytes[0], cwActions[oldlen], length(bytes));
     end
     else
     begin
       SetLength(cwActions, sz);
+      SetLength(cwActionsPlus, sz);
       move(bytes[0], cwActions[0], length(bytes));
     end;
 
@@ -284,6 +305,7 @@ begin
     i := SizeOf(cwSymbol);
     sz := trunc(length(bytes) / i);
     SetLength(cwSymbols, sz);
+    SetLength(cwSymbolsPlus, sz);
     SetLength(cwsymbolsSortindex, 0); // zurücksetzen
     move(bytes[0], cwSymbols[0], length(bytes));
     lbDebug2.Items.Add('Zeit move->symbol:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
@@ -318,6 +340,7 @@ begin
     i := SizeOf(cwuser);
     sz := trunc(length(bytes) / i);
     SetLength(cwUsers, sz);
+    SetLength(cwUsersPlus, sz);
     SetLength(cwUsersSortindex, 0); // zurücksetzen
     SetLength(cwUsersSortindex2, 0); // zurücksetzen
     move(bytes[0], cwUsers[0], length(bytes));
@@ -405,6 +428,7 @@ begin
     // end;
     ParseDelimited('symbols', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
     cwSymbolsCt := length(cwSymbols);
+    SetLength(cwSymbolsPlus, cwSymbolsCt);
 
   end;
 
@@ -422,6 +446,7 @@ begin
     // end;
     ParseDelimited('users', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
     cwUsersCt := length(cwUsers);
+    SetLength(cwUsersPlus, cwUsersCt);
   end;
 
   if typ = 'comments' then
@@ -438,6 +463,7 @@ begin
     // end;
     ParseDelimited('comments', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
     cwCommentsCt := length(cwComments);
+    SetLength(cwcommentsplus, cwCommentsCt);
   end;
 
   if typ = 'ticks' then
@@ -449,7 +475,6 @@ begin
   ms.Free;
 
 end;
-
 
 procedure TForm2.gridMouseLeftClickHandler(grid: FTCommons.TStringGridSorted; col, row: Integer;
   sCell, sCol, sRow: string);
@@ -494,6 +519,7 @@ begin
   fzmax := 10000;
   fz := -1;
   SetLength(cwSingleUserActions, fzmax);
+  SetLength(cwSingleUserActionsPlus, fzmax);
   cwactionsct := length(cwActions);
   for i := 0 to cwactionsct - 1 do
   begin
@@ -504,6 +530,7 @@ begin
       begin
         fzmax := fzmax + 10000;
         SetLength(cwSingleUserActions, fzmax);
+        SetLength(cwSingleUserActionsPlus, fzmax);
       end;
       cwSingleUserActions[fz] := cwActions[i];
     end;
@@ -512,19 +539,19 @@ begin
   // application.messagebox('test1','test3');
 
   SetLength(cwSingleUserActions, fz + 1);
+  SetLength(cwSingleUserActionsPlus, fz + 1);
   cwsingleuseractionsCt := fz + 1;
 
+  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 24 + 3);
 
-  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 23);
-
-
-//  max := cwsingleuseractionsCt;
-//  if max > maxActionsPerGrid then
-//    max := maxActionsPerGrid;
-//
-//  doActionsGridCW(SGCwSingleUser, SGFieldCol, cwSingleUserActions, max, max);
-//  autosizegrid(SGCwSingleUser);
+  // max := cwsingleuseractionsCt;
+  // if max > maxActionsPerGrid then
+  // max := maxActionsPerGrid;
+  //
+  // doActionsGridCW(SGCwSingleUser, SGFieldCol, cwSingleUserActions, max, max);
+  // autosizegrid(SGCwSingleUser);
   lblSingleUserActions.Caption := 'Actions: ' + inttostr(cwsingleuseractionsCt);
+  zeigUserInfo(id,lbUserInfo);
 end;
 
 procedure TForm2.btnGetSymbolsUsersCommentsClick(Sender: TObject);
@@ -663,18 +690,16 @@ begin
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10 +
     ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
-
   TabSheet1.TabVisible := true;
   TabSheet6.TabVisible := true;
   TabSheet5.TabVisible := true;
 
   PageControl1.TabIndex := 1;
 
-  btnCwSymbolsToGridClick(nil);
-  btnCwusersToGridClick(nil);
-  btnCwCommentsToGridClick(nil);
-  btnCwactionsToGridClick(nil);
-
+  // btnCwSymbolsToGridClick(nil);
+  // btnCwusersToGridClick(nil);
+  // btnCwCommentsToGridClick(nil);
+  // btnCwactionsToGridClick(nil);
 
   // symbole sortieren in einem extra Feld
   cwSymbolsCt := length(cwSymbols);
@@ -704,8 +729,15 @@ begin
     cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
   end;
 
+  btnDoPlusClick(nil); // zusätzliche berechnete Felder erstellen
+
   edSingleUserActionsId.text := inttostr(cwActions[0].userId);
   btnGetSingleUserActionsClick(nil);
+
+  btnCwSymbolsToGridClick(nil);
+  btnCwusersToGridClick(nil);
+  btnCwCommentsToGridClick(nil);
+  btnCwactionsToGridClick(nil);
 
   Panel10.enabled := true;
 
@@ -719,6 +751,33 @@ begin
   Memo1.lines.Add(s);
   // lblLoadInfo.Repaint;
   lbLoadInfo.Repaint;
+end;
+
+procedure TForm2.PageControl1Change(Sender: TObject);
+var
+  a: Integer;
+begin
+  a := PageControl1.TabIndex;
+  // wirksam um die falschen Skinnings zu beseitigen
+  PageControl1.ActivePage.Width := PageControl1.ActivePage.Width + 1;
+  //
+end;
+
+procedure TForm2.PageControl1Changing(Sender: TObject; var AllowChange: boolean);
+var
+  a: Integer;
+begin
+  a := 1;
+  //
+end;
+
+procedure TForm2.PageControl1DrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect; Active: boolean);
+var
+  a: Integer;
+begin
+  //
+  a := 1;
+
 end;
 
 procedure TForm2.btnSaveCacheFileCwClick(Sender: TObject);
@@ -746,6 +805,7 @@ procedure TForm2.btnSelectClearCwClick(Sender: TObject);
 begin
   cwActionsSelectionCt := 0;
   SetLength(cwActionsSelection, 0);
+  SetLength(cwActionsSelectionPlus, 0);
   if 1 = 1 then
   begin
     ClearStringGridSorted(SGCacheCwSearch);
@@ -770,12 +830,12 @@ begin
   else;
   // showmessage('Die Darstellung wird auf ' + edCacheShowMax.Text + ' Einträge beschränkt!');
 
-//  stp := strtoint(edCacheCwShowStep.text);
-//  doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), max, stp);
-//  autosizegrid(SGCwCache);
-//
-//  doCacheGridCwInfo;
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 23);
+  // stp := strtoint(edCacheCwShowStep.text);
+  // doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), max, stp);
+  // autosizegrid(SGCwCache);
+  //
+  // doCacheGridCwInfo;
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 24 + 3);
 end;
 
 procedure TForm2.Button2Click(Sender: TObject);
@@ -841,6 +901,49 @@ begin
   doFilter();
 end;
 
+procedure TForm2.btnDoPlusClick(Sender: TObject);
+var
+  i, index, j, total: Integer;
+  sum: double;
+  gt: Cardinal;
+
+begin
+  // zusätzliche Berechnungen durchführen
+  gt := GetTickCount;
+  sum := 0;
+  total := 0;
+  for i := 0 to cwUsersCt - 1 do
+  begin
+    cwUsersPlus[i].totaltrades := 0;
+    cwUsersPlus[i].totalprofit := 0;
+    cwUsersPlus[i].totalsymbols := 0;
+  end;
+
+  for i := 0 to length(cwActions) - 1 do
+  begin
+    inc(cwSymbolsPlus[cwActions[i].symbolId].TradesCount);
+    cwSymbolsPlus[cwActions[i].symbolId].TradesLotsTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesLotsTotal +
+      cwActions[i].volume;
+    index := finduserindex(cwActions[i].userId);
+    if index > -1 then
+    begin
+      // cwusersplus[index].totalSymbols:=0;
+      inc(cwUsersPlus[index].totaltrades);
+      if cwActions[i].typeId = 7 then
+      begin
+        cwUsersPlus[index].totalBalance := cwUsersPlus[index].totalBalance + cwActions[i].profit;
+      end
+      else
+      begin
+        cwUsersPlus[index].totalprofit := cwUsersPlus[index].totalprofit + cwActions[i].profit + cwActions[i].swap;
+        // evtl auch noch swap aber nicht Balance
+      end;
+    end;
+
+  end;
+  showmessage(inttostr(GetTickCount - gt));
+end;
+
 procedure TForm2.doFilter();
 var
   i, j: Integer;
@@ -892,6 +995,7 @@ begin
       begin
         fzmax := fzmax + 1000;
         SetLength(cwActionsSelection, fzmax);
+        SetLength(cwActionsSelectionPlus, fzmax);
       end;
       cwActionsSelection[fz] := cwActions[i];
 
@@ -905,6 +1009,7 @@ begin
 
   cwActionsSelectionCt := fz + 1;
   SetLength(cwActionsSelection, fz + 1); // vergessen
+  SetLength(cwActionsSelectionPlus, fz + 1); // vergessen
 
   max := maxActionsPerGrid;
   if cwActionsSelectionCt < max then
@@ -931,7 +1036,7 @@ begin
     lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption + ' Grid:' + inttostr(max);
   end;
 
-  DynGrid2.initGrid('cwactionsselection', 'userId', 1, length(cwActionsSelection), 23);
+  DynGrid2.initGrid('cwactionsselection', 'userId', 1, length(cwActionsSelection), 24 + 3);
 end;
 
 procedure TForm2.Button5Click(Sender: TObject);
@@ -1004,6 +1109,7 @@ begin
           begin
             fzmax := fzmax + 50000;
             SetLength(cwActionsSelection, fzmax);
+            SetLength(cwActionsSelectionPlus, fzmax);
           end;
           cwActionsSelection[fz] := cwActions[i];
         end;
@@ -1014,6 +1120,7 @@ begin
   showmessage('z:' + inttostr(timegettime - gt) + ' ' + inttostr(timegettime - tg));
   cwActionsSelectionCt := fz + 1;
   SetLength(cwActionsSelection, fz + 1); // vergessen
+  SetLength(cwActionsSelectionPlus, fz + 1); // vergessen
 
   max := maxActionsPerGrid;
   if cwActionsSelectionCt < max then
@@ -1049,7 +1156,7 @@ end;
 
 procedure TForm2.Button7Click(Sender: TObject);
 begin
-  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 23);
+  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 24 + 3);
   // nGrid2.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
 end;
 
@@ -1090,12 +1197,12 @@ begin
     tt := tt - 0; // 5 Minuten zurück
   end;
   lold := length(cwActions);
-  showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
+  // showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
   GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromOpen=' + inttostr(tt), 'actions', lbCSVError, true);
-  showmessage(' Actions:' + inttostr(length(cwActions)));
+  // showmessage(' Actions:' + inttostr(length(cwActions)));
   GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromClose=' + inttostr(tt), 'actions',
     lbCSVError, true);
-  showmessage(' Actions:' + inttostr(length(cwActions)));
+  // showmessage(' Actions:' + inttostr(length(cwActions)));
 
   // btnSaveCacheFileCwClick(nil);
   lnew := length(cwActions);
@@ -1160,7 +1267,13 @@ begin
     end;
   end;
   SetLength(cwActions, p + 1);
+  SetLength(cwActionsPlus, p + 1);
   // fertig
+
+  lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) +
+    #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10 +
+    ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
+
 end;
 
 procedure TForm2.btnSample1Click(Sender: TObject);
@@ -1169,7 +1282,7 @@ var
   i: Integer;
   fe: TFilterParameter;
 begin
-  fe.active := false;
+  fe.Active := false;
   for i := 1 to FilterCt do
   begin
     Filter[i].setValues(fe);
@@ -1177,7 +1290,7 @@ begin
 
   if (Sender = btnSample1) then
   begin
-    fe.active := true;
+    fe.Active := true;
     fe.topic := 'ActionType';
     fe.operator := '=';
     fe.values := 'BALANCE';
@@ -1186,12 +1299,12 @@ begin
 
   if (Sender = btnSample2) then
   begin
-    fe.active := true;
+    fe.Active := true;
     fe.topic := 'Profit';
     fe.operator := '>=';
     fe.values := '1000';
     Filter[1].setValues(fe);
-    fe.active := true;
+    fe.Active := true;
     fe.topic := 'ActionType';
     fe.operator := '<>';
     fe.values := 'BALANCE';
@@ -1201,7 +1314,7 @@ begin
 
   if (Sender = btnSample3) then
   begin
-    fe.active := true;
+    fe.Active := true;
     fe.topic := 'Symbol';
     fe.operator := 'contains';
     fe.values := 'GOLD';
@@ -1215,13 +1328,54 @@ end;
 procedure TForm2.CategoryPanel1Collapse(Sender: TObject);
 begin
   //
-  remeasureCategoryPanels;
+  remeasureCategoryPanels(CategoryPanelGroup1);
 end;
 
 procedure TForm2.CategoryPanel1Expand(Sender: TObject);
 begin
   //
-  remeasureCategoryPanels;
+  remeasureCategoryPanels(CategoryPanelGroup1);
+end;
+
+procedure TForm2.CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var i:integer;
+pa : tCategoryPanel;
+begin
+  //
+  // if ssshift in Shift then
+
+  if Y < CategoryPanelGroup1.Headerheight then
+  begin
+    if Button = mbright then
+    begin
+     for i:=0 to CategoryPanelGroup1.Panels.count-1 do
+     begin
+       pa:=CategoryPanelGroup1.Panels.items[i];//.collapsed:=true;
+       pa.Collapsed:=true;
+     end;
+    end;
+
+  end;
+
+end;
+
+procedure TForm2.CategoryPanelCollapse2(Sender: TObject);
+begin
+  remeasureCategoryPanels(CategoryPanelGroup2);
+
+end;
+
+procedure TForm2.CategoryPanelExpand2(Sender: TObject);
+begin
+  remeasureCategoryPanels(CategoryPanelGroup2);
+
+//
+end;
+
+procedure TForm2.CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+//
+showmessage('');
 end;
 
 procedure TForm2.cbStylesChange(Sender: TObject);
@@ -1236,22 +1390,22 @@ begin
   gridsortmethode2 := CheckBox1.Checked;
 end;
 
-procedure TForm2.remeasureCategoryPanels;
+procedure TForm2.remeasureCategoryPanels(c1:TCategoryPanelGroup);
 var
   coll, SplitHeight, i: Integer;
 begin
   coll := 0;
-  for i := 0 to CategoryPanelGroup1.ControlCount - 1 do
-    if CategoryPanelGroup1.Controls[i] is TCategoryPanel then
-      if TCategoryPanel(CategoryPanelGroup1.Controls[i]).Collapsed then
+  for i := 0 to c1.ControlCount - 1 do
+    if c1.Controls[i] is TCategoryPanel then
+      if TCategoryPanel(c1.Controls[i]).Collapsed then
         inc(coll);
-  if coll < CategoryPanelGroup1.ControlCount then
+  if coll < c1.ControlCount then
   begin
-    SplitHeight := (CategoryPanelGroup1.Height - coll * 30) div (CategoryPanelGroup1.ControlCount - coll);
-    for i := 0 to CategoryPanelGroup1.ControlCount - 1 do
-      if CategoryPanelGroup1.Controls[i] is TCategoryPanel then
-        if not TCategoryPanel(CategoryPanelGroup1.Controls[i]).Collapsed then
-          TCategoryPanel(CategoryPanelGroup1.Controls[i]).Height := SplitHeight;
+    SplitHeight := (c1.Height - coll * 30) div (c1.ControlCount - coll);
+    for i := 0 to c1.ControlCount - 1 do
+      if c1.Controls[i] is TCategoryPanel then
+        if not TCategoryPanel(c1.Controls[i]).Collapsed then
+          TCategoryPanel(c1.Controls[i]).Height := SplitHeight;
   end;
 end;
 
@@ -1293,7 +1447,7 @@ begin
   begin
     Filter[i] := TFilterElemente.Create(self);
     Filter[i].name := 'Filter_' + inttostr(i); // muss sein
-    Filter[i].SetBounds(0, (i - 1) * Filter[i].Height, Filter[i].width, Filter[i].Height);
+    Filter[i].SetBounds(0, (i - 1) * Filter[i].Height, Filter[i].Width, Filter[i].Height);
     Filter[i].Parent := pnlFilter;
 
   end;
@@ -1328,6 +1482,8 @@ begin
   InitializeCriticalSection(HTTPWorkCriticalSection);
   dosleep(100);
   StartHTTPWorker;
+  remeasureCategoryPanels(CategoryPanelGroup1);
+  remeasureCategoryPanels(CategoryPanelGroup2);
 end;
 
 procedure TForm2.btnClbBrokersDeSelectAllClick(Sender: TObject);
@@ -1352,27 +1508,27 @@ end;
 
 procedure TForm2.btnCwactionsToGridClick(Sender: TObject);
 begin
-//  doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
-//  autosizegrid(SGCwCache);
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 23);
+  // doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
+  // autosizegrid(SGCwCache);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 24 + 3);
 end;
 
 procedure TForm2.btnCwCommentsToGridClick(Sender: TObject);
 begin
-  doCommentsGridCW(SGCwComments, SGFieldCol, cwComments, cwCommentsCt, maxActionsPerGrid, 1);
+  doCommentsGridCW(SGCwComments, SGFieldCol, cwComments, cwcommentsplus, cwCommentsCt, maxActionsPerGrid, 1);
   autosizegrid(SGCwComments);
 end;
 
 procedure TForm2.btnCwSymbolsToGridClick(Sender: TObject);
 begin
-  doSymbolsGridCW(SGCwSymbols, SGFieldCol, cwSymbols, length(cwSymbols), maxActionsPerGrid, 1);
+  doSymbolsGridCW(SGCwSymbols, SGFieldCol, cwSymbols, cwSymbolsPlus, length(cwSymbols), maxActionsPerGrid, 1);
   autosizegrid(SGCwSymbols);
 
 end;
 
 procedure TForm2.btnCwusersToGridClick(Sender: TObject);
 begin
-  doUsersGridCW(SGCwUsers, SGFieldCol, cwUsers, length(cwUsers), maxActionsPerGrid, 1);
+  doUsersGridCW(SGCwUsers, SGFieldCol, cwUsers, cwUsersPlus, length(cwUsers), maxActionsPerGrid, 1);
   autosizegrid(SGCwUsers);
 
 end;
@@ -1455,6 +1611,7 @@ begin
   // neuer Zähler ist um doubleCount kleiner
   ct := n + 1;
   SetLength(cwActions, ct);
+  SetLength(cwActionsPlus, ct);
   showmessage('jetzt im Cache:' + inttostr(ct) + ' Zeit:' + inttostr(timegettime - gt));
 
   sl.clear;
@@ -1514,6 +1671,7 @@ begin
   cwActionsSelection := Copy(dummy, 0, cwActionsSelectionCt);
   cwActionsSelectionCt := dptr + 1;
   SetLength(cwActionsSelection, cwActionsSelectionCt);
+  SetLength(cwActionsSelectionPlus, cwActionsSelectionCt);
 
   doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwActionsSelection, cwActionsSelectionCt, cwActionsSelectionCt, 1);
   // lblCacheCwSearchResult.Caption := inttostr(cwActionsSelectionCt);
@@ -1712,7 +1870,7 @@ begin
 
   const
     // Define the Separator
-    TheSeparator = '@';
+    TheSeparator = #1;
   var
     CountItem, i, j, k, ThePosition: Integer;
     MyList: TStringList;
@@ -1780,10 +1938,44 @@ begin
 
   procedure TForm2.TabSheet2Resize(Sender: TObject);
   begin
-    Panel10.Left := trunc(TabSheet2.width / 2) - trunc(Panel10.width / 2);
+    Panel10.Left := trunc(TabSheet2.Width / 2) - trunc(Panel10.Width / 2);
   end;
 
-  procedure TForm2.StartHTTPWorker();
+  procedure TForm2.zeigUserInfo(id: integer; lb: TListBox);
+  var k:integer;
+begin
+k:=finduserindex(id);
+lb.Items.Clear;
+
+        lb.items.add('userId'+#9+ inttostr(cwusers[k].userId));
+        lb.items.add('accountId'+#9+ inttostr(cwusers[k].accountId));
+        lb.items.add('group'+#9+ cwusers[k].group);
+        lb.items.add('enable'+#9+ inttostr(cwusers[k].enable));
+        lb.items.add('registrationTime'+#9+ inttostr(cwusers[k].registrationTime));
+        lb.items.add('lastLoginTime'+#9+ inttostr(cwusers[k].lastLoginTime));
+        lb.items.add('leverage'+#9+ inttostr(cwusers[k].leverage));
+        lb.items.add('balance'+#9+ floattostr(cwusers[k].balance));
+        lb.items.add('balPrevMonth'+#9+ floattostr(cwusers[k].balancePreviousMonth));
+        lb.items.add('balPrevDay'+#9+ floattostr(cwusers[k].balancePreviousDay));
+        lb.items.add('credit'+#9+ floattostr(cwusers[k].credit));
+        lb.items.add('interestrate'+#9+ floattostr(cwusers[k].interestrate));
+        lb.items.add('taxes'+#9+ floattostr(cwusers[k].taxes));
+        lb.items.add('name'+#9+ cwusers[k].name);
+        lb.items.add('country'+#9+ cwusers[k].country);
+        lb.items.add('city'+#9+ cwusers[k].city);
+        lb.items.add('state'+#9+ cwusers[k].state);
+        lb.items.add('zipcode'+#9+ cwusers[k].zipcode);
+        lb.items.add('address'+#9+ cwusers[k].address);
+        lb.items.add('phone'+#9+ cwusers[k].phone);
+        lb.items.add('email'+#9+ cwusers[k].email);
+        lb.items.add('soc.number'+#9+ cwusers[k].socialNumber);
+        lb.items.add('comment'+#9+ cwusers[k].comment);
+        lb.items.add('totalTrades'+#9+ inttostr(cwusersplus[k].totalTrades));
+        lb.items.add('totalProfit'+#9+ FormatFloat('#0.00',cwusersplus[k].totalProfit));
+        lb.items.add('totalBalance'+#9+ FormatFloat('#0.00',cwusersplus[k].totalBalance));
+end;
+
+procedure TForm2.StartHTTPWorker();
   var
     s: string;
   begin

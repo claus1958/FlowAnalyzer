@@ -3,7 +3,7 @@
         <ProjectGuid>{8B0D8096-A087-4336-BFCA-DAFDF3924E06}</ProjectGuid>
         <MainSource>FTAnalyzer.dpr</MainSource>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Application</AppType>
         <FrameworkType>VCL</FrameworkType>

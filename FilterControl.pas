@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Strutils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, FTCommons, Vcl.CheckLst;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, FTCommons, Vcl.CheckLst,DateUtils;
 
 const
 
@@ -127,7 +127,8 @@ begin
   e := Sender as TDateTimePicker;
   if screen.ActiveControl = e then
   begin
-    edValue.Text := inttostr(datetimetounix(e.DateTime));
+  // Dateof ist notwendig damit man an Null Uhr des gewählten Datums landet
+    edValue.Text := inttostr(datetimetounix(dateof(e.DateTime)));
   end;
 end;
 

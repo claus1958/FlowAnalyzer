@@ -43,9 +43,11 @@ object DynGrid: TDynGrid
       Width = 735
       Height = 587
       Align = alClient
+      DoubleBuffered = True
       FixedCols = 0
       RowCount = 2
-      Options = [goRangeSelect, goColSizing, goRowSelect, goFixedColClick, goFixedRowClick]
+      Options = [goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
+      ParentDoubleBuffered = False
       ScrollBars = ssHorizontal
       TabOrder = 0
       OnDrawCell = SGDrawCell
@@ -64,6 +66,7 @@ object DynGrid: TDynGrid
       PageSize = 0
       TabOrder = 1
       OnChange = ScrollBar1Change
+      OnScroll = ScrollBar1Scroll
     end
   end
 end
