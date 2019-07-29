@@ -127,6 +127,19 @@ type
     lbUserInfo: TListBox;
     Panel14: TPanel;
     Splitter2: TSplitter;
+    TabSheet7: TTabSheet;
+    Panel15: TPanel;
+    Panel16: TPanel;
+    btnGroupSymbolsAllActions: TButton;
+    Panel17: TPanel;
+    Panel18: TPanel;
+    SGCwSymbolsGroups: FTCommons.TStringGridSorted;
+    Panel19: TPanel;
+    btnOnePage1: TButton;
+    btnOnePage2: TButton;
+    btnOnePage3: TButton;
+    btnOnePage4: TButton;
+    btnGroupSymbolsFilteredActions: TButton;
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean);
@@ -161,7 +174,7 @@ type
     procedure edSingleUserActionsIdChange(Sender: TObject);
     procedure CategoryPanel1Collapse(Sender: TObject);
     procedure CategoryPanel1Expand(Sender: TObject);
-    procedure remeasureCategoryPanels(c1:TCategoryPanelGroup);
+    procedure remeasureCategoryPanels(c1: TCategoryPanelGroup);
     procedure StartHTTPWorker;
     procedure HTTPOnTerminate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -185,9 +198,11 @@ type
     procedure btnDoPlusClick(Sender: TObject);
     procedure CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure zeigUserInfo(id:integer;lb:TListBox);
+    procedure zeigUserInfo(id: Integer; lb: TListBox);
     procedure CategoryPanelExpand2(Sender: TObject);
     procedure CategoryPanelCollapse2(Sender: TObject);
+    procedure btnGroupSymbolsClick(Sender: TObject);
+    procedure btnOnePageClick(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -551,7 +566,7 @@ begin
   // doActionsGridCW(SGCwSingleUser, SGFieldCol, cwSingleUserActions, max, max);
   // autosizegrid(SGCwSingleUser);
   lblSingleUserActions.Caption := 'Actions: ' + inttostr(cwsingleuseractionsCt);
-  zeigUserInfo(id,lbUserInfo);
+  zeigUserInfo(id, lbUserInfo);
 end;
 
 procedure TForm2.btnGetSymbolsUsersCommentsClick(Sender: TObject);
@@ -569,6 +584,134 @@ begin
   LoadInfo('Load Comments...');
   btnGetCsvClick(nil);
 
+end;
+
+procedure TForm2.btnGroupSymbolsClick(Sender: TObject);
+var
+  i, j, k: Integer;
+  s, smerk, smerk5, s5, s6: string;
+  t,t2: TStringList;
+  nam:string;
+  found: Integer;
+  typ:integer;
+label weiter;
+
+begin
+  typ:=0;
+  with (sender as tbutton) do
+    nam:=name;
+  if (nam='btnGroupSymbolsAllActions') then
+    typ:=0;
+  if (nam='btnGroupSymbolsFilteredActions') then
+    typ:=1;
+
+  t := TStringList.Create;
+  t.sorted := true;
+  t2 := TStringList.Create;
+  t2.sorted := false;
+
+  smerk := '';
+  for i := 0 to cwSymbolsCt - 1 do
+  begin
+    s := leftstr(cwSymbols[i].name, 6);
+    j := pos('.', s);
+    if (j > 0) then
+      s := leftstr(s, j - 1);
+    j := pos('-', s);
+    if (j > 0) then
+      s := leftstr(s, j - 1);
+    if s <> smerk then
+    begin
+      t.Add(s);
+
+      smerk := s;
+    end
+    else
+    begin
+
+    end;
+  end;
+  smerk := '';
+  for i := 0 to t.Count - 1 do
+  begin
+    if t.Strings[i] <> smerk then
+    begin
+      smerk := t.Strings[i];
+      s5 := leftstr(smerk, 5);
+      if s5 <> smerk5 then
+        t2.Add(smerk)
+      else
+      // die 5 Buchstaben wiederholen sich also kein neues Groupsymbol anlegen
+      begin
+
+        t2.strings[t2.Count - 1] :=
+          leftstr(t2.strings[t2.Count - 1], 5);
+      end;;
+      smerk5 := s5;
+    end;
+
+  end;
+  // jetzt könnten noch spezielle Fälle eliminiert werden
+  // HOil NGas OJ
+
+  // wie soll man das nun rückwärts wieder Symbolen zuordnen ohne Missverständnisse ?
+  // wieder 6 links abschneiden -> GER30A  - das wurde später zu GER30  Aber es gibt auch ein GE und ein GER (angenommen)
+  // wenn das GE nun überprüft wird passen GE,GER und GER30A. Also ist GE das richtige weil es am kürzesten ist - ok ?
+  // also ... 6 abschneiden und prüfen
+  // wenn nix dann 5 abschneiden und prüfen
+  // wenn aber Länge 1-4 gleich damit prüfen
+  // von den geprüften den kürzesten Treffer verwenden
+
+  // soll nun zu den Symbols eine SymbolGroupId gespeichert werden oder zu den SymbolGroups die SymbolIds ?
+  // reicht eines davon ? Ist es nicht immer so daß im speziellen Array die Id des übergeordneten gespeichert wird ?
+
+  //lbGroupedSymbols.Items.Add('Groups:' + inttostr(lbGroupedSymbols.Items.Count));
+  cwSymbolsGroupsCt := t2.Count;
+  SetLength(cwsymbolsgroups, cwSymbolsGroupsCt);
+  for i := 0 to cwSymbolsGroupsCt - 1 do
+  begin
+    cwsymbolsgroups[i].name := t2.strings[i];
+    cwsymbolsgroups[i].sourceNames := '';
+    cwsymbolsgroups[i].sourceIds := '';
+    cwsymbolsgroups[i].TradesCount := 0;
+    cwsymbolsgroups[i].TradesLotsTotal := 0;
+    cwsymbolsgroups[i].TradesUsers := 0;
+    cwsymbolsgroups[i].TradesProfitTotal := 0;
+
+  end;
+
+  t.Free;
+  t2.Free;
+  found := -1;
+  for i := 0 to cwSymbolsCt - 1 do
+  begin
+    for k := 6 downto 1 do
+    begin
+      s6 := leftstr(cwSymbols[i].name, k);
+      if (length(s6) = k) then
+      begin
+        for j := 0 to cwSymbolsGroupsCt - 1 do
+        begin
+          if leftstr(cwsymbolsgroups[j].name, k) = s6 then
+          begin
+            found := j;
+            cwSymbolsPlus[i].GroupId := j;
+            goto weiter;
+          end;
+        end;
+      end;
+    end;
+  weiter:
+  end;
+
+  if typ=0 then
+    computeSymbolGroupValues(cwActions, cwsymbolsgroups);
+  if typ=1 then
+    computeSymbolGroupValues(cwActionsSelection,cwsymbolsgroups);
+
+  doSymbolsGroupsGridCW(SGCwSymbolsGroups, SGFieldCol, cwsymbolsgroups, length(cwsymbolsgroups), maxActionsPerGrid, 1);
+  autosizegrid(SGCwSymbolsGroups);
+  btnCwSymbolsToGridClick(nil);
 end;
 
 procedure TForm2.btnListDoublesCwClick(Sender: TObject);
@@ -924,6 +1067,10 @@ begin
     inc(cwSymbolsPlus[cwActions[i].symbolId].TradesCount);
     cwSymbolsPlus[cwActions[i].symbolId].TradesLotsTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesLotsTotal +
       cwActions[i].volume;
+
+    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal +
+      cwActions[i].profit + cwActions[i].swap;
+
     index := finduserindex(cwActions[i].userId);
     if index > -1 then
     begin
@@ -941,7 +1088,7 @@ begin
     end;
 
   end;
-  showmessage(inttostr(GetTickCount - gt));
+  // showmessage(inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.doFilter();
@@ -1276,6 +1423,32 @@ begin
 
 end;
 
+procedure TForm2.btnOnePageClick(Sender: TObject);
+begin
+
+  with (Sender as TButton) do
+  begin
+
+    if Caption <> 'Actions' then
+      CategoryPanel1.collapsed := true;
+    if Caption <> 'Symbols' then
+      CategoryPanel2.collapsed := true;
+    if Caption <> 'Users' then
+      CategoryPanel3.collapsed := true;
+    if Caption <> 'Comments' then
+      CategoryPanel4.collapsed := true;
+
+    if Caption = 'Actions' then
+      CategoryPanel1.collapsed := false;
+    if Caption = 'Symbols' then
+      CategoryPanel2.collapsed := false;
+    if Caption = 'Users' then
+      CategoryPanel3.collapsed := false;
+    if Caption = 'Comments' then
+      CategoryPanel4.collapsed := false;
+  end;
+end;
+
 procedure TForm2.btnSample1Click(Sender: TObject);
 
 var
@@ -1338,8 +1511,9 @@ begin
 end;
 
 procedure TForm2.CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var i:integer;
-pa : tCategoryPanel;
+var
+  i: Integer;
+  pa: TCategoryPanel;
 begin
   //
   // if ssshift in Shift then
@@ -1348,11 +1522,11 @@ begin
   begin
     if Button = mbright then
     begin
-     for i:=0 to CategoryPanelGroup1.Panels.count-1 do
-     begin
-       pa:=CategoryPanelGroup1.Panels.items[i];//.collapsed:=true;
-       pa.Collapsed:=true;
-     end;
+      for i := 0 to CategoryPanelGroup1.Panels.Count - 1 do
+      begin
+        pa := CategoryPanelGroup1.Panels.Items[i]; // .collapsed:=true;
+        pa.collapsed := true;
+      end;
     end;
 
   end;
@@ -1369,13 +1543,13 @@ procedure TForm2.CategoryPanelExpand2(Sender: TObject);
 begin
   remeasureCategoryPanels(CategoryPanelGroup2);
 
-//
+  //
 end;
 
 procedure TForm2.CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-//
-showmessage('');
+  //
+  showmessage('');
 end;
 
 procedure TForm2.cbStylesChange(Sender: TObject);
@@ -1390,21 +1564,21 @@ begin
   gridsortmethode2 := CheckBox1.Checked;
 end;
 
-procedure TForm2.remeasureCategoryPanels(c1:TCategoryPanelGroup);
+procedure TForm2.remeasureCategoryPanels(c1: TCategoryPanelGroup);
 var
   coll, SplitHeight, i: Integer;
 begin
   coll := 0;
   for i := 0 to c1.ControlCount - 1 do
     if c1.Controls[i] is TCategoryPanel then
-      if TCategoryPanel(c1.Controls[i]).Collapsed then
+      if TCategoryPanel(c1.Controls[i]).collapsed then
         inc(coll);
   if coll < c1.ControlCount then
   begin
     SplitHeight := (c1.Height - coll * 30) div (c1.ControlCount - coll);
     for i := 0 to c1.ControlCount - 1 do
       if c1.Controls[i] is TCategoryPanel then
-        if not TCategoryPanel(c1.Controls[i]).Collapsed then
+        if not TCategoryPanel(c1.Controls[i]).collapsed then
           TCategoryPanel(c1.Controls[i]).Height := SplitHeight;
   end;
 end;
@@ -1815,7 +1989,7 @@ begin
     CountItem := genstrgrid.rowcount;
     // Create the List
     MyList := TStringList.Create;
-    MyList.Sorted := false;
+    MyList.sorted := false;
     SetLength(ia, CountItem - 1);
     SetLength(da, CountItem - 1);
 
@@ -1880,7 +2054,7 @@ begin
     CountItem := genstrgrid.rowcount;
     // Create the List
     MyList := TStringList.Create;
-    MyList.Sorted := false;
+    MyList.sorted := false;
     try
       begin
         gt := timegettime;
@@ -1941,41 +2115,42 @@ begin
     Panel10.Left := trunc(TabSheet2.Width / 2) - trunc(Panel10.Width / 2);
   end;
 
-  procedure TForm2.zeigUserInfo(id: integer; lb: TListBox);
-  var k:integer;
-begin
-k:=finduserindex(id);
-lb.Items.Clear;
+  procedure TForm2.zeigUserInfo(id: Integer; lb: TListBox);
+  var
+    k: Integer;
+  begin
+    k := finduserindex(id);
+    lb.Items.clear;
 
-        lb.items.add('userId'+#9+ inttostr(cwusers[k].userId));
-        lb.items.add('accountId'+#9+ inttostr(cwusers[k].accountId));
-        lb.items.add('group'+#9+ cwusers[k].group);
-        lb.items.add('enable'+#9+ inttostr(cwusers[k].enable));
-        lb.items.add('registrationTime'+#9+ inttostr(cwusers[k].registrationTime));
-        lb.items.add('lastLoginTime'+#9+ inttostr(cwusers[k].lastLoginTime));
-        lb.items.add('leverage'+#9+ inttostr(cwusers[k].leverage));
-        lb.items.add('balance'+#9+ floattostr(cwusers[k].balance));
-        lb.items.add('balPrevMonth'+#9+ floattostr(cwusers[k].balancePreviousMonth));
-        lb.items.add('balPrevDay'+#9+ floattostr(cwusers[k].balancePreviousDay));
-        lb.items.add('credit'+#9+ floattostr(cwusers[k].credit));
-        lb.items.add('interestrate'+#9+ floattostr(cwusers[k].interestrate));
-        lb.items.add('taxes'+#9+ floattostr(cwusers[k].taxes));
-        lb.items.add('name'+#9+ cwusers[k].name);
-        lb.items.add('country'+#9+ cwusers[k].country);
-        lb.items.add('city'+#9+ cwusers[k].city);
-        lb.items.add('state'+#9+ cwusers[k].state);
-        lb.items.add('zipcode'+#9+ cwusers[k].zipcode);
-        lb.items.add('address'+#9+ cwusers[k].address);
-        lb.items.add('phone'+#9+ cwusers[k].phone);
-        lb.items.add('email'+#9+ cwusers[k].email);
-        lb.items.add('soc.number'+#9+ cwusers[k].socialNumber);
-        lb.items.add('comment'+#9+ cwusers[k].comment);
-        lb.items.add('totalTrades'+#9+ inttostr(cwusersplus[k].totalTrades));
-        lb.items.add('totalProfit'+#9+ FormatFloat('#0.00',cwusersplus[k].totalProfit));
-        lb.items.add('totalBalance'+#9+ FormatFloat('#0.00',cwusersplus[k].totalBalance));
-end;
+    lb.Items.Add('userId' + #9 + inttostr(cwUsers[k].userId));
+    lb.Items.Add('accountId' + #9 + inttostr(cwUsers[k].accountId));
+    lb.Items.Add('group' + #9 + cwUsers[k].group);
+    lb.Items.Add('enable' + #9 + inttostr(cwUsers[k].enable));
+    lb.Items.Add('registrationTime' + #9 + inttostr(cwUsers[k].registrationTime));
+    lb.Items.Add('lastLoginTime' + #9 + inttostr(cwUsers[k].lastLoginTime));
+    lb.Items.Add('leverage' + #9 + inttostr(cwUsers[k].leverage));
+    lb.Items.Add('balance' + #9 + floattostr(cwUsers[k].balance));
+    lb.Items.Add('balPrevMonth' + #9 + floattostr(cwUsers[k].balancePreviousMonth));
+    lb.Items.Add('balPrevDay' + #9 + floattostr(cwUsers[k].balancePreviousDay));
+    lb.Items.Add('credit' + #9 + floattostr(cwUsers[k].credit));
+    lb.Items.Add('interestrate' + #9 + floattostr(cwUsers[k].interestrate));
+    lb.Items.Add('taxes' + #9 + floattostr(cwUsers[k].taxes));
+    lb.Items.Add('name' + #9 + cwUsers[k].name);
+    lb.Items.Add('country' + #9 + cwUsers[k].country);
+    lb.Items.Add('city' + #9 + cwUsers[k].city);
+    lb.Items.Add('state' + #9 + cwUsers[k].state);
+    lb.Items.Add('zipcode' + #9 + cwUsers[k].zipcode);
+    lb.Items.Add('address' + #9 + cwUsers[k].address);
+    lb.Items.Add('phone' + #9 + cwUsers[k].phone);
+    lb.Items.Add('email' + #9 + cwUsers[k].email);
+    lb.Items.Add('soc.number' + #9 + cwUsers[k].socialNumber);
+    lb.Items.Add('comment' + #9 + cwUsers[k].comment);
+    lb.Items.Add('totalTrades' + #9 + inttostr(cwUsersPlus[k].totaltrades));
+    lb.Items.Add('totalProfit' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalprofit));
+    lb.Items.Add('totalBalance' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalBalance));
+  end;
 
-procedure TForm2.StartHTTPWorker();
+  procedure TForm2.StartHTTPWorker();
   var
     s: string;
   begin

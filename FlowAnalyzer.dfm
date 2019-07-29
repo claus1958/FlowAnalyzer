@@ -26,7 +26,7 @@ object Form2: TForm2
     Top = 0
     Width = 1473
     Height = 907
-    ActivePage = TabSheet5
+    ActivePage = TabSheet7
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -245,15 +245,16 @@ object Form2: TForm2
       ImageIndex = 5
       ParentFont = False
       object Splitter1: TSplitter
-        Left = 177
+        Left = 229
         Top = 0
         Width = 8
         Height = 871
+        ExplicitLeft = 177
       end
       object CategoryPanelGroup1: TCategoryPanelGroup
-        Left = 185
+        Left = 237
         Top = 0
-        Width = 1280
+        Width = 1228
         Height = 871
         VertScrollBar.Tracking = True
         Align = alClient
@@ -279,7 +280,7 @@ object Form2: TForm2
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1270
+            Width = 1218
             Height = 213
             Align = alClient
             DefaultColWidth = 80
@@ -303,7 +304,7 @@ object Form2: TForm2
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1270
+            Width = 1218
             Height = 168
             Align = alClient
             DefaultColWidth = 80
@@ -327,7 +328,7 @@ object Form2: TForm2
             AlignWithMargins = True
             Left = 3
             Top = 3
-            Width = 1270
+            Width = 1218
             Height = 168
             Align = alClient
             DefaultColWidth = 80
@@ -356,14 +357,14 @@ object Form2: TForm2
           inline DynGrid3: TDynGrid
             Left = 0
             Top = 0
-            Width = 1276
+            Width = 1224
             Height = 174
             Align = alClient
             TabOrder = 0
             ExplicitWidth = 1267
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 1276
+              Width = 1224
               Align = alTop
               ExplicitWidth = 1267
               inherited lblTime: TLabel
@@ -376,7 +377,7 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 41
-              Width = 1276
+              Width = 1224
               Height = 133
               Align = alClient
               ExplicitLeft = 0
@@ -385,14 +386,14 @@ object Form2: TForm2
               ExplicitHeight = 133
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 1258
+                Width = 1206
                 Height = 131
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 1249
                 ExplicitHeight = 131
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1259
+                Left = 1207
                 Height = 131
                 ExplicitLeft = 1250
                 ExplicitHeight = 131
@@ -404,13 +405,13 @@ object Form2: TForm2
       object Panel3: TPanel
         Left = 0
         Top = 0
-        Width = 177
+        Width = 229
         Height = 871
         Align = alLeft
         TabOrder = 1
         object lblAllDataInfo: TLabel
-          Left = 4
-          Top = 36
+          Left = 0
+          Top = 72
           Width = 6
           Height = 19
           Caption = '-'
@@ -420,6 +421,51 @@ object Form2: TForm2
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
+        end
+        object Panel19: TPanel
+          Left = 0
+          Top = 16
+          Width = 231
+          Height = 37
+          Color = clWindow
+          ParentBackground = False
+          TabOrder = 0
+          object btnOnePage1: TButton
+            Left = 0
+            Top = 8
+            Width = 60
+            Height = 21
+            Caption = 'Actions'
+            TabOrder = 0
+            OnClick = btnOnePageClick
+          end
+          object btnOnePage2: TButton
+            Left = 57
+            Top = 8
+            Width = 60
+            Height = 21
+            Caption = 'Symbols'
+            TabOrder = 1
+            OnClick = btnOnePageClick
+          end
+          object btnOnePage3: TButton
+            Left = 114
+            Top = 8
+            Width = 60
+            Height = 21
+            Caption = 'Users'
+            TabOrder = 2
+            OnClick = btnOnePageClick
+          end
+          object btnOnePage4: TButton
+            Left = 172
+            Top = 8
+            Width = 60
+            Height = 21
+            Caption = 'Comments'
+            TabOrder = 3
+            OnClick = btnOnePageClick
+          end
         end
       end
     end
@@ -1306,6 +1352,94 @@ object Form2: TForm2
           Caption = 'Show Grid'
           TabOrder = 1
           OnClick = Button7Click
+        end
+      end
+    end
+    object TabSheet7: TTabSheet
+      Caption = 'SymbolsGroups'
+      ImageIndex = 6
+      object Panel15: TPanel
+        Left = 0
+        Top = 0
+        Width = 261
+        Height = 871
+        Align = alLeft
+        TabOrder = 0
+        ExplicitLeft = 4
+        ExplicitTop = 4
+        ExplicitHeight = 865
+        object btnGroupSymbolsAllActions: TButton
+          Left = 40
+          Top = 38
+          Width = 165
+          Height = 25
+          Caption = 'btnGroupSymbolsAllActions'
+          TabOrder = 0
+          OnClick = btnGroupSymbolsClick
+        end
+        object btnGroupSymbolsFilteredActions: TButton
+          Left = 40
+          Top = 72
+          Width = 165
+          Height = 25
+          Caption = 'btnGroupSymbolsFilteredActions'
+          TabOrder = 1
+          OnClick = btnGroupSymbolsClick
+        end
+      end
+      object Panel16: TPanel
+        Left = 261
+        Top = 0
+        Width = 1204
+        Height = 871
+        Align = alClient
+        TabOrder = 1
+        ExplicitLeft = 280
+        ExplicitTop = 4
+        ExplicitWidth = 1185
+        ExplicitHeight = 865
+        object Panel17: TPanel
+          Left = 1
+          Top = 1
+          Width = 1202
+          Height = 33
+          Align = alTop
+          Caption = 'Panel17'
+          TabOrder = 0
+          ExplicitLeft = 20
+          ExplicitTop = 4
+          ExplicitWidth = 1173
+        end
+        object Panel18: TPanel
+          Left = 1
+          Top = 34
+          Width = 1202
+          Height = 836
+          Align = alClient
+          Caption = 'Panel18'
+          TabOrder = 1
+          ExplicitLeft = 24
+          ExplicitTop = 52
+          ExplicitWidth = 1141
+          ExplicitHeight = 813
+          object SGCwSymbolsGroups: TStringGridSorted
+            AlignWithMargins = True
+            Left = 4
+            Top = 4
+            Width = 1194
+            Height = 828
+            Align = alClient
+            DefaultColWidth = 80
+            RowCount = 1
+            FixedRows = 0
+            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
+            TabOrder = 0
+            OnMouseDown = SGMouseDown
+            ExplicitLeft = 3
+            ExplicitTop = 3
+            ExplicitWidth = 1261
+            ExplicitHeight = 168
+          end
         end
       end
     end

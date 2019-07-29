@@ -119,25 +119,39 @@ type
   DACwActionPlus = array of cwActionPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
   cwUserPlus = packed Record
-    totalSymbols:integer;
-    totalTrades:integer;
-    totalProfit:double;
-    totalBalance:Double;
+    totalSymbols: integer;
+    totalTrades: integer;
+    totalProfit: double;
+    totalBalance: double;
 
   End;
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
+  cwSymbolGroup = packed Record
+    name: string; // GE30
+    sourceNames: string; // GE30-Apr;GE30-Jul...
+    sourceIds: string; // 122;133;155;...
+    TradesCount: integer;
+    TradesLotsTotal:integer;
+    TradesUsers: integer; // wieviele User handelten Symbol
+    TradesProfitTotal: double;
+  End;
+
+  DACwSymbolGroup = array of cwSymbolGroup;
+
   cwSymbolPlus = packed Record
-    TradesCount:integer;
-    TradesLotsTotal:double;
-    Users:integer;//wieviele User handelten Symbol
+    TradesCount: integer;
+    TradesLotsTotal: double;
+    TradesUsers: integer; // wieviele User handelten Symbol
+    TradesProfitTotal: double;
+    groupId: integer; // symbolsgroup
   End;
 
   DACwSymbolPlus = array of cwSymbolPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
   cwCommentPlus = packed Record
-    total:integer;
+    total: integer;
   End;
 
   DACwCommentPlus = array of cwCommentPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -222,11 +236,16 @@ procedure splitHeadLine(Value: string; var headers: DAstring; var headerz: integ
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
   total: integer; stp: integer = 1);
 
-procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DAcwUserPlus; ct: integer; total: integer; stp: integer = 1);
-procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment; commentsPlus: DAcwCommentPlus;ct, total, stp: integer);
+procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
+  ct: integer; total: integer; stp: integer = 1);
+procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
+  commentsPlus: DACwCommentPlus; ct, total, stp: integer);
 
-procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol; symbolsPlus: DACwSymbolPlus; ct: integer;
-  total: integer; stp: integer = 1);
+procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
+  symbolsPlus: DACwSymbolPlus; ct: integer; total: integer; stp: integer = 1);
+procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup;
+  ct, total, stp: integer);
+
 function getCwComment(id: integer): string;
 function getCwSymbol(id: integer): string;
 function OrderTypes(cmd: integer): string;
@@ -280,8 +299,9 @@ function BinSearchInt(var Ints: intArray; v: integer): integer;
 function BinSearchInt64(var Ints: int64Array; v: int64): integer;
 function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var actions: DACwAction; k: integer; col: integer; such: string): integer;
-function findUserName(userId: Integer): string;
-function findUserIndex(userId: Integer): integer;
+function findUserName(userId: integer): string;
+function findUserIndex(userId: integer): integer;
+procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup);
 
 var
 
@@ -292,6 +312,11 @@ var
   cwSymbols: DACwSymbol;
   cwSymbolsPlus: DACwSymbolPlus;
   cwSymbolsCt: integer;
+
+  cwSymbolsGroups: DACwSymbolGroup;
+  cwSymbolsGroupsCt: integer;
+
+
   cwSymbolsSortIndex: intArray; // sortierter Zugang zu cwsymbols
   cwUsersSortIndex: StringArray; // sortierter Zugang zu cwsymbols
   cwUsersSortIndex2: intArray; // sortierter Zugang zu cwsymbols
@@ -1155,7 +1180,7 @@ begin
       rct := rct1;
 
     SG.RowCount := rct;
-    SG.ColCount := 24;
+    SG.ColCount := 25;
     if (SG.RowCount > 1) then
       SG.FixedRows := 1;
 
@@ -1185,6 +1210,7 @@ begin
     SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
     SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
     SG.cells[SGFieldCol[23], 0] := 'marginRate';
+    SG.cells[SGFieldCol[24], 0] := 'symGroupId';
     SG.Rows[0].endUpdate;
 
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
@@ -1223,6 +1249,9 @@ begin
         SG.cells[SGFieldCol[21], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[22], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[23], row] := floattostr(actions[k].marginRate);
+        if cwSymbolsGroupsCt > 0 then
+          SG.cells[SGFieldCol[24], row] := cwSymbolsGroups[cwSymbolsPlus[actions[k].symbolId].groupId].name;
+
         SG.Rows[row].endUpdate;
       end
       else
@@ -1300,7 +1329,8 @@ begin
   end;
 end;
 
-procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DAcwUserPlus; ct: integer; total: integer; stp: integer = 1);
+procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
+  ct: integer; total: integer; stp: integer = 1);
 var
   k: integer;
   row: integer;
@@ -1408,9 +1438,9 @@ begin
         SG.cells[SGFieldCol[20], row] := users[k].email;
         SG.cells[SGFieldCol[21], row] := users[k].socialNumber;
         SG.cells[SGFieldCol[22], row] := users[k].comment;
-        SG.cells[SGFieldCol[23], row] := inttostr(usersplus[k].totalTrades);
-        SG.cells[SGFieldCol[24], row] := FormatFloat('#0.00',usersplus[k].totalProfit);
-        SG.cells[SGFieldCol[25], row] := FormatFloat('#0.00',usersplus[k].totalBalance);
+        SG.cells[SGFieldCol[23], row] := inttostr(usersPlus[k].totalTrades);
+        SG.cells[SGFieldCol[24], row] := FormatFloat('#0.00', usersPlus[k].totalProfit);
+        SG.cells[SGFieldCol[25], row] := FormatFloat('#0.00', usersPlus[k].totalBalance);
 
       end
       else
@@ -1426,7 +1456,8 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment; commentsPlus: DAcwCommentPlus;ct, total, stp: integer);
+procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
+  commentsPlus: DACwCommentPlus; ct, total, stp: integer);
 var
   k: integer;
   // sl: TStringList;
@@ -1491,7 +1522,8 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol; symbolsPlus: DACwSymbolPlus; ct, total, stp: integer);
+procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
+  symbolsPlus: DACwSymbolPlus; ct, total, stp: integer);
 var
   k: integer;
   row: integer;
@@ -1507,7 +1539,7 @@ begin
       rct := rct1;
 
     SG.RowCount := rct;
-    SG.ColCount := 15;
+    SG.ColCount := 17;
     if (SG.RowCount > 1) then
       SG.FixedRows := 1;
 
@@ -1527,6 +1559,8 @@ begin
     SG.cells[SGFieldCol[12], 0] := 'type_';
     SG.cells[SGFieldCol[13], 0] := 'Trades';
     SG.cells[SGFieldCol[14], 0] := 'Lots';
+    SG.cells[SGFieldCol[15], 0] := 'Profit';
+    SG.cells[SGFieldCol[16], 0] := 'symGroup';
 
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
 
@@ -1568,7 +1602,82 @@ begin
         SG.cells[SGFieldCol[11], row] := floattostr(symbols[k].tickSize);
         SG.cells[SGFieldCol[12], row] := inttostr(symbols[k].type_);
         SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[k].TradesCount);
-        SG.cells[SGFieldCol[14], row] := Floattostr(symbolsPlus[k].TradesLotsTotal);
+        SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[k].TradesLotsTotal);
+        SG.cells[SGFieldCol[15], row] := FormatFloat('#0.00', symbolsPlus[k].TradesProfitTotal);
+        if cwSymbolsGroupsCt > 0 then
+          SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[k].groupId].name;
+
+      end
+      else
+      begin
+        break;
+      end;
+      k := k + stp;
+    end;
+
+  except
+    // debug('Fehler');
+  end;
+  // {$RANGECHECKS ON}
+end;
+
+procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup;
+  ct, total, stp: integer);
+var
+  k: integer;
+  row: integer;
+  rct: integer;
+  rct1: integer;
+
+begin
+  try
+    // sl := TStringList.Create;
+    // die Größe gleich festlegen
+    rct := trunc(ct / stp) + 1;
+    rct1 := total + 1;
+    if rct1 < rct then
+      rct := rct1;
+
+    SG.RowCount := rct;
+    SG.ColCount := 8;
+    if (SG.RowCount > 1) then
+      SG.FixedRows := 1;
+    // name:string;        //GE30
+    // sourceNames:string; //GE30-Apr;GE30-Jul...
+    // sourceIds:string;   //122;133;155;...
+    // TradesCount:integer;
+    // TradesLotsTotal:double;
+    // TradesUsers:integer;//wieviele User handelten Symbol
+    // TradesProfitTotal:double;
+
+    SG.cells[SGFieldCol[0], 0] := 'groupId';
+    // SG.ColWidths[SGFieldCol[0]] := 100;
+    SG.cells[SGFieldCol[1], 0] := 'name';
+    SG.cells[SGFieldCol[2], 0] := 'TradesCount';
+    SG.cells[SGFieldCol[3], 0] := 'T.LotsTotal';
+    SG.cells[SGFieldCol[4], 0] := 'T.Users';
+    SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
+    SG.cells[SGFieldCol[6], 0] := 'sourceNames';
+    SG.cells[SGFieldCol[7], 0] := 'sourceIds';
+    row := 0;
+    k := 0;
+    while (k < ct) do
+    begin
+      row := row + 1;
+      if (row < (total + 1)) then
+      begin
+        SG.cells[SGFieldCol[0], row] := inttostr(k);
+        SG.cells[SGFieldCol[1], row] := symbolsGroups[k].name;
+        SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
+        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesLotsTotal);
+        SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
+        SG.cells[SGFieldCol[5], row] := FormatFloat('#0.00', symbolsGroups[k].TradesProfitTotal);
+        SG.cells[SGFieldCol[6], row] := symbolsGroups[k].sourceNames;
+        SG.cells[SGFieldCol[7], row] := symbolsGroups[k].sourceIds;
+
+
+        // SG.cells[SGFieldCol[15], row] := FormatFloat('#0.00',symbolsPlus[k].TradesProfitTotal);
+        // if cwsymbolsgroupsct>0 then SG.cells[SGFieldCol[16], row] := cwsymbolsgroups[symbolsplus[k].groupId].name;
 
       end
       else
@@ -2931,39 +3040,73 @@ begin
   end;
 end;
 
-function findUserName(userId: Integer): string;
+function findUserName(userId: integer): string;
 var
-  i: Integer;
-  p: Integer;
+  i: integer;
+  p: integer;
 begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
   // mit Binsearch2 sinds: 850  Super:-)
-  i := BinSearchString2(cwuserssortindex, cwuserssortindex2, userId);
+  i := BinSearchString2(cwUsersSortIndex, cwUsersSortIndex2, userId);
   if (i > -1) then
   begin
-    p := pos('=', cwuserssortindex[i]);
-    result := cwusers[strtoint(midstr(cwuserssortindex[i], p + 1, 255))].name;
+    p := pos('=', cwUsersSortIndex[i]);
+    result := cwUsers[strtoint(midstr(cwUsersSortIndex[i], p + 1, 255))].name;
   end
   else
     result := '?';
 end;
 
-function findUserIndex(userId: Integer): integer;
+function findUserIndex(userId: integer): integer;
 var
-  i: Integer;
-  p: Integer;
+  i: integer;
+  p: integer;
 begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
   // mit Binsearch2 sinds: 850  Super:-)
-  i := BinSearchString2(cwuserssortindex, cwuserssortindex2, userId);
+  i := BinSearchString2(cwUsersSortIndex, cwUsersSortIndex2, userId);
   if (i > -1) then
   begin
-    p := pos('=', cwuserssortindex[i]);
-    result := strtoint(midstr(cwuserssortindex[i], p + 1, 255));
+    p := pos('=', cwUsersSortIndex[i]);
+    result := strtoint(midstr(cwUsersSortIndex[i], p + 1, 255));
   end
   else
     result := -1;
 end;
 
+procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup);
+var
+  i, j, symbolId, groupId: integer;
+var
+  sum: double;
+begin
+  for i := 0 to length(groups) - 1 do
+  begin
+    groups[i].TradesCount := 0;
+    groups[i].TradesLotsTotal := 0;
+    groups[i].TradesUsers := 0;
+    groups[i].TradesProfitTotal := 0;
+    groups[i].sourceNames:='';
+    groups[i].sourceIds:='';
+
+  end;
+  for i:=0 to cwsymbolsct-1 do
+  begin
+    j:=cwsymbolsplus[i].groupId;
+    groups[j].sourceNames:=groups[j].sourceNames+cwsymbols[i].name+';';
+    groups[j].sourceIds:=groups[j].sourceIds+inttostr(i)+';';
+  end;
+
+  for i := 0 to length(actions) - 1 do
+  begin
+    symbolId := actions[i].symbolId;
+    groupId := cwSymbolsPlus[symbolId].groupId;
+    Inc(groups[groupId].TradesCount);
+    groups[groupId].TradesLotsTotal := groups[groupId].TradesLotsTotal + actions[i].volume;
+    groups[groupId].TradesUsers := 0;
+    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
+
+  end;
+end;
 
 end.
