@@ -21,7 +21,7 @@ begin
   ReportMemoryLeaksOnShutdown := DebugHook <> 0;
   Application.Initialize;
   Application.Initialize;
-  TStyleManager.TrySetStyle('Cyan Dusk');
+  TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TForm2, Form2);
   Application.Run;
 end.

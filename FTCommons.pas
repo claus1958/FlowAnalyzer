@@ -23,6 +23,22 @@ type
     The reason may be that placing it here means that the array is
     created when the program loads - if it is declared "locally"
     it is not created until the procedure requests it. }
+
+  TPieParameters = Packed record
+    // diverse Einstellparameter
+    header: string;
+  end;
+
+  TPieValue = Packed record
+    value: double;
+    text: string;
+    color1: integer;
+    color2: integer;
+    indent: integer;
+  end;
+
+  DAPieValue = array of TPieValue;
+
   StringArray = array of string;
 
   TFilterParameter = packed record
@@ -133,7 +149,7 @@ type
     sourceNames: string; // GE30-Apr;GE30-Jul...
     sourceIds: string; // 122;133;155;...
     TradesCount: integer;
-    TradesLotsTotal:integer;
+    TradesVolumeTotal: integer;
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
   End;
@@ -142,7 +158,7 @@ type
 
   cwSymbolPlus = packed Record
     TradesCount: integer;
-    TradesLotsTotal: double;
+    TradesVolumeTotal: double;
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
     groupId: integer; // symbolsgroup
@@ -229,22 +245,10 @@ function MyStrToFloat(AString: string): double;
 procedure FillCharArray(var a: TStr12; const s: String);
 procedure SwapRowField(rf: array of integer; fr: array of integer; von, nach: integer);
 procedure generateMinutes(var ticks: array of TKurs; var mBars: DAKursOCHL; minutes: integer);
-procedure ParseDelimited(theme: string; const sl: TListBox; const Value: AnsiString; const delimiter: string;
+procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
   var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TMemoryStream;
   append: Boolean);
-procedure splitHeadLine(Value: string; var headers: DAstring; var headerz: integer; delimiter: string);
-procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
-  total: integer; stp: integer = 1);
-
-procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
-  ct: integer; total: integer; stp: integer = 1);
-procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
-  commentsPlus: DACwCommentPlus; ct, total, stp: integer);
-
-procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
-  symbolsPlus: DACwSymbolPlus; ct: integer; total: integer; stp: integer = 1);
-procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup;
-  ct, total, stp: integer);
+procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
 
 function getCwComment(id: integer): string;
 function getCwSymbol(id: integer): string;
@@ -290,8 +294,30 @@ procedure lbDebug(s: string);
 procedure AutoSizeGrid(Grid: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
-procedure doActionsGridCWFast(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
+  total: integer; stp: integer = 1);
+
+procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
+  ct: integer; total: integer; stp: integer = 1);
+procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
+  commentsPlus: DACwCommentPlus; ct, total, stp: integer);
+
+procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
+  symbolsPlus: DACwSymbolPlus; ct: integer; total: integer; stp: integer = 1);
+procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup;
+  ct, total, stp: integer);
+
+procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var actions: DACwAction; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var comments: DAcwComment; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var users: DAcwUser; usersPlus: DACwUserPlus; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer;
+  justone: Boolean = false);
+procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
 
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
@@ -301,7 +327,9 @@ function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAIntege
   var actions: DACwAction; k: integer; col: integer; such: string): integer;
 function findUserName(userId: integer): string;
 function findUserIndex(userId: integer): integer;
-procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup);
+procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
+
+function RandomRange(const AFrom, ATo: integer): integer;
 
 var
 
@@ -316,6 +344,8 @@ var
   cwSymbolsGroups: DACwSymbolGroup;
   cwSymbolsGroupsCt: integer;
 
+  cwFilteredSymbolsGroups: DACwSymbolGroup;
+  cwFilteredSymbolsGroupsCt: integer;
 
   cwSymbolsSortIndex: intArray; // sortierter Zugang zu cwsymbols
   cwUsersSortIndex: StringArray; // sortierter Zugang zu cwsymbols
@@ -331,9 +361,9 @@ var
   cwActions: DACwAction; // 'Alle' Actions
   cwActionsPlus: DACwActionPlus; // 'Alle' Actions
   cwActionsCt: integer;
-  cwActionsSelection: DACwAction; // die herausgesuchten Actions
-  cwActionsSelectionPlus: DACwActionPlus; // die herausgesuchten Actions
-  cwActionsSelectionCt: integer;
+  cwFilteredActions: DACwAction; // die herausgesuchten Actions
+  cwFilteredActionPlus: DACwActionPlus; // die herausgesuchten Actions
+  cwFilteredActionCt: integer;
   cwRatings: DACwRating;
   lboxDebug: TListBox;
   lboxInfo: TListBox;
@@ -819,7 +849,7 @@ begin
 end;
 // ParseDelimited('symbols', lbDebug2, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms);
 
-procedure ParseDelimited(theme: string; const sl: TListBox; const Value: AnsiString; const delimiter: string;
+procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
   var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TMemoryStream;
   append: Boolean);
 var
@@ -1124,7 +1154,7 @@ begin
   sl.items.add('Z Parse:' + inttostr(GetTickCount - gt) + ' Ct:' + inttostr(lc));
 end;
 
-procedure splitHeadLine(Value: string; var headers: DAstring; var headerz: integer; delimiter: string);
+procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
 var
   dx: integer;
   ns: string;
@@ -1135,7 +1165,7 @@ begin
   max := 100;
   SetLength(headers, max);
   delta := length(delimiter);
-  txt := Value + delimiter;
+  txt := value + delimiter;
   headerz := 0;
   try
     while length(txt) > 0 do
@@ -1161,6 +1191,319 @@ begin
   end;
 end;
 
+procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DACwAction; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := 'actionId';
+      SG.ColWidths[SGFieldCol[0]] := 140;
+      SG.cells[SGFieldCol[1], 0] := 'userId';
+      SG.cells[SGFieldCol[2], 0] := 'accountId';
+      SG.cells[SGFieldCol[3], 0] := 'symbol';
+      SG.cells[SGFieldCol[4], 0] := 'symbolId';
+      SG.cells[SGFieldCol[5], 0] := 'comment';
+      SG.cells[SGFieldCol[6], 0] := 'typeId';
+      SG.cells[SGFieldCol[7], 0] := 'sourceId';
+      SG.cells[SGFieldCol[8], 0] := 'openTime';
+      SG.cells[SGFieldCol[9], 0] := 'closeTime';
+      SG.cells[SGFieldCol[10], 0] := 'openTimeUnix';
+      SG.cells[SGFieldCol[11], 0] := 'closeTimeUnix';
+      SG.cells[SGFieldCol[12], 0] := 'expirationTime';
+      SG.cells[SGFieldCol[13], 0] := 'openPrice';
+      SG.cells[SGFieldCol[14], 0] := 'closePrice';
+      SG.cells[SGFieldCol[15], 0] := 'stopLoss';
+      SG.cells[SGFieldCol[16], 0] := 'takeProfit';
+      SG.cells[SGFieldCol[17], 0] := 'swap';
+      SG.cells[SGFieldCol[18], 0] := 'profit';
+      SG.cells[SGFieldCol[19], 0] := 'volume';
+      SG.cells[SGFieldCol[20], 0] := 'precision';
+      SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
+      SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
+      SG.cells[SGFieldCol[23], 0] := 'marginRate';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+      SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
+      SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
+      SG.cells[SGFieldCol[2], row] := inttostr(actions[sort[k]].accountId);
+      SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
+      SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
+      SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
+      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1); // cw statt 0..6 ist 1..7
+      SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
+      SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
+      SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
+      SG.cells[SGFieldCol[10], row] := inttostr(actions[sort[k]].openTime);
+      SG.cells[SGFieldCol[11], row] := inttostr(actions[sort[k]].closeTime);
+      SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
+      SG.cells[SGFieldCol[13], row] := floattostr(actions[sort[k]].openPrice);
+      SG.cells[SGFieldCol[14], row] := floattostr(actions[sort[k]].closePrice);
+      SG.cells[SGFieldCol[15], row] := floattostr(actions[sort[k]].stopLoss);
+      SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
+      SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
+      SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
+      SG.cells[SGFieldCol[19], row] := inttostr(actions[sort[k]].volume);
+      SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
+      SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
+      SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
+      SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
+procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var comments: DAcwComment; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0],0] := 'commentId';
+      SG.cells[SGFieldCol[1],0] := 'comment';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+      SG.cells[SGFieldCol[0], row] := inttostr(comments[sort[k]].commentId) + ' ' + inttostr(k);
+      SG.cells[SGFieldCol[1], row] := comments[sort[k]].text;
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
+procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var users: DAcwUser; usersPlus: DACwUserPlus; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := 'userId';
+      SG.ColWidths[SGFieldCol[0]] := 100;
+      SG.cells[SGFieldCol[1], 0] := 'accountId';
+      SG.cells[SGFieldCol[2], 0] := 'group';
+      SG.cells[SGFieldCol[3], 0] := 'enable';
+      SG.cells[SGFieldCol[4], 0] := 'registrationTime';
+      SG.cells[SGFieldCol[5], 0] := 'lastLoginTime';
+      SG.cells[SGFieldCol[6], 0] := 'leverage';
+      SG.cells[SGFieldCol[7], 0] := 'balance';
+      SG.cells[SGFieldCol[8], 0] := 'balancePreviousMonth';
+      SG.cells[SGFieldCol[9], 0] := 'balancePreviousDay';
+      SG.cells[SGFieldCol[10], 0] := 'credit';
+      SG.cells[SGFieldCol[11], 0] := 'interestrate';
+      SG.cells[SGFieldCol[12], 0] := 'taxes';
+      SG.cells[SGFieldCol[13], 0] := 'name';
+      SG.cells[SGFieldCol[14], 0] := 'country';
+      SG.cells[SGFieldCol[15], 0] := 'city';
+      SG.cells[SGFieldCol[16], 0] := 'state';
+      SG.cells[SGFieldCol[17], 0] := 'zipcode';
+      SG.cells[SGFieldCol[18], 0] := 'address';
+      SG.cells[SGFieldCol[19], 0] := 'phone';
+      SG.cells[SGFieldCol[20], 0] := 'email';
+      SG.cells[SGFieldCol[21], 0] := 'socialNumber';
+      SG.cells[SGFieldCol[22], 0] := 'comment';
+      SG.cells[SGFieldCol[23], 0] := 'trades';
+      SG.cells[SGFieldCol[24], 0] := 'profit';
+      SG.cells[SGFieldCol[25], 0] := 'totalbalance';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+      SG.cells[SGFieldCol[0], row] := inttostr(users[sort[k]].userId);
+      SG.cells[SGFieldCol[1], row] := inttostr(users[sort[k]].accountId);
+      SG.cells[SGFieldCol[2], row] := users[sort[k]].group;
+      SG.cells[SGFieldCol[3], row] := inttostr(users[sort[k]].enable);
+      SG.cells[SGFieldCol[4], row] := inttostr(users[sort[k]].registrationTime);
+      SG.cells[SGFieldCol[5], row] := inttostr(users[sort[k]].lastLoginTime);
+      SG.cells[SGFieldCol[6], row] := inttostr(users[sort[k]].leverage);
+      SG.cells[SGFieldCol[7], row] := floattostr(users[sort[k]].balance);
+      SG.cells[SGFieldCol[8], row] := floattostr(users[sort[k]].balancePreviousMonth);
+      SG.cells[SGFieldCol[9], row] := floattostr(users[sort[k]].balancePreviousDay);
+      SG.cells[SGFieldCol[10], row] := floattostr(users[sort[k]].credit);
+      SG.cells[SGFieldCol[11], row] := floattostr(users[sort[k]].interestrate);
+      SG.cells[SGFieldCol[12], row] := floattostr(users[sort[k]].taxes);
+      SG.cells[SGFieldCol[13], row] := users[sort[k]].name;
+      SG.cells[SGFieldCol[14], row] := users[sort[k]].country;
+      SG.cells[SGFieldCol[15], row] := users[sort[k]].city;
+      SG.cells[SGFieldCol[16], row] := users[sort[k]].state;
+      SG.cells[SGFieldCol[17], row] := users[sort[k]].zipcode;
+      SG.cells[SGFieldCol[18], row] := users[sort[k]].address;
+      SG.cells[SGFieldCol[19], row] := users[sort[k]].phone;
+      SG.cells[SGFieldCol[20], row] := users[sort[k]].email;
+      SG.cells[SGFieldCol[21], row] := users[sort[k]].socialNumber;
+      SG.cells[SGFieldCol[22], row] := users[sort[k]].comment;
+      SG.cells[SGFieldCol[23], row] := inttostr(usersPlus[sort[k]].totalTrades);
+      SG.cells[SGFieldCol[24], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalProfit);
+      SG.cells[SGFieldCol[25], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalBalance);
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
+procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer;
+  justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := 'symbolId';
+      SG.ColWidths[SGFieldCol[0]] := 100;
+      SG.cells[SGFieldCol[1], 0] := 'brokerId';
+      SG.cells[SGFieldCol[2], 0] := 'name';
+      SG.cells[SGFieldCol[3], 0] := 'description';
+      SG.cells[SGFieldCol[4], 0] := 'currency';
+      SG.cells[SGFieldCol[5], 0] := 'margin_currency';
+      SG.cells[SGFieldCol[6], 0] := 'digits';
+      SG.cells[SGFieldCol[7], 0] := 'tradeMode';
+      SG.cells[SGFieldCol[8], 0] := 'expiration';
+      SG.cells[SGFieldCol[9], 0] := 'contractSize';
+      SG.cells[SGFieldCol[10], 0] := 'tickValue';
+      SG.cells[SGFieldCol[11], 0] := 'tickSize';
+      SG.cells[SGFieldCol[12], 0] := 'type_';
+      SG.cells[SGFieldCol[13], 0] := 'Trades';
+      SG.cells[SGFieldCol[14], 0] := 'Volume';
+      SG.cells[SGFieldCol[15], 0] := 'Profit';
+      SG.cells[SGFieldCol[16], 0] := 'symGroup';
+
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+      SG.cells[SGFieldCol[0], row] := inttostr(symbols[sort[k]].symbolId);
+      SG.cells[SGFieldCol[1], row] := inttostr(symbols[sort[k]].brokerId);
+      SG.cells[SGFieldCol[2], row] := symbols[sort[k]].name;
+      SG.cells[SGFieldCol[3], row] := symbols[sort[k]].description;
+      SG.cells[SGFieldCol[4], row] := symbols[sort[k]].currency;
+      SG.cells[SGFieldCol[5], row] := symbols[sort[k]].margin_currency;
+      SG.cells[SGFieldCol[6], row] := inttostr(symbols[sort[k]].digits);
+      SG.cells[SGFieldCol[7], row] := inttostr(symbols[sort[k]].tradeMode);
+      SG.cells[SGFieldCol[8], row] := inttostr(symbols[sort[k]].expiration);
+      SG.cells[SGFieldCol[9], row] := floattostr(symbols[sort[k]].contractSize);
+      SG.cells[SGFieldCol[10], row] := floattostr(symbols[sort[k]].tickValue);
+      SG.cells[SGFieldCol[11], row] := floattostr(symbols[sort[k]].tickSize);
+      SG.cells[SGFieldCol[12], row] := inttostr(symbols[sort[k]].type_);
+      SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[sort[k]].TradesCount);
+      SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesProfitTotal);
+      if cwSymbolsGroupsCt > 0 then
+        SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[sort[k]].groupId].name;
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
+procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := 'groupId';
+      // SG.ColWidths[SGFieldCol[0]] := 100;
+      SG.cells[SGFieldCol[1], 0] := 'name';
+      SG.cells[SGFieldCol[2], 0] := 'TradesCount';
+      SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
+      SG.cells[SGFieldCol[4], 0] := 'T.Users';
+      SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
+      SG.cells[SGFieldCol[6], 0] := 'sourceNames';
+      SG.cells[SGFieldCol[7], 0] := 'sourceIds';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+
+      SG.cells[SGFieldCol[0], row] := inttostr(k);
+      SG.cells[SGFieldCol[1], row] := symbolsGroups[sort[k]].name;
+      SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
+      SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
+      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
+      SG.cells[SGFieldCol[6], row] := symbolsGroups[sort[k]].sourceNames;
+      SG.cells[SGFieldCol[7], row] := symbolsGroups[sort[k]].sourceIds;
+
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
   total: integer; stp: integer = 1);
 // {$RANGECHECKS OFF}
@@ -1178,12 +1521,10 @@ begin
     rct1 := total + 1;
     if rct1 < rct then
       rct := rct1;
-
     SG.RowCount := rct;
     SG.ColCount := 25;
     if (SG.RowCount > 1) then
       SG.FixedRows := 1;
-
     SG.Rows[0].BeginUpdate;
     SG.cells[SGFieldCol[0], 0] := 'actionId';
     SG.ColWidths[SGFieldCol[0]] := 100;
@@ -1439,8 +1780,8 @@ begin
         SG.cells[SGFieldCol[21], row] := users[k].socialNumber;
         SG.cells[SGFieldCol[22], row] := users[k].comment;
         SG.cells[SGFieldCol[23], row] := inttostr(usersPlus[k].totalTrades);
-        SG.cells[SGFieldCol[24], row] := FormatFloat('#0.00', usersPlus[k].totalProfit);
-        SG.cells[SGFieldCol[25], row] := FormatFloat('#0.00', usersPlus[k].totalBalance);
+        SG.cells[SGFieldCol[24], row] := FormatFloat(',#0.00', usersPlus[k].totalProfit);
+        SG.cells[SGFieldCol[25], row] := FormatFloat(',#0.00', usersPlus[k].totalBalance);
 
       end
       else
@@ -1558,7 +1899,7 @@ begin
     SG.cells[SGFieldCol[11], 0] := 'tickSize';
     SG.cells[SGFieldCol[12], 0] := 'type_';
     SG.cells[SGFieldCol[13], 0] := 'Trades';
-    SG.cells[SGFieldCol[14], 0] := 'Lots';
+    SG.cells[SGFieldCol[14], 0] := 'Volume';
     SG.cells[SGFieldCol[15], 0] := 'Profit';
     SG.cells[SGFieldCol[16], 0] := 'symGroup';
 
@@ -1602,8 +1943,8 @@ begin
         SG.cells[SGFieldCol[11], row] := floattostr(symbols[k].tickSize);
         SG.cells[SGFieldCol[12], row] := inttostr(symbols[k].type_);
         SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[k].TradesCount);
-        SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[k].TradesLotsTotal);
-        SG.cells[SGFieldCol[15], row] := FormatFloat('#0.00', symbolsPlus[k].TradesProfitTotal);
+        SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[k].TradesVolumeTotal);
+        SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[k].TradesProfitTotal);
         if cwSymbolsGroupsCt > 0 then
           SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[k].groupId].name;
 
@@ -1646,7 +1987,7 @@ begin
     // sourceNames:string; //GE30-Apr;GE30-Jul...
     // sourceIds:string;   //122;133;155;...
     // TradesCount:integer;
-    // TradesLotsTotal:double;
+    // TradesVolumeTotal:double;
     // TradesUsers:integer;//wieviele User handelten Symbol
     // TradesProfitTotal:double;
 
@@ -1654,7 +1995,7 @@ begin
     // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'name';
     SG.cells[SGFieldCol[2], 0] := 'TradesCount';
-    SG.cells[SGFieldCol[3], 0] := 'T.LotsTotal';
+    SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
     SG.cells[SGFieldCol[4], 0] := 'T.Users';
     SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
     SG.cells[SGFieldCol[6], 0] := 'sourceNames';
@@ -1669,14 +2010,14 @@ begin
         SG.cells[SGFieldCol[0], row] := inttostr(k);
         SG.cells[SGFieldCol[1], row] := symbolsGroups[k].name;
         SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
-        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesLotsTotal);
+        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesVolumeTotal);
         SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
-        SG.cells[SGFieldCol[5], row] := FormatFloat('#0.00', symbolsGroups[k].TradesProfitTotal);
+        SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
         SG.cells[SGFieldCol[6], row] := symbolsGroups[k].sourceNames;
         SG.cells[SGFieldCol[7], row] := symbolsGroups[k].sourceIds;
 
 
-        // SG.cells[SGFieldCol[15], row] := FormatFloat('#0.00',symbolsPlus[k].TradesProfitTotal);
+        // SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00',symbolsPlus[k].TradesProfitTotal);
         // if cwsymbolsgroupsct>0 then SG.cells[SGFieldCol[16], row] := cwsymbolsgroups[symbolsplus[k].groupId].name;
 
       end
@@ -2816,89 +3157,6 @@ begin
 
 end;
 
-procedure doActionsGridCWFast(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; datafrom: integer; datato: integer; justone: Boolean = false);
-// {$RANGECHECKS OFF}
-var
-  k: integer;
-  row: integer;
-  fehler: string;
-begin
-  try
-    if (justone = false) then
-    begin
-      SG.Rows[0].BeginUpdate;
-      SG.cells[SGFieldCol[0], 0] := 'actionId';
-      SG.ColWidths[SGFieldCol[0]] := 140;
-      SG.cells[SGFieldCol[1], 0] := 'userId';
-      SG.cells[SGFieldCol[2], 0] := 'accountId';
-      SG.cells[SGFieldCol[3], 0] := 'symbol';
-      SG.cells[SGFieldCol[4], 0] := 'symbolId';
-      SG.cells[SGFieldCol[5], 0] := 'comment';
-      SG.cells[SGFieldCol[6], 0] := 'typeId';
-      SG.cells[SGFieldCol[7], 0] := 'sourceId';
-      SG.cells[SGFieldCol[8], 0] := 'openTime';
-      SG.cells[SGFieldCol[9], 0] := 'closeTime';
-      SG.cells[SGFieldCol[10], 0] := 'openTimeUnix';
-      SG.cells[SGFieldCol[11], 0] := 'closeTimeUnix';
-      SG.cells[SGFieldCol[12], 0] := 'expirationTime';
-      SG.cells[SGFieldCol[13], 0] := 'openPrice';
-      SG.cells[SGFieldCol[14], 0] := 'closePrice';
-      SG.cells[SGFieldCol[15], 0] := 'stopLoss';
-      SG.cells[SGFieldCol[16], 0] := 'takeProfit';
-      SG.cells[SGFieldCol[17], 0] := 'swap';
-      SG.cells[SGFieldCol[18], 0] := 'profit';
-      SG.cells[SGFieldCol[19], 0] := 'volume';
-      SG.cells[SGFieldCol[20], 0] := 'precision';
-      SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
-      SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
-      SG.cells[SGFieldCol[23], 0] := 'marginRate';
-      SG.Rows[0].endUpdate;
-      // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
-
-    end;
-    row := 0;
-    for k := datafrom to datato do
-
-    begin
-      row := row + 1;
-      SG.Rows[row].BeginUpdate;
-      SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
-      SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
-      SG.cells[SGFieldCol[2], row] := inttostr(actions[sort[k]].accountId);
-      SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
-      SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
-      SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
-      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1); // cw statt 0..6 ist 1..7
-      SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
-      SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
-      SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
-      SG.cells[SGFieldCol[10], row] := inttostr(actions[sort[k]].openTime);
-      SG.cells[SGFieldCol[11], row] := inttostr(actions[sort[k]].closeTime);
-      SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
-      SG.cells[SGFieldCol[13], row] := floattostr(actions[sort[k]].openPrice);
-      SG.cells[SGFieldCol[14], row] := floattostr(actions[sort[k]].closePrice);
-      SG.cells[SGFieldCol[15], row] := floattostr(actions[sort[k]].stopLoss);
-      SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
-      SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
-      SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
-      SG.cells[SGFieldCol[19], row] := inttostr(actions[sort[k]].volume);
-      SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
-      SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
-      SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
-      SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
-      SG.Rows[row].endUpdate;
-    end;
-  except
-    on E: Exception do
-    begin
-      fehler := E.Message;
-    end;
-
-  end;
-  // {$RANGECHECKS ON}
-end;
-
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
 // ich nehme zwei Arrays nehmen: eines it 12345=45678 und eines nur 12345 damit man die strtoint-Berechnung spart
 var
@@ -3074,39 +3332,64 @@ begin
     result := -1;
 end;
 
-procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup);
+procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
 var
   i, j, symbolId, groupId: integer;
-var
+  TradesCount: integer;
+  TradesVolumeTotal: integer;
+  TradesProfitTotal: double;
   sum: double;
 begin
+  TradesCount := 0;
+  TradesVolumeTotal := 0;
+  TradesProfitTotal := 0;
   for i := 0 to length(groups) - 1 do
   begin
     groups[i].TradesCount := 0;
-    groups[i].TradesLotsTotal := 0;
+    groups[i].TradesVolumeTotal := 0;
     groups[i].TradesUsers := 0;
     groups[i].TradesProfitTotal := 0;
-    groups[i].sourceNames:='';
-    groups[i].sourceIds:='';
-
+    groups[i].sourceNames := '';
+    groups[i].sourceIds := '';
   end;
-  for i:=0 to cwsymbolsct-1 do
+  for i := 0 to cwSymbolsCt - 1 do
   begin
-    j:=cwsymbolsplus[i].groupId;
-    groups[j].sourceNames:=groups[j].sourceNames+cwsymbols[i].name+';';
-    groups[j].sourceIds:=groups[j].sourceIds+inttostr(i)+';';
+    j := cwSymbolsPlus[i].groupId;
+    groups[j].sourceNames := groups[j].sourceNames + cwSymbols[i].name + ';';
+    groups[j].sourceIds := groups[j].sourceIds + inttostr(i) + ';';
   end;
 
   for i := 0 to length(actions) - 1 do
   begin
+    // Balance rauslassen ? Ist aber auch interessant
     symbolId := actions[i].symbolId;
     groupId := cwSymbolsPlus[symbolId].groupId;
     Inc(groups[groupId].TradesCount);
-    groups[groupId].TradesLotsTotal := groups[groupId].TradesLotsTotal + actions[i].volume;
+    Inc(TradesCount);
+    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
+    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
     groups[groupId].TradesUsers := 0;
     groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
-
+    TradesProfitTotal := TradesProfitTotal + actions[i].swap + actions[i].profit;
   end;
+  lb.items.Clear;
+  lb.items.add('Actions:' + #9 + inttostr(length(actions)));
+  lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
+  lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));
+  lb.items.add('BalanceTotal:' + #9 + FormatFloat(',#0.00', groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
+  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId]
+    .TradesCount));
+  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
+    .TradesProfitTotal));
+
+end;
+
+function RandomRange(const AFrom, ATo: integer): integer;
+begin
+  if AFrom > ATo then
+    result := Random(AFrom - ATo) + ATo
+  else
+    result := Random(ATo - AFrom) + AFrom;
 end;
 
 end.

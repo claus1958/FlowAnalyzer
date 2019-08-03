@@ -3,7 +3,7 @@ object Form2: TForm2
   Top = 0
   Caption = 'Flow Analyzer'
   ClientHeight = 940
-  ClientWidth = 1473
+  ClientWidth = 1604
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,16 +17,16 @@ object Form2: TForm2
   object StatusBar1: TStatusBar
     Left = 0
     Top = 907
-    Width = 1473
+    Width = 1604
     Height = 33
     Panels = <>
   end
   object PageControl1: TPageControl
     Left = 0
     Top = 0
-    Width = 1473
+    Width = 1604
     Height = 907
-    ActivePage = TabSheet7
+    ActivePage = TabSheet4
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -224,14 +224,15 @@ object Form2: TForm2
           TabOrder = 13
           OnClick = Button8Click
         end
-        object btnDoPlus: TButton
+        object btnDoUsersPlus: TButton
           Left = 36
           Top = 572
           Width = 205
           Height = 21
           Caption = 'Additional computations'
           TabOrder = 14
-          OnClick = btnDoPlusClick
+          Visible = False
+          OnClick = btnDoUsersPlusClick
         end
       end
     end
@@ -254,7 +255,7 @@ object Form2: TForm2
       object CategoryPanelGroup1: TCategoryPanelGroup
         Left = 237
         Top = 0
-        Width = 1228
+        Width = 1359
         Height = 871
         VertScrollBar.Tracking = True
         Align = alClient
@@ -266,8 +267,6 @@ object Form2: TForm2
         HeaderHeight = 20
         TabOrder = 0
         OnResize = CategoryPanel1Expand
-        ExplicitLeft = 232
-        ExplicitWidth = 1233
         object CategoryPanel4: TCategoryPanel
           Top = 588
           Height = 241
@@ -275,21 +274,66 @@ object Form2: TForm2
           TabOrder = 0
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          ExplicitWidth = 1269
           object SGCwComments: TStringGridSorted
             AlignWithMargins = True
-            Left = 3
+            Left = 661
             Top = 3
-            Width = 1218
+            Width = 691
             Height = 213
-            Align = alClient
             DefaultColWidth = 80
             RowCount = 1
             FixedRows = 0
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
             OnMouseDown = SGMouseDown
-            ExplicitWidth = 1261
+          end
+          inline DynGrid7: TDynGrid
+            Left = 8
+            Top = 0
+            Width = 674
+            Height = 213
+            TabOrder = 1
+            ExplicitLeft = 8
+            ExplicitWidth = 674
+            ExplicitHeight = 213
+            inherited Panel1: TPanel
+              Width = 674
+              Height = 5
+              Align = alTop
+              ExplicitWidth = 674
+              ExplicitHeight = 5
+              inherited lblTime: TLabel
+                Width = 38
+                Height = 14
+                ExplicitWidth = 38
+                ExplicitHeight = 14
+              end
+            end
+            inherited Panel2: TPanel
+              Left = 0
+              Top = 5
+              Width = 674
+              Height = 208
+              Align = alClient
+              ExplicitLeft = 0
+              ExplicitTop = 5
+              ExplicitWidth = 674
+              ExplicitHeight = 169
+              inherited SG: TStringGridSorted
+                Tag = 3
+                Width = 656
+                Height = 206
+                Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                ExplicitWidth = 656
+                ExplicitHeight = 167
+              end
+              inherited ScrollBar1: TScrollBar
+                Left = 657
+                Height = 206
+                ExplicitLeft = 657
+                ExplicitHeight = 167
+              end
+            end
           end
         end
         object CategoryPanel3: TCategoryPanel
@@ -299,21 +343,66 @@ object Form2: TForm2
           TabOrder = 1
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          ExplicitWidth = 1269
           object SGCwUsers: TStringGridSorted
             AlignWithMargins = True
-            Left = 3
+            Left = 668
             Top = 3
-            Width = 1218
+            Width = 684
             Height = 168
-            Align = alClient
             DefaultColWidth = 80
             RowCount = 1
             FixedRows = 0
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
             OnMouseDown = SGMouseDown
-            ExplicitWidth = 1261
+          end
+          inline DynGrid6: TDynGrid
+            Left = 4
+            Top = 0
+            Width = 674
+            Height = 174
+            TabOrder = 1
+            ExplicitLeft = 4
+            ExplicitWidth = 674
+            ExplicitHeight = 174
+            inherited Panel1: TPanel
+              Width = 674
+              Height = 5
+              Align = alTop
+              ExplicitWidth = 674
+              ExplicitHeight = 5
+              inherited lblTime: TLabel
+                Width = 38
+                Height = 14
+                ExplicitWidth = 38
+                ExplicitHeight = 14
+              end
+            end
+            inherited Panel2: TPanel
+              Left = 0
+              Top = 5
+              Width = 674
+              Height = 169
+              Align = alClient
+              ExplicitLeft = 0
+              ExplicitTop = 5
+              ExplicitWidth = 674
+              ExplicitHeight = 169
+              inherited SG: TStringGridSorted
+                Tag = 3
+                Width = 656
+                Height = 167
+                Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                ExplicitWidth = 656
+                ExplicitHeight = 167
+              end
+              inherited ScrollBar1: TScrollBar
+                Left = 657
+                Height = 167
+                ExplicitLeft = 657
+                ExplicitHeight = 167
+              end
+            end
           end
         end
         object CategoryPanel2: TCategoryPanel
@@ -323,21 +412,66 @@ object Form2: TForm2
           TabOrder = 2
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          ExplicitWidth = 1269
           object SGCwSymbols: TStringGridSorted
             AlignWithMargins = True
-            Left = 3
-            Top = 3
-            Width = 1218
+            Left = 680
+            Top = 1
+            Width = 672
             Height = 168
-            Align = alClient
             DefaultColWidth = 80
             RowCount = 1
             FixedRows = 0
             Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
             TabOrder = 0
+            OnColumnMoved = SGCwSymbolsColumnMoved
             OnMouseDown = SGMouseDown
-            ExplicitWidth = 1261
+          end
+          inline DynGrid5: TDynGrid
+            Left = 0
+            Top = 0
+            Width = 674
+            Height = 174
+            TabOrder = 1
+            ExplicitWidth = 674
+            ExplicitHeight = 174
+            inherited Panel1: TPanel
+              Width = 674
+              Height = 5
+              Align = alTop
+              ExplicitWidth = 1355
+              ExplicitHeight = 5
+              inherited lblTime: TLabel
+                Width = 38
+                Height = 14
+                ExplicitWidth = 38
+                ExplicitHeight = 14
+              end
+            end
+            inherited Panel2: TPanel
+              Left = 0
+              Top = 5
+              Width = 674
+              Height = 169
+              Align = alClient
+              ExplicitLeft = 0
+              ExplicitTop = 5
+              ExplicitWidth = 1355
+              ExplicitHeight = 169
+              inherited SG: TStringGridSorted
+                Tag = 3
+                Width = 656
+                Height = 167
+                Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                ExplicitWidth = 1337
+                ExplicitHeight = 167
+              end
+              inherited ScrollBar1: TScrollBar
+                Left = 657
+                Height = 167
+                ExplicitLeft = 1338
+                ExplicitHeight = 167
+              end
+            end
           end
         end
         object CategoryPanel1: TCategoryPanel
@@ -353,20 +487,21 @@ object Form2: TForm2
           TabOrder = 3
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          ExplicitWidth = 1269
           inline DynGrid3: TDynGrid
             Left = 0
             Top = 0
-            Width = 1224
+            Width = 1355
             Height = 174
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 1267
+            ExplicitWidth = 1355
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 1224
+              Width = 1355
+              Height = 5
               Align = alTop
-              ExplicitWidth = 1267
+              ExplicitWidth = 1355
+              ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
                 Height = 14
@@ -376,26 +511,26 @@ object Form2: TForm2
             end
             inherited Panel2: TPanel
               Left = 0
-              Top = 41
-              Width = 1224
-              Height = 133
+              Top = 5
+              Width = 1355
+              Height = 169
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
-              ExplicitWidth = 1267
+              ExplicitWidth = 1355
               ExplicitHeight = 133
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 1206
-                Height = 131
+                Width = 1337
+                Height = 167
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1249
+                ExplicitWidth = 1337
                 ExplicitHeight = 131
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1207
-                Height = 131
-                ExplicitLeft = 1250
+                Left = 1338
+                Height = 167
+                ExplicitLeft = 1338
                 ExplicitHeight = 131
               end
             end
@@ -481,7 +616,7 @@ object Form2: TForm2
       object Panel6: TPanel
         Left = 0
         Top = 0
-        Width = 1465
+        Width = 1596
         Height = 871
         Align = alClient
         TabOrder = 0
@@ -504,12 +639,9 @@ object Form2: TForm2
             Left = 1
             Top = 1
             Width = 319
-            Height = 125
+            Height = 82
             Align = alTop
             TabOrder = 0
-            ExplicitLeft = 4
-            ExplicitTop = 40
-            ExplicitWidth = 317
             object Label2: TLabel
               Left = 184
               Top = 24
@@ -538,9 +670,9 @@ object Form2: TForm2
           end
           object CategoryPanelGroup2: TCategoryPanelGroup
             Left = 1
-            Top = 126
+            Top = 83
             Width = 319
-            Height = 742
+            Height = 785
             VertScrollBar.Tracking = True
             Align = alClient
             HeaderFont.Charset = DEFAULT_CHARSET
@@ -549,9 +681,6 @@ object Form2: TForm2
             HeaderFont.Name = 'Tahoma'
             HeaderFont.Style = []
             TabOrder = 1
-            ExplicitTop = 184
-            ExplicitWidth = 241
-            ExplicitHeight = 684
             object CategoryPanel7: TCategoryPanel
               Top = 363
               Height = 30
@@ -592,8 +721,6 @@ object Form2: TForm2
                 ParentFont = False
                 TabOrder = 0
                 TabWidth = 66
-                ExplicitTop = 4
-                ExplicitHeight = 303
               end
               object Panel14: TPanel
                 Left = 0
@@ -695,7 +822,7 @@ object Form2: TForm2
       object Panel26: TPanel
         Left = 0
         Top = 0
-        Width = 1465
+        Width = 1596
         Height = 871
         Align = alClient
         TabOrder = 0
@@ -934,7 +1061,7 @@ object Form2: TForm2
               Height = 25
               Caption = 'Balance only'
               TabOrder = 5
-              OnClick = btnSample1Click
+              OnClick = btnSampleClick
             end
             object btnSample2: TButton
               Left = 7
@@ -943,7 +1070,7 @@ object Form2: TForm2
               Height = 25
               Caption = 'Winner>1000'
               TabOrder = 6
-              OnClick = btnSample1Click
+              OnClick = btnSampleClick
             end
             object btnSample3: TButton
               Left = 7
@@ -952,28 +1079,28 @@ object Form2: TForm2
               Height = 25
               Caption = 'Gold 2018 Loosers'
               TabOrder = 7
-              OnClick = btnSample1Click
+              OnClick = btnSampleClick
             end
           end
         end
         object Panel4: TPanel
           Left = 525
           Top = 1
-          Width = 939
+          Width = 1070
           Height = 869
           Align = alClient
           TabOrder = 1
           object Panel5: TPanel
             Left = 1
             Top = 1
-            Width = 937
+            Width = 1068
             Height = 41
             Align = alTop
             TabOrder = 0
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 935
+              Width = 1066
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -986,12 +1113,20 @@ object Form2: TForm2
               ParentFont = False
               ExplicitWidth = 6
             end
+            object lblDemoText: TLabel
+              Left = 400
+              Top = 24
+              Width = 263
+              Height = 14
+              Alignment = taCenter
+              Caption = 'oben "altes" Grid und unten "Neues" ohne Limit'
+            end
           end
           object SGCacheCwSearch: TStringGridSorted
             AlignWithMargins = True
             Left = 4
             Top = 45
-            Width = 931
+            Width = 1062
             Height = 372
             Align = alTop
             ColCount = 1
@@ -1007,13 +1142,13 @@ object Form2: TForm2
           inline DynGrid2: TDynGrid
             Left = 1
             Top = 420
-            Width = 937
+            Width = 1068
             Height = 448
             Align = alClient
             TabOrder = 2
             ExplicitLeft = 1
             ExplicitTop = 420
-            ExplicitWidth = 937
+            ExplicitWidth = 1068
             ExplicitHeight = 448
             inherited Panel1: TPanel
               inherited lblTime: TLabel
@@ -1026,25 +1161,25 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 0
-              Width = 937
+              Width = 1068
               Height = 448
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 0
-              ExplicitWidth = 937
+              ExplicitWidth = 1068
               ExplicitHeight = 448
               inherited SG: TStringGridSorted
                 Tag = 2
-                Width = 919
+                Width = 1050
                 Height = 446
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 919
+                ExplicitWidth = 1050
                 ExplicitHeight = 446
               end
               inherited ScrollBar1: TScrollBar
-                Left = 920
+                Left = 1051
                 Height = 446
-                ExplicitLeft = 920
+                ExplicitLeft = 1051
                 ExplicitHeight = 446
               end
             end
@@ -1288,10 +1423,11 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 5
       ParentFont = False
+      TabVisible = False
       object Panel12: TPanel
         Left = 0
         Top = 0
-        Width = 1465
+        Width = 1596
         Height = 871
         Align = alClient
         Caption = 'Panel12'
@@ -1299,18 +1435,18 @@ object Form2: TForm2
         inline DynGrid1: TDynGrid
           Left = 1
           Top = 1
-          Width = 1463
+          Width = 1594
           Height = 869
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 1
           ExplicitTop = 1
-          ExplicitWidth = 1463
+          ExplicitWidth = 1594
           ExplicitHeight = 869
           inherited Panel1: TPanel
-            Width = 1463
+            Width = 1594
             Align = alTop
-            ExplicitWidth = 1463
+            ExplicitWidth = 1594
             inherited lblTime: TLabel
               Width = 38
               Height = 14
@@ -1321,25 +1457,25 @@ object Form2: TForm2
           inherited Panel2: TPanel
             Left = 0
             Top = 41
-            Width = 1463
+            Width = 1594
             Height = 828
             Align = alClient
             ExplicitLeft = 0
             ExplicitTop = 41
-            ExplicitWidth = 1463
+            ExplicitWidth = 1594
             ExplicitHeight = 828
             inherited SG: TStringGridSorted
               Tag = 1
-              Width = 1445
+              Width = 1576
               Height = 826
               Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goFixedColClick]
-              ExplicitWidth = 1445
+              ExplicitWidth = 1576
               ExplicitHeight = 826
             end
             inherited ScrollBar1: TScrollBar
-              Left = 1446
+              Left = 1577
               Height = 826
-              ExplicitLeft = 1446
+              ExplicitLeft = 1577
               ExplicitHeight = 826
             end
           end
@@ -1365,15 +1501,19 @@ object Form2: TForm2
         Height = 871
         Align = alLeft
         TabOrder = 0
-        ExplicitLeft = 4
-        ExplicitTop = 4
-        ExplicitHeight = 865
+        object Label4: TLabel
+          Left = 44
+          Top = 12
+          Width = 86
+          Height = 19
+          Caption = 'Use actions:'
+        end
         object btnGroupSymbolsAllActions: TButton
           Left = 40
           Top = 38
           Width = 165
           Height = 25
-          Caption = 'btnGroupSymbolsAllActions'
+          Caption = 'All Actions'
           TabOrder = 0
           OnClick = btnGroupSymbolsClick
         end
@@ -1382,66 +1522,1553 @@ object Form2: TForm2
           Top = 72
           Width = 165
           Height = 25
-          Caption = 'btnGroupSymbolsFilteredActions'
+          Caption = 'Actions from '#39'Filtering'#39
           TabOrder = 1
           OnClick = btnGroupSymbolsClick
+        end
+        object lbSymbolsGroupsInfo: TListBox
+          Left = 0
+          Top = 112
+          Width = 260
+          Height = 301
+          ItemHeight = 19
+          TabOrder = 2
+          TabWidth = 60
+        end
+        object pnlPieButtons: TPanel
+          Left = 10
+          Top = 419
+          Width = 245
+          Height = 149
+          TabOrder = 3
+          Visible = False
+          object btnPieChart1: TButton
+            Left = 0
+            Top = 8
+            Width = 237
+            Height = 41
+            Caption = 'PieChart '#39'TradesCount'#39' Col'
+            TabOrder = 0
+            OnClick = btnPieChartClick
+          end
+          object btnPieChart2: TButton
+            Left = 0
+            Top = 55
+            Width = 237
+            Height = 41
+            Caption = 'PieChart '#39'TradesVolume'#39' Col'
+            TabOrder = 1
+            OnClick = btnPieChartClick
+          end
+          object btnPieChart3: TButton
+            Left = 0
+            Top = 102
+            Width = 237
+            Height = 41
+            Caption = 'PieChart '#39'TotalProfit'#39' Col'
+            TabOrder = 2
+            OnClick = btnPieChartClick
+          end
         end
       end
       object Panel16: TPanel
         Left = 261
         Top = 0
-        Width = 1204
+        Width = 1335
         Height = 871
         Align = alClient
         TabOrder = 1
-        ExplicitLeft = 280
-        ExplicitTop = 4
-        ExplicitWidth = 1185
-        ExplicitHeight = 865
         object Panel17: TPanel
           Left = 1
           Top = 1
-          Width = 1202
+          Width = 1333
           Height = 33
           Align = alTop
-          Caption = 'Panel17'
           TabOrder = 0
-          ExplicitLeft = 20
-          ExplicitTop = 4
-          ExplicitWidth = 1173
         end
         object Panel18: TPanel
           Left = 1
           Top = 34
-          Width = 1202
+          Width = 1333
           Height = 836
           Align = alClient
           Caption = 'Panel18'
           TabOrder = 1
-          ExplicitLeft = 24
-          ExplicitTop = 52
-          ExplicitWidth = 1141
-          ExplicitHeight = 813
-          object SGCwSymbolsGroups: TStringGridSorted
-            AlignWithMargins = True
-            Left = 4
-            Top = 4
-            Width = 1194
-            Height = 828
+          object CategoryPanelGroup3: TCategoryPanelGroup
+            Left = 1
+            Top = 1
+            Width = 1331
+            Height = 834
+            VertScrollBar.Tracking = True
             Align = alClient
-            DefaultColWidth = 80
-            RowCount = 1
-            FixedRows = 0
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
+            HeaderFont.Charset = DEFAULT_CHARSET
+            HeaderFont.Color = clWindowText
+            HeaderFont.Height = -16
+            HeaderFont.Name = 'Tahoma'
+            HeaderFont.Style = []
             TabOrder = 0
-            OnMouseDown = SGMouseDown
-            ExplicitLeft = 3
-            ExplicitTop = 3
-            ExplicitWidth = 1261
-            ExplicitHeight = 168
+            object CategoryPanel8: TCategoryPanel
+              Top = 0
+              Height = 300
+              Caption = 'Symbols Groups'
+              TabOrder = 0
+              OnCollapse = CategoryPanel9CollapseExpand
+              OnExpand = CategoryPanel9CollapseExpand
+              ExplicitWidth = 1329
+              object SGCwSymbolsGroups: TStringGridSorted
+                AlignWithMargins = True
+                Left = 840
+                Top = 3
+                Width = 484
+                Height = 270
+                DefaultColWidth = 80
+                RowCount = 1
+                FixedRows = 0
+                Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect, goFixedColClick]
+                TabOrder = 0
+                OnDrawCell = SGCwSymbolsGroupsDrawCell
+                OnMouseDown = SGMouseDown
+                OnMouseUp = SGCwSymbolsGroupsMouseUp
+              end
+              inline DynGrid8: TDynGrid
+                Left = 12
+                Top = 4
+                Width = 674
+                Height = 213
+                TabOrder = 1
+                ExplicitLeft = 12
+                ExplicitTop = 4
+                ExplicitWidth = 674
+                ExplicitHeight = 213
+                inherited Panel1: TPanel
+                  Width = 674
+                  Height = 5
+                  Align = alTop
+                  ExplicitWidth = 674
+                  ExplicitHeight = 5
+                  inherited lblTime: TLabel
+                    Width = 53
+                    Height = 19
+                    ExplicitWidth = 53
+                    ExplicitHeight = 19
+                  end
+                end
+                inherited Panel2: TPanel
+                  Left = 0
+                  Top = 5
+                  Width = 674
+                  Height = 208
+                  Align = alClient
+                  ExplicitLeft = 0
+                  ExplicitTop = 5
+                  ExplicitWidth = 674
+                  ExplicitHeight = 208
+                  inherited SG: TStringGridSorted
+                    Tag = 3
+                    Width = 656
+                    Height = 206
+                    Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                    ExplicitWidth = 656
+                    ExplicitHeight = 206
+                  end
+                  inherited ScrollBar1: TScrollBar
+                    Left = 657
+                    Height = 206
+                    ExplicitLeft = 657
+                    ExplicitHeight = 206
+                  end
+                end
+              end
+            end
+            object CategoryPanel9: TCategoryPanel
+              Top = 300
+              Height = 565
+              Caption = 'Visualization'
+              TabOrder = 1
+              OnCollapse = CategoryPanel9CollapseExpand
+              OnExpand = CategoryPanel9CollapseExpand
+              ExplicitTop = 232
+              ExplicitWidth = 1329
+              object Panel20: TPanel
+                Left = 0
+                Top = 0
+                Width = 1310
+                Height = 539
+                Align = alClient
+                Caption = 'Panel20'
+                TabOrder = 0
+                ExplicitLeft = 16
+                ExplicitTop = 8
+                ExplicitWidth = 669
+                ExplicitHeight = 561
+                object SymbolsGroupsPieChartView: TAdvGDIPChartView
+                  Left = 1
+                  Top = 1
+                  Width = 1308
+                  Height = 537
+                  Align = alClient
+                  Color = clWhite
+                  Panes = <
+                    item
+                      Bands.Distance = 2.000000000000000000
+                      Background.Color = clSilver
+                      Background.ColorTo = 3355443
+                      Background.Font.Charset = DEFAULT_CHARSET
+                      Background.Font.Color = clWindowText
+                      Background.Font.Height = -11
+                      Background.Font.Name = 'Tahoma'
+                      Background.Font.Style = []
+                      Background.GradientType = gtForwardDiagonal
+                      BorderColor = clBlack
+                      CrossHair.CrossHairYValues.Position = [chYAxis]
+                      CrossHair.Distance = 0
+                      Height = 100.000000000000000000
+                      Legend.Color = clGray
+                      Legend.ColorTo = clSilver
+                      Legend.Font.Charset = DEFAULT_CHARSET
+                      Legend.Font.Color = clWindowText
+                      Legend.Font.Height = -11
+                      Legend.Font.Name = 'Tahoma'
+                      Legend.Font.Style = []
+                      Legend.GradientType = gtVertical
+                      Legend.Shadow = True
+                      Name = 'ChartPane 0'
+                      Options = []
+                      Range.StartDate = 43675.893897118050000000
+                      Range.RangeTo = 5
+                      Series = <
+                        item
+                          AutoRange = arDisabled
+                          Pie.Size = 500
+                          Pie.ShowValues = True
+                          Pie.ValuePosition = vpOutSideSlice
+                          Pie.ShowLegendOnSlice = True
+                          Pie.ValueFont.Charset = DEFAULT_CHARSET
+                          Pie.ValueFont.Color = clWindowText
+                          Pie.ValueFont.Height = -11
+                          Pie.ValueFont.Name = 'Tahoma'
+                          Pie.ValueFont.Style = []
+                          Pie.LegendFont.Charset = DEFAULT_CHARSET
+                          Pie.LegendFont.Color = clWindowText
+                          Pie.LegendFont.Height = -11
+                          Pie.LegendFont.Name = 'Tahoma'
+                          Pie.LegendFont.Style = []
+                          Annotations = <>
+                          ChartType = ctPie
+                          Color = 22015
+                          CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                          CrossHairYValue.Font.Color = clWindowText
+                          CrossHairYValue.Font.Height = -11
+                          CrossHairYValue.Font.Name = 'Tahoma'
+                          CrossHairYValue.Font.Style = []
+                          CrossHairYValue.GradientSteps = 0
+                          LineColor = 22015
+                          LegendText = 'Serie 0'
+                          Marker.MarkerType = mCircle
+                          Marker.MarkerColor = 22015
+                          Marker.SelectedColor = 22015
+                          Marker.SelectedLineColor = clBlack
+                          Marker.SelectedSize = 15
+                          Maximum = 12.000000000000000000
+                          Name = 'Serie 0'
+                          ValueFont.Charset = DEFAULT_CHARSET
+                          ValueFont.Color = clWindowText
+                          ValueFont.Height = -11
+                          ValueFont.Name = 'Tahoma'
+                          ValueFont.Style = []
+                          ValueFormat = '%g'
+                          ValueWidth = 80
+                          XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                          XAxis.DateTimeFont.Color = clWindowText
+                          XAxis.DateTimeFont.Height = -11
+                          XAxis.DateTimeFont.Name = 'Tahoma'
+                          XAxis.DateTimeFont.Style = []
+                          XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                          XAxis.MajorFont.Color = clWindowText
+                          XAxis.MajorFont.Height = -11
+                          XAxis.MajorFont.Name = 'Tahoma'
+                          XAxis.MajorFont.Style = []
+                          XAxis.MajorUnit = 1.000000000000000000
+                          XAxis.MajorUnitSpacing = 0
+                          XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                          XAxis.MinorFont.Color = clWindowText
+                          XAxis.MinorFont.Height = -11
+                          XAxis.MinorFont.Name = 'Tahoma'
+                          XAxis.MinorFont.Style = []
+                          XAxis.MinorUnit = 1.000000000000000000
+                          XAxis.MinorUnitSpacing = 0
+                          XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                          XAxis.TextTop.Font.Color = clWindowText
+                          XAxis.TextTop.Font.Height = -11
+                          XAxis.TextTop.Font.Name = 'Tahoma'
+                          XAxis.TextTop.Font.Style = []
+                          XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                          XAxis.TextBottom.Font.Color = clWindowText
+                          XAxis.TextBottom.Font.Height = -11
+                          XAxis.TextBottom.Font.Name = 'Tahoma'
+                          XAxis.TextBottom.Font.Style = []
+                          XAxis.TickMarkSize = 6
+                          YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                          YAxis.MajorFont.Color = clWindowText
+                          YAxis.MajorFont.Height = -11
+                          YAxis.MajorFont.Name = 'Tahoma'
+                          YAxis.MajorFont.Style = []
+                          YAxis.MajorUnit = 1.000000000000000000
+                          YAxis.MajorUnitSpacing = 0
+                          YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                          YAxis.MinorFont.Color = clWindowText
+                          YAxis.MinorFont.Height = -11
+                          YAxis.MinorFont.Name = 'Tahoma'
+                          YAxis.MinorFont.Style = []
+                          YAxis.MinorUnitSpacing = 10
+                          YAxis.TextLeft.Angle = -90
+                          YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                          YAxis.TextLeft.Font.Color = clWindowText
+                          YAxis.TextLeft.Font.Height = -11
+                          YAxis.TextLeft.Font.Name = 'Tahoma'
+                          YAxis.TextLeft.Font.Style = []
+                          YAxis.TextRight.Angle = 90
+                          YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                          YAxis.TextRight.Font.Color = clWindowText
+                          YAxis.TextRight.Font.Height = -11
+                          YAxis.TextRight.Font.Name = 'Tahoma'
+                          YAxis.TextRight.Font.Style = []
+                          YAxis.TickMarkColor = clRed
+                          BarValueTextFont.Charset = DEFAULT_CHARSET
+                          BarValueTextFont.Color = clWindowText
+                          BarValueTextFont.Height = -11
+                          BarValueTextFont.Name = 'Tahoma'
+                          BarValueTextFont.Style = []
+                          XAxisGroups = <>
+                          GradientType = gtHorizontal
+                          SerieType = stNormal
+                        end>
+                      Title.Alignment = taCenter
+                      Title.Color = clGray
+                      Title.Font.Charset = DEFAULT_CHARSET
+                      Title.Font.Color = clWindowText
+                      Title.Font.Height = -11
+                      Title.Font.Name = 'Tahoma'
+                      Title.Font.Style = []
+                      Title.Position = tTop
+                      Title.Text = 'Darstellung'
+                      XAxis.Font.Charset = DEFAULT_CHARSET
+                      XAxis.Font.Color = clWindowText
+                      XAxis.Font.Height = -11
+                      XAxis.Font.Name = 'Tahoma'
+                      XAxis.Font.Style = []
+                      XAxis.Position = xNone
+                      XAxis.Text = 'X-axis'
+                      XGrid.MajorFont.Charset = DEFAULT_CHARSET
+                      XGrid.MajorFont.Color = clWindowText
+                      XGrid.MajorFont.Height = -11
+                      XGrid.MajorFont.Name = 'Tahoma'
+                      XGrid.MajorFont.Style = []
+                      XGrid.MinorFont.Charset = DEFAULT_CHARSET
+                      XGrid.MinorFont.Color = clWindowText
+                      XGrid.MinorFont.Height = -11
+                      XGrid.MinorFont.Name = 'Tahoma'
+                      XGrid.MinorFont.Style = []
+                      YAxis.Font.Charset = DEFAULT_CHARSET
+                      YAxis.Font.Color = clWindowText
+                      YAxis.Font.Height = -11
+                      YAxis.Font.Name = 'Tahoma'
+                      YAxis.Font.Style = []
+                      YAxis.Position = yNone
+                      YAxis.Size = 40
+                      YAxis.Text = 'Y-axis'
+                      YGrid.MinorDistance = 1.000000000000000000
+                      YGrid.MajorDistance = 2.000000000000000000
+                    end>
+                  Tracker.Font.Charset = DEFAULT_CHARSET
+                  Tracker.Font.Color = clWindowText
+                  Tracker.Font.Height = -11
+                  Tracker.Font.Name = 'Tahoma'
+                  Tracker.Font.Style = []
+                  Tracker.Title.Font.Charset = DEFAULT_CHARSET
+                  Tracker.Title.Font.Color = clWindowText
+                  Tracker.Title.Font.Height = -11
+                  Tracker.Title.Font.Name = 'Tahoma'
+                  Tracker.Title.Font.Style = []
+                  Tracker.Title.Text = 'TRACKER'
+                  Tracker.OpenValuePrefix = 'O:'
+                  Tracker.HighValuePrefix = 'H:'
+                  Tracker.LowValuePrefix = 'L:'
+                  Tracker.CloseValuePrefix = 'C:'
+                  Version = '4.2.1.6 APR, 2018'
+                  XAxisZoomSensitivity = 1.000000000000000000
+                  YAxisZoomSensitivity = 1.000000000000000000
+                  DoubleBuffered = True
+                  ExplicitLeft = -216
+                  ExplicitTop = 256
+                  ExplicitWidth = 597
+                  ExplicitHeight = 305
+                end
+              end
+            end
           end
         end
       end
     end
+    object TabSheet8: TTabSheet
+      Caption = 'TabSheet8'
+      ImageIndex = 7
+      TabVisible = False
+      object Button9: TButton
+        Left = 36
+        Top = 76
+        Width = 125
+        Height = 29
+        Caption = 'Button9'
+        TabOrder = 0
+        OnClick = Button9Click
+      end
+      object AdvGDIPChartView2: TAdvGDIPChartView
+        Left = 859
+        Top = -8
+        Width = 633
+        Height = 561
+        ShowDesignHelper = False
+        Color = clWhite
+        Panes = <
+          item
+            Bands.Distance = 2.000000000000000000
+            Bands.GradientDirection = cgdVertical
+            Bands.PrimaryColorTo = clSilver
+            Bands.SecondaryColor = clGray
+            Bands.SecondaryColorTo = clGray
+            Background.BackGroundPosition = bpStretched
+            Background.Color = 26367
+            Background.ColorTo = 10092543
+            Background.Font.Charset = DEFAULT_CHARSET
+            Background.Font.Color = clWindowText
+            Background.Font.Height = -11
+            Background.Font.Name = 'Tahoma'
+            Background.Font.Style = []
+            Background.PictureVisible = True
+            Background.GradientType = gtHorizontal
+            BorderColor = clGreen
+            BorderWidth = 7
+            CrossHair.CrossHairYValues.Position = [chYAxis]
+            CrossHair.Distance = 0
+            Height = 100.000000000000000000
+            Legend.ColorTo = clWhite
+            Legend.Font.Charset = DEFAULT_CHARSET
+            Legend.Font.Color = clWindowText
+            Legend.Font.Height = -19
+            Legend.Font.Name = 'Tahoma'
+            Legend.Font.Style = []
+            Legend.Left = 5
+            Legend.Top = 5
+            Legend.RectangleSize = 20
+            Legend.Visible = False
+            Legend.GradientType = gtVertical
+            Legend.Opacity = 100
+            Legend.OpacityTo = 100
+            Name = 'ChartPane 0'
+            Options = []
+            Range.RangeTo = 9
+            Series = <
+              item
+                AutoRange = arEnabledZeroBased
+                Pie.Position = spCustom
+                Pie.Left = 111
+                Pie.Top = 111
+                Pie.Size = 120
+                Pie.ShowValues = True
+                Pie.ValueFont.Charset = ANSI_CHARSET
+                Pie.ValueFont.Color = clWhite
+                Pie.ValueFont.Height = -13
+                Pie.ValueFont.Name = 'Tw Cen MT'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = ANSI_CHARSET
+                Pie.LegendFont.Color = clBlack
+                Pie.LegendFont.Height = -13
+                Pie.LegendFont.Name = 'Tw Cen MT'
+                Pie.LegendFont.Style = []
+                Pie.LegendTitleColor = clWhite
+                Pie.LegendTitleColorTo = 52377
+                Pie.LegendTitleGradientType = gtHatch
+                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
+                Annotations = <>
+                BorderColor = clGray
+                ChartType = ctPie
+                Color = clNone
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LegendText = 'Pie Chart 1'
+                Marker.MarkerColorTo = clBlack
+                Maximum = 12.000000000000000000
+                Name = 'Serie 1'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%.2g'
+                ValueType = cvPercentage
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 0
+                YAxis.Position = yNone
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                Angle = 90
+                Opacity = 209
+                GradientType = gtBackwardDiagonal
+                SerieType = stNormal
+              end
+              item
+                AutoRange = arEnabledZeroBased
+                Pie.Position = spCustom
+                Pie.Left = 121
+                Pie.Top = 555
+                Pie.Size = 120
+                Pie.ShowValues = True
+                Pie.ValueFont.Charset = ANSI_CHARSET
+                Pie.ValueFont.Color = clWhite
+                Pie.ValueFont.Height = -13
+                Pie.ValueFont.Name = 'Tw Cen MT'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = ANSI_CHARSET
+                Pie.LegendFont.Color = clBlack
+                Pie.LegendFont.Height = -13
+                Pie.LegendFont.Name = 'Tw Cen MT'
+                Pie.LegendFont.Style = []
+                Pie.LegendTitleColor = clWhite
+                Pie.LegendTitleColorTo = 52377
+                Pie.LegendTitleGradientType = gtHatch
+                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
+                Annotations = <>
+                BorderColor = clGray
+                ChartType = ctPie
+                Color = clNone
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LegendText = 'Pie Chart 1'
+                Marker.MarkerColorTo = clBlack
+                Maximum = 12.000000000000000000
+                Name = 'Serie 1'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%.2g'
+                ValueType = cvPercentage
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 0
+                YAxis.Position = yNone
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                Angle = 90
+                Opacity = 209
+                GradientType = gtBackwardDiagonal
+                SerieType = stNormal
+              end
+              item
+                AutoRange = arEnabledZeroBased
+                Pie.Position = spCustom
+                Pie.Left = 221
+                Pie.Top = 555
+                Pie.Size = 120
+                Pie.ShowValues = True
+                Pie.ValueFont.Charset = ANSI_CHARSET
+                Pie.ValueFont.Color = clWhite
+                Pie.ValueFont.Height = -13
+                Pie.ValueFont.Name = 'Tw Cen MT'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = ANSI_CHARSET
+                Pie.LegendFont.Color = clBlack
+                Pie.LegendFont.Height = -13
+                Pie.LegendFont.Name = 'Tw Cen MT'
+                Pie.LegendFont.Style = []
+                Pie.LegendTitleColor = clWhite
+                Pie.LegendTitleColorTo = 52377
+                Pie.LegendTitleGradientType = gtHatch
+                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
+                Annotations = <>
+                BorderColor = clGray
+                ChartType = ctPie
+                Color = clNone
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LegendText = 'Pie Chart 1'
+                Marker.MarkerColorTo = clBlack
+                Maximum = 12.000000000000000000
+                Name = 'Serie 1'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%.2g'
+                ValueType = cvPercentage
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 0
+                YAxis.Position = yNone
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                Angle = 90
+                Opacity = 209
+                GradientType = gtBackwardDiagonal
+                SerieType = stNormal
+              end
+              item
+                Pie.Position = spCustom
+                Pie.Left = 300
+                Pie.Top = 300
+                Pie.ShowValues = True
+                Pie.ValueFont.Charset = DEFAULT_CHARSET
+                Pie.ValueFont.Color = clWindowText
+                Pie.ValueFont.Height = -11
+                Pie.ValueFont.Name = 'Tahoma'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = DEFAULT_CHARSET
+                Pie.LegendFont.Color = clWindowText
+                Pie.LegendFont.Height = -11
+                Pie.LegendFont.Name = 'Tahoma'
+                Pie.LegendFont.Style = []
+                Annotations = <>
+                ChartType = ctPie
+                Color = clNone
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LegendText = 'Serie 3'
+                Maximum = 12.000000000000000000
+                Name = 'Serie 3'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%.2g'
+                ValueType = cvPercentage
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 0
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                Angle = 90
+                Opacity = 205
+                GradientType = gtBackwardDiagonal
+                SerieType = stNormal
+              end>
+            Title.Alignment = taCenter
+            Title.GradientSteps = 0
+            Title.Font.Charset = DEFAULT_CHARSET
+            Title.Font.Color = clWhite
+            Title.Font.Height = -24
+            Title.Font.Name = 'Tahoma'
+            Title.Font.Style = []
+            Title.Position = tTop
+            Title.Size = 30
+            Title.Text = 'Pie chart with TAdvChartviewGDIP'
+            XAxis.Font.Charset = DEFAULT_CHARSET
+            XAxis.Font.Color = clWindowText
+            XAxis.Font.Height = -11
+            XAxis.Font.Name = 'Tahoma'
+            XAxis.Font.Style = []
+            XAxis.Position = xNone
+            XAxis.Text = 'X-axis'
+            XAxis.Enable3D = True
+            XAxis.Offset3D = 49
+            XGrid.MinorDistance = 1
+            XGrid.MajorDistance = 2
+            XGrid.MajorFont.Charset = DEFAULT_CHARSET
+            XGrid.MajorFont.Color = clWindowText
+            XGrid.MajorFont.Height = -11
+            XGrid.MajorFont.Name = 'Tahoma'
+            XGrid.MajorFont.Style = []
+            XGrid.MinorFont.Charset = DEFAULT_CHARSET
+            XGrid.MinorFont.Color = clWindowText
+            XGrid.MinorFont.Height = -11
+            XGrid.MinorFont.Name = 'Tahoma'
+            XGrid.MinorFont.Style = []
+            YAxis.Font.Charset = DEFAULT_CHARSET
+            YAxis.Font.Color = clWindowText
+            YAxis.Font.Height = -11
+            YAxis.Font.Name = 'Tahoma'
+            YAxis.Font.Style = []
+            YAxis.Position = yNone
+            YAxis.Size = 40
+            YAxis.Text = 'Y-axis'
+            YGrid.MinorDistance = 1.000000000000000000
+            YGrid.MajorDistance = 2.000000000000000000
+            YGrid.ShowBorder = True
+            ZoomControl.Visible = True
+          end>
+        TabOrder = 1
+        Tracker.Font.Charset = DEFAULT_CHARSET
+        Tracker.Font.Color = clWindowText
+        Tracker.Font.Height = -11
+        Tracker.Font.Name = 'Tahoma'
+        Tracker.Font.Style = []
+        Tracker.Title.Font.Charset = DEFAULT_CHARSET
+        Tracker.Title.Font.Color = clWindowText
+        Tracker.Title.Font.Height = -11
+        Tracker.Title.Font.Name = 'Tahoma'
+        Tracker.Title.Font.Style = []
+        Tracker.Title.Text = 'TRACKER'
+        Tracker.OpenValuePrefix = 'O:'
+        Tracker.HighValuePrefix = 'H:'
+        Tracker.LowValuePrefix = 'L:'
+        Tracker.CloseValuePrefix = 'C:'
+        Version = '4.2.1.6 APR, 2018'
+        XAxisZoomSensitivity = 1.000000000000000000
+        YAxisZoomSensitivity = 1.000000000000000000
+        DoubleBuffered = True
+      end
+      object AdvGDIPChartView1: TAdvGDIPChartView
+        Left = 288
+        Top = 10
+        Width = 565
+        Height = 853
+        Color = clWhite
+        Panes = <
+          item
+            Bands.Distance = 2.000000000000000000
+            Bands.GradientDirection = cgdVertical
+            Bands.PrimaryColorTo = clSilver
+            Bands.SecondaryColor = clGray
+            Bands.SecondaryColorTo = clGray
+            Background.BackGroundPosition = bpStretched
+            Background.Color = clWhite
+            Background.Font.Charset = DEFAULT_CHARSET
+            Background.Font.Color = clWindowText
+            Background.Font.Height = -11
+            Background.Font.Name = 'Tahoma'
+            Background.Font.Style = []
+            Background.PictureVisible = True
+            Background.GradientType = gtSolid
+            CrossHair.CrossHairYValues.Position = [chYAxis]
+            CrossHair.Distance = 0
+            Height = 100.000000000000000000
+            Legend.ColorTo = clWhite
+            Legend.Font.Charset = DEFAULT_CHARSET
+            Legend.Font.Color = clWindowText
+            Legend.Font.Height = -19
+            Legend.Font.Name = 'Tahoma'
+            Legend.Font.Style = []
+            Legend.Left = 5
+            Legend.Top = 5
+            Legend.RectangleSize = 20
+            Legend.Visible = False
+            Legend.GradientType = gtVertical
+            Legend.Opacity = 100
+            Legend.OpacityTo = 100
+            Name = 'ChartPane 0'
+            Options = []
+            Range.RangeTo = 9
+            Series = <
+              item
+                AutoRange = arEnabledZeroBased
+                Pie.Position = spCustom
+                Pie.Left = 222
+                Pie.Top = 222
+                Pie.ShowValues = True
+                Pie.ValueFont.Charset = ANSI_CHARSET
+                Pie.ValueFont.Color = clWhite
+                Pie.ValueFont.Height = -13
+                Pie.ValueFont.Name = 'Tw Cen MT'
+                Pie.ValueFont.Style = []
+                Pie.LegendVisible = False
+                Pie.LegendFont.Charset = ANSI_CHARSET
+                Pie.LegendFont.Color = clBlack
+                Pie.LegendFont.Height = -13
+                Pie.LegendFont.Name = 'Tw Cen MT'
+                Pie.LegendFont.Style = []
+                Pie.LegendTitleColor = clWhite
+                Pie.LegendTitleColorTo = 52377
+                Pie.LegendTitleGradientType = gtHatch
+                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
+                Annotations = <>
+                BorderColor = clGray
+                ChartType = ctBar
+                Color = clNone
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LegendText = 'Pie Chart 1'
+                Marker.MarkerColorTo = clBlack
+                Maximum = 12.000000000000000000
+                Name = 'Serie 1'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%.2g'
+                ValueType = cvPercentage
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 0
+                YAxis.Position = yNone
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                Angle = 90
+                Opacity = 209
+                GradientType = gtBackwardDiagonal
+                SerieType = stNormal
+              end>
+            Title.Alignment = taCenter
+            Title.GradientSteps = 0
+            Title.Font.Charset = DEFAULT_CHARSET
+            Title.Font.Color = clWhite
+            Title.Font.Height = -24
+            Title.Font.Name = 'Tahoma'
+            Title.Font.Style = []
+            Title.Position = tTop
+            Title.Size = 30
+            Title.Text = 'Pie chart with TAdvChartviewGDIP'
+            XAxis.Font.Charset = DEFAULT_CHARSET
+            XAxis.Font.Color = clWindowText
+            XAxis.Font.Height = -11
+            XAxis.Font.Name = 'Tahoma'
+            XAxis.Font.Style = []
+            XAxis.Position = xNone
+            XAxis.Text = 'X-axis'
+            XGrid.MinorDistance = 1
+            XGrid.MajorDistance = 2
+            XGrid.MajorFont.Charset = DEFAULT_CHARSET
+            XGrid.MajorFont.Color = clWindowText
+            XGrid.MajorFont.Height = -11
+            XGrid.MajorFont.Name = 'Tahoma'
+            XGrid.MajorFont.Style = []
+            XGrid.MinorFont.Charset = DEFAULT_CHARSET
+            XGrid.MinorFont.Color = clWindowText
+            XGrid.MinorFont.Height = -11
+            XGrid.MinorFont.Name = 'Tahoma'
+            XGrid.MinorFont.Style = []
+            YAxis.Font.Charset = DEFAULT_CHARSET
+            YAxis.Font.Color = clWindowText
+            YAxis.Font.Height = -11
+            YAxis.Font.Name = 'Tahoma'
+            YAxis.Font.Style = []
+            YAxis.Position = yNone
+            YAxis.Size = 40
+            YAxis.Text = 'Y-axis'
+            YGrid.MinorDistance = 1.000000000000000000
+            YGrid.MajorDistance = 2.000000000000000000
+            YGrid.ShowBorder = True
+          end>
+        TabOrder = 2
+        Tracker.Font.Charset = DEFAULT_CHARSET
+        Tracker.Font.Color = clWindowText
+        Tracker.Font.Height = -11
+        Tracker.Font.Name = 'Tahoma'
+        Tracker.Font.Style = []
+        Tracker.Title.Font.Charset = DEFAULT_CHARSET
+        Tracker.Title.Font.Color = clWindowText
+        Tracker.Title.Font.Height = -11
+        Tracker.Title.Font.Name = 'Tahoma'
+        Tracker.Title.Font.Style = []
+        Tracker.Title.Text = 'TRACKER'
+        Tracker.OpenValuePrefix = 'O:'
+        Tracker.HighValuePrefix = 'H:'
+        Tracker.LowValuePrefix = 'L:'
+        Tracker.CloseValuePrefix = 'C:'
+        Version = '4.2.1.6 APR, 2018'
+        XAxisZoomSensitivity = 1.000000000000000000
+        YAxisZoomSensitivity = 1.000000000000000000
+        DoubleBuffered = True
+      end
+      object AdvGDIPChartView3: TAdvGDIPChartView
+        Left = 864
+        Top = 568
+        Width = 597
+        Height = 305
+        Color = clWhite
+        Panes = <
+          item
+            Bands.Distance = 2.000000000000000000
+            Background.Color = clSilver
+            Background.ColorTo = 3355443
+            Background.Font.Charset = DEFAULT_CHARSET
+            Background.Font.Color = clWindowText
+            Background.Font.Height = -11
+            Background.Font.Name = 'Tahoma'
+            Background.Font.Style = []
+            Background.GradientType = gtForwardDiagonal
+            BorderColor = clBlack
+            CrossHair.CrossHairYValues.Position = [chYAxis]
+            CrossHair.Distance = 0
+            Height = 100.000000000000000000
+            Legend.Font.Charset = DEFAULT_CHARSET
+            Legend.Font.Color = clWindowText
+            Legend.Font.Height = -11
+            Legend.Font.Name = 'Tahoma'
+            Legend.Font.Style = []
+            Name = 'ChartPane 0'
+            Options = []
+            Range.StartDate = 43675.893897118050000000
+            Range.RangeTo = 5
+            Series = <
+              item
+                AutoRange = arDisabled
+                Pie.ValueFont.Charset = DEFAULT_CHARSET
+                Pie.ValueFont.Color = clWindowText
+                Pie.ValueFont.Height = -11
+                Pie.ValueFont.Name = 'Tahoma'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = DEFAULT_CHARSET
+                Pie.LegendFont.Color = clWindowText
+                Pie.LegendFont.Height = -11
+                Pie.LegendFont.Name = 'Tahoma'
+                Pie.LegendFont.Style = []
+                Annotations = <>
+                ChartType = ctPie
+                Color = 22015
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LineColor = 22015
+                LegendText = 'Serie 0'
+                Marker.MarkerType = mCircle
+                Marker.MarkerColor = 22015
+                Marker.SelectedColor = 22015
+                Marker.SelectedLineColor = clBlack
+                Marker.SelectedSize = 15
+                Maximum = 12.000000000000000000
+                Name = 'Serie 0'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%g'
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.TickMarkSize = 6
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnit = 1.000000000000000000
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 10
+                YAxis.TextLeft.Angle = -90
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Angle = 90
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                YAxis.TickMarkColor = clRed
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                GradientType = gtHorizontal
+                SerieType = stNormal
+              end
+              item
+                AutoRange = arDisabled
+                Pie.ValueFont.Charset = DEFAULT_CHARSET
+                Pie.ValueFont.Color = clWindowText
+                Pie.ValueFont.Height = -11
+                Pie.ValueFont.Name = 'Tahoma'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = DEFAULT_CHARSET
+                Pie.LegendFont.Color = clWindowText
+                Pie.LegendFont.Height = -11
+                Pie.LegendFont.Name = 'Tahoma'
+                Pie.LegendFont.Style = []
+                Annotations = <>
+                Color = 13599488
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LineColor = 13599488
+                LegendText = 'Serie 1'
+                Marker.MarkerType = mCircle
+                Marker.MarkerColor = 13599488
+                Marker.SelectedColor = 13599488
+                Marker.SelectedLineColor = clBlack
+                Marker.SelectedSize = 15
+                Maximum = 12.000000000000000000
+                Name = 'Serie 1'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%g'
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 0
+                YAxis.TextLeft.Angle = -90
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Angle = 90
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                YAxis.Visible = False
+                SelectedIndex = 5
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                SerieType = stNormal
+              end
+              item
+                AutoRange = arDisabled
+                Pie.ValueFont.Charset = DEFAULT_CHARSET
+                Pie.ValueFont.Color = clWindowText
+                Pie.ValueFont.Height = -11
+                Pie.ValueFont.Name = 'Tahoma'
+                Pie.ValueFont.Style = []
+                Pie.LegendFont.Charset = DEFAULT_CHARSET
+                Pie.LegendFont.Color = clWindowText
+                Pie.LegendFont.Height = -11
+                Pie.LegendFont.Name = 'Tahoma'
+                Pie.LegendFont.Style = []
+                Annotations = <>
+                Color = 6732418
+                CrossHairYValue.BorderWidth = 0
+                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
+                CrossHairYValue.Font.Color = clWindowText
+                CrossHairYValue.Font.Height = -11
+                CrossHairYValue.Font.Name = 'Tahoma'
+                CrossHairYValue.Font.Style = []
+                CrossHairYValue.GradientSteps = 0
+                LineColor = 6732418
+                LegendText = 'Serie 2'
+                Marker.MarkerType = mCircle
+                Marker.MarkerColor = 6732418
+                Marker.SelectedColor = 6732418
+                Marker.SelectedLineColor = clBlack
+                Marker.SelectedSize = 15
+                Maximum = 12.000000000000000000
+                Name = 'Serie 2'
+                ValueFont.Charset = DEFAULT_CHARSET
+                ValueFont.Color = clWindowText
+                ValueFont.Height = -11
+                ValueFont.Name = 'Tahoma'
+                ValueFont.Style = []
+                ValueFormat = '%g'
+                ValueWidth = 80
+                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
+                XAxis.DateTimeFont.Color = clWindowText
+                XAxis.DateTimeFont.Height = -11
+                XAxis.DateTimeFont.Name = 'Tahoma'
+                XAxis.DateTimeFont.Style = []
+                XAxis.MajorFont.Charset = DEFAULT_CHARSET
+                XAxis.MajorFont.Color = clWindowText
+                XAxis.MajorFont.Height = -11
+                XAxis.MajorFont.Name = 'Tahoma'
+                XAxis.MajorFont.Style = []
+                XAxis.MajorUnit = 1.000000000000000000
+                XAxis.MajorUnitSpacing = 0
+                XAxis.MinorFont.Charset = DEFAULT_CHARSET
+                XAxis.MinorFont.Color = clWindowText
+                XAxis.MinorFont.Height = -11
+                XAxis.MinorFont.Name = 'Tahoma'
+                XAxis.MinorFont.Style = []
+                XAxis.MinorUnit = 1.000000000000000000
+                XAxis.MinorUnitSpacing = 0
+                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextTop.Font.Color = clWindowText
+                XAxis.TextTop.Font.Height = -11
+                XAxis.TextTop.Font.Name = 'Tahoma'
+                XAxis.TextTop.Font.Style = []
+                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
+                XAxis.TextBottom.Font.Color = clWindowText
+                XAxis.TextBottom.Font.Height = -11
+                XAxis.TextBottom.Font.Name = 'Tahoma'
+                XAxis.TextBottom.Font.Style = []
+                XAxis.TickMarkColor = clRed
+                XAxis.TickMarkSize = 6
+                XAxis.TickMarkWidth = 2
+                XAxis.Visible = False
+                YAxis.MajorFont.Charset = DEFAULT_CHARSET
+                YAxis.MajorFont.Color = clWindowText
+                YAxis.MajorFont.Height = -11
+                YAxis.MajorFont.Name = 'Tahoma'
+                YAxis.MajorFont.Style = []
+                YAxis.MajorUnit = 2.000000000000000000
+                YAxis.MajorUnitSpacing = 0
+                YAxis.MinorFont.Charset = DEFAULT_CHARSET
+                YAxis.MinorFont.Color = clWindowText
+                YAxis.MinorFont.Height = -11
+                YAxis.MinorFont.Name = 'Tahoma'
+                YAxis.MinorFont.Style = []
+                YAxis.MinorUnitSpacing = 10
+                YAxis.TextLeft.Angle = -90
+                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextLeft.Font.Color = clWindowText
+                YAxis.TextLeft.Font.Height = -11
+                YAxis.TextLeft.Font.Name = 'Tahoma'
+                YAxis.TextLeft.Font.Style = []
+                YAxis.TextRight.Angle = 90
+                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
+                YAxis.TextRight.Font.Color = clWindowText
+                YAxis.TextRight.Font.Height = -11
+                YAxis.TextRight.Font.Name = 'Tahoma'
+                YAxis.TextRight.Font.Style = []
+                YAxis.TickMarkColor = clBlue
+                YAxis.Visible = False
+                BarValueTextFont.Charset = DEFAULT_CHARSET
+                BarValueTextFont.Color = clWindowText
+                BarValueTextFont.Height = -11
+                BarValueTextFont.Name = 'Tahoma'
+                BarValueTextFont.Style = []
+                XAxisGroups = <>
+                SerieType = stNormal
+              end>
+            Title.Alignment = taCenter
+            Title.Color = clGray
+            Title.Font.Charset = DEFAULT_CHARSET
+            Title.Font.Color = clWindowText
+            Title.Font.Height = -11
+            Title.Font.Name = 'Tahoma'
+            Title.Font.Style = []
+            Title.Position = tTop
+            Title.Text = 'Darstellung'
+            XAxis.Font.Charset = DEFAULT_CHARSET
+            XAxis.Font.Color = clWindowText
+            XAxis.Font.Height = -11
+            XAxis.Font.Name = 'Tahoma'
+            XAxis.Font.Style = []
+            XAxis.Position = xNone
+            XAxis.Text = 'X-axis'
+            XGrid.MajorFont.Charset = DEFAULT_CHARSET
+            XGrid.MajorFont.Color = clWindowText
+            XGrid.MajorFont.Height = -11
+            XGrid.MajorFont.Name = 'Tahoma'
+            XGrid.MajorFont.Style = []
+            XGrid.MinorFont.Charset = DEFAULT_CHARSET
+            XGrid.MinorFont.Color = clWindowText
+            XGrid.MinorFont.Height = -11
+            XGrid.MinorFont.Name = 'Tahoma'
+            XGrid.MinorFont.Style = []
+            YAxis.Font.Charset = DEFAULT_CHARSET
+            YAxis.Font.Color = clWindowText
+            YAxis.Font.Height = -11
+            YAxis.Font.Name = 'Tahoma'
+            YAxis.Font.Style = []
+            YAxis.Position = yNone
+            YAxis.Size = 40
+            YAxis.Text = 'Y-axis'
+            YGrid.MinorDistance = 1.000000000000000000
+            YGrid.MajorDistance = 2.000000000000000000
+          end>
+        TabOrder = 3
+        Tracker.Font.Charset = DEFAULT_CHARSET
+        Tracker.Font.Color = clWindowText
+        Tracker.Font.Height = -11
+        Tracker.Font.Name = 'Tahoma'
+        Tracker.Font.Style = []
+        Tracker.Title.Font.Charset = DEFAULT_CHARSET
+        Tracker.Title.Font.Color = clWindowText
+        Tracker.Title.Font.Height = -11
+        Tracker.Title.Font.Name = 'Tahoma'
+        Tracker.Title.Font.Style = []
+        Tracker.Title.Text = 'TRACKER'
+        Tracker.OpenValuePrefix = 'O:'
+        Tracker.HighValuePrefix = 'H:'
+        Tracker.LowValuePrefix = 'L:'
+        Tracker.CloseValuePrefix = 'C:'
+        Version = '4.2.1.6 APR, 2018'
+        XAxisZoomSensitivity = 1.000000000000000000
+        YAxisZoomSensitivity = 1.000000000000000000
+        DoubleBuffered = True
+      end
+    end
+  end
+  object AdvChartPanesEditorDialogGDIP1: TAdvChartPanesEditorDialogGDIP
+    Left = 20
+    Top = 56
   end
 end

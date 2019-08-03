@@ -20,13 +20,20 @@ type
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
     procedure sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
+    procedure sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;var usersplus:DACwUserPlus);
+
+    procedure sortGridCwComments(source: string; sortcol: string; sortdir: integer; var comments: DACwComment);
+    procedure sortGridCwSymbolsGroups(source: string; sortcol: string; sortdir: integer; var symbolsGroups: DACwSymbolGroup);
+    procedure sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;var symbolsPlus:DACwSymbolPlus);
+
+
+
     procedure SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure gridHandler(Sender: TObject);
     procedure SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
     procedure SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
     procedure ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: integer);
-    // procedure SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
 
   private
     { Private-Deklarationen }
@@ -63,9 +70,152 @@ begin
   inherited Create(AOwner);
   initialized := true;
   maxDataRows := 0;
-  setlength(dSort, 0);
+  setlength(dSort, 0);//warum nur die ?
   setlength(sSort, 0);
 end;
+
+  procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
+  // diese gridinterne Funktion ist beim DynGrid abgeschaltet
+  var
+    i: integer;
+  begin
+    //
+    exit;
+
+    i := SGFieldCol[FromIndex];
+    SGFieldCol[FromIndex] := SGFieldCol[ToIndex];
+    SGFieldCol[ToIndex] := i;
+    for i := 0 to SG.Colcount - 1 do
+    begin
+      // sgcolfield(sg.Cols[i,0].Text
+    end;
+  end;
+
+
+procedure TDynGrid.SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
+var
+  s: String;
+  r: TRect;
+  gt: cardinal;
+  i, j: integer;
+  sp: integer;
+  rc:integer;
+begin
+  rc:=(Sender as Tstringgrid).rowcount;
+  if arow>=(Sender as Tstringgrid).rowcount then
+  begin
+    exit;
+  end;
+
+  sp := scrollPosition + ARow - 1;
+  if sp < 0 then
+    exit;
+
+  if length(ixSorted) <= sp then
+    exit;
+
+  if selSorted[ixSorted[sp]] = 1 then
+
+    with Sender as TStringGrid do
+
+    begin
+      s := cells[ACol, ARow];
+      Canvas.Brush.Color := clGray;
+      r := Rect;
+      r.left := r.left - 4; // -4 wird ganz gefüllt
+      Canvas.FillRect(r);
+      // den Text am alten Rect ausrichten sonstzu weit links
+      Canvas.Pen.Color := clBlue;
+      r.left := r.left + 6;
+      r.Top := r.Top + 4;
+      DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
+    end;
+end;
+
+
+procedure TDynGrid.Panel2Resize(Sender: TObject);
+var
+  max: integer;
+begin
+  // neu Einstellen der Grenzen
+  visibleRows := trunc((SG.height / SG.defaultrowheight)) + 1;
+  visibleCols := trunc((SG.width / SG.defaultcolwidth)) + 1;
+
+  if SG.RowCount < visibleRows then
+    SG.RowCount := visibleRows;
+  // 1 fix Row erfordert min. 2 RowCount
+  if sg.rowcount>maxdatarows+1 then
+    sg.rowcount:=maxdatarows+1;
+
+
+  if SG.RowCount < 2 then
+    SG.RowCount := 2;
+  if SG.fixedrows = 0 then
+    SG.fixedrows := 1;
+  ScrollBar1.Min := 0;
+  max := maxDataRows - visibleRows + 4;
+  if max < 0 then
+    max := 0;
+  ScrollBar1.max := max;
+  if maxDataRows > 0 then
+  begin
+    gridHandler(self);
+    if autosized = false then
+    begin
+      autosizegrid(SG);
+      autosized := true; // nur einmal bei der ersten Darstellung nach dem Init und Sort
+    end;
+  end;
+
+end;
+
+procedure TDynGrid.ScrollBar1Change(Sender: TObject);
+begin
+  // scrollbar1.position:=ScrollBar1.Position+5;//->stackoverflow
+  scrollPosition := ScrollBar1.Position;
+
+  if maxDataRows > 0 then
+    gridHandler(self);
+
+end;
+
+procedure TDynGrid.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: integer);
+var
+  a: integer;
+begin
+  // TScrollCode = (scLineUp, scLineDown, scPageUp, scPageDown, scPosition,scTrack, scTop, scBottom, scEndScroll);
+  a := 0;
+  // klappt so nicht wie gewünscht da position nach +5 wieder als +1 kommt
+  // scrollbar1.position:=ScrollBar1.Position+5;//->stackoverflow
+  // if maxDataRows > 0 then
+  // gridHandler(self);
+  inc(scrollBar1RepeatCount);
+  if scrollBar1RepeatCount = 10 then
+  begin
+    ScrollBar1.smallChange := 10;
+    ScrollBar1.largechange := 200;
+  end;
+  if scrollBar1RepeatCount = 50 then
+  begin
+    ScrollBar1.smallChange := 100;
+    ScrollBar1.largechange := 1000;
+  end;
+  if scrollBar1RepeatCount = 100 then
+  begin
+    ScrollBar1.smallChange := 200;
+    ScrollBar1.largechange := 2000;
+  end;
+
+  if ScrollCode = scEndScroll then
+  begin
+    scrollBar1RepeatCount := 0;
+    ScrollBar1.smallChange := 1;
+    ScrollBar1.largechange := 20;
+  end;
+end;
+
+// spezieller Teil auf zB cwactions,cwfilteredactions,cwsingleuseractions bezugnehmend
+// todo: cwsymbols cwusers cwcomments cwsymbolsgroups cwfilteredsymbolsgroups
 
 procedure TDynGrid.initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
 var
@@ -105,12 +255,23 @@ begin
   // source   cwactions
   // sortcol  ActionId
   // sortdir  1  und -1
+  // und das array
   if source = 'cwactions' then
     sortGridCwactions(source, sortcol, sortdir, cwactions);
-  if source = 'cwactionsselection' then
-    sortGridCwactions(source, sortcol, sortdir, cwactionsselection);
+  if source = 'cwfilteredactions' then
+    sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
   if source = 'cwsingleuseractions' then
     sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
+  if source='cwsymbols' then
+    sortGridCwsymbols(source, sortcol, sortdir, cwSymbols,cwsymbolsplus);
+  if source='cwusers' then
+    sortGridCwusers(source, sortcol, sortdir, cwUsers,cwUsersplus);
+  if source='cwcomments' then
+    sortGridCwcomments(source, sortcol, sortdir, cwComments);
+  if source='cwsymbolsgroups' then
+    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwSymbolsGroups);
+  if  source='cwfilteredsymbolsgroups' then
+    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
 
   autosized := false;
 
@@ -120,12 +281,14 @@ begin
 
 end;
 
+// es geht hier nur um die Überschrift der Column um das Grid zu sortieren
+// die Reihenfolge der Columns spielt keine Rolle !
+
 procedure TDynGrid.sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
 var
   dl, i, scol, smethode: integer;
   gt: cardinal;
 begin
-  // Hier steckt jetzt sehr viel Spezielles drin
   gt := gettickcount;
 
   dl := length(actions);
@@ -133,7 +296,7 @@ begin
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
   scol := 1;
-  if ((source = 'cwactions') or (source = 'cwactionsselection') or (source = 'cwsingleuseractions')) then
+  if ((source = 'cwactions') or (source = 'cwFilteredActions') or (source = 'cwsingleuseractions')) then
   begin
     if sortcol = 'actionId' then
       scol := 1;
@@ -205,7 +368,10 @@ begin
       scol := 23;
 
     if ((scol = 22) or (scol = 23)) then
-      setlength(sSort, dl)
+    begin
+      setlength(sSort, dl);
+      smethode:=2;
+    end
     else
       setlength(dSort, dl);
 
@@ -338,7 +504,6 @@ begin
         FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
       else
         FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
-      if smethode = 2 then
     end;
 
     if smethode = 2 then
@@ -355,86 +520,544 @@ begin
   Panel2Resize(self);
 end;
 
-procedure TDynGrid.Panel2Resize(Sender: TObject);
+procedure TDynGrid.sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;var usersplus:DACwUserPlus);
 var
-  max: integer;
+  dl, i, scol, smethode: integer;
+  gt: cardinal;
 begin
-  // neu Einstellen der Grenzen
-  visibleRows := trunc((SG.height / SG.defaultrowheight)) + 1;
-  visibleCols := trunc((SG.width / SG.defaultcolwidth)) + 1;
+  gt := gettickcount;
 
-  if SG.RowCount < visibleRows then
-    SG.RowCount := visibleRows;
-  // 1 fix Row erfordert min. 2 RowCount
-  if sg.rowcount>maxdatarows+1 then
-    sg.rowcount:=maxdatarows+1;
+  dl := length(users);
+
+  setlength(ixSorted, dl);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if ((source = 'cwusers')) then
 
 
-  if SG.RowCount < 2 then
-    SG.RowCount := 2;
-  if SG.fixedrows = 0 then
-    SG.fixedrows := 1;
-  ScrollBar1.Min := 0;
-  max := maxDataRows - visibleRows + 4;
-  if max < 0 then
-    max := 0;
-  ScrollBar1.max := max;
-  if maxDataRows > 0 then
+
   begin
-    gridHandler(self);
-    if autosized = false then
+If sortcol ='userId' then scol:=1;
+If sortcol ='accountId' then scol:=2;
+If sortcol ='group' then scol:=3;
+If sortcol ='enable' then scol:=4;
+If sortcol ='registrationTime' then scol:=5;
+If sortcol ='lastLoginTime' then scol:=6;
+If sortcol ='leverage' then scol:=7;
+If sortcol ='balance' then scol:=8;
+If sortcol ='balancePreviousMonth' then scol:=9;
+If sortcol ='balancePreviousDay' then scol:=10;
+If sortcol ='credit' then scol:=11;
+If sortcol ='interestrate' then scol:=12;
+If sortcol ='taxes' then scol:=13;
+If sortcol ='name' then scol:=14;
+If sortcol ='country' then scol:=15;
+If sortcol ='city' then scol:=16;
+If sortcol ='state' then scol:=17;
+If sortcol ='zipcode' then scol:=18;
+If sortcol ='address' then scol:=19;
+If sortcol ='phone' then scol:=20;
+If sortcol ='email' then scol:=21;
+If sortcol ='socialNumber' then scol:=22;
+If sortcol ='comment' then scol:=23;
+If sortcol ='totalSymbols'then scol:=24;
+If sortcol ='totalTrades' then scol:=25;
+If sortcol ='totalProfit' then scol:=26;
+If sortcol ='totalBalance' then scol:=27;
+
+    if ((scol = 3 )or((scol>=14)and(scol<=23)))  then
     begin
-      autosizegrid(SG);
-      autosized := true; // nur einmal bei der ersten Darstellung nach dem Init und Sort
+      setlength(sSort, dl);
+      smethode:=2;
+    end
+    else
+      setlength(dSort, dl);
+
+    begin
+      for i := 0 to dl - 1 do
+      begin
+        ixSorted[i] := i;
+
+        if scol = 1 then
+        begin
+          dSort[i] :=users[i].userId;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          dSort[i] :=users[i].accountId;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          sSort[i] :=users[i].group;
+          continue;
+        end;
+        if scol = 4  then
+        begin
+          dSort[i] :=users[i].enable;
+          continue;
+        end;
+        if scol = 5  then
+        begin
+          dSort[i] :=users[i].registrationTime;
+          continue;
+        end;
+        if scol = 6  then
+        begin
+          dSort[i] :=users[i].lastLoginTime;
+          continue;
+        end;
+        if scol = 7  then
+        begin
+          dSort[i] :=users[i].leverage;
+          continue;
+        end;
+        if scol = 8  then
+        begin
+          dSort[i] :=users[i].balance;
+          continue;
+        end;
+        if scol = 9  then
+        begin
+          dSort[i] :=users[i].balancePreviousMonth;
+          continue;
+        end;
+        if scol = 10  then
+        begin
+          dSort[i] :=users[i].balancePreviousDay;
+          continue;
+        end;
+        if scol = 11  then
+        begin
+          dSort[i] :=users[i].credit;
+          continue;
+        end;
+        if scol = 12  then
+        begin
+          dSort[i] :=users[i].interestrate;
+          continue;
+        end;
+        if scol = 13  then
+        begin
+          dSort[i] :=users[i].taxes;
+          continue;
+        end;
+        if scol = 14  then
+        begin
+          sSort[i] :=users[i].name;
+          continue;
+        end;
+        if scol = 15  then
+        begin
+          sSort[i] :=users[i].country;
+          continue;
+        end;
+        if scol = 16  then
+        begin
+          sSort[i] :=users[i].city;
+          continue;
+        end;
+        if scol = 17  then
+        begin
+          sSort[i] :=users[i].state;
+          continue;
+        end;
+        if scol = 18  then
+        begin
+          sSort[i] :=users[i].zipcode;
+          continue;
+        end;
+        if scol = 19  then
+        begin
+          sSort[i] :=users[i].address;
+          continue;
+        end;
+        if scol = 20  then
+        begin
+          sSort[i] :=users[i].phone;
+          continue;
+        end;
+        if scol = 21  then
+        begin
+          sSort[i] :=users[i].email;
+          continue;
+        end;
+        if scol = 22  then
+        begin
+          sSort[i] :=users[i].socialNumber;
+          continue;
+        end;
+        if scol = 23  then
+        begin
+          sSort[i] :=users[i].comment;
+          continue;
+        end;
+        if scol = 24  then
+        begin
+          dSort[i] :=usersplus[i].totalSymbols;
+          continue;
+        end;
+        if scol = 25  then
+        begin
+          dSort[i] :=usersplus[i].totalTrades;
+          continue;
+        end;
+        if scol = 26  then
+        begin
+          dSort[i] :=usersplus[i].totalProfit;
+          continue;
+        end;
+        if scol = 27  then
+        begin
+          dSort[i] :=usersplus[i].totalBalance;
+          continue;
+        end;
+
+
+      end;
     end;
+    // nun sortieren
+    if smethode = 1 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
   end;
-
+  lblTime.caption := inttostr(gettickcount - gt);
+  Panel2Resize(self);
 end;
 
-procedure TDynGrid.ScrollBar1Change(Sender: TObject);
-begin
-  // scrollbar1.position:=ScrollBar1.Position+5;//->stackoverflow
-  scrollPosition := ScrollBar1.Position;
-
-  if maxDataRows > 0 then
-    gridHandler(self);
-
-end;
-
-procedure TDynGrid.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: integer);
+procedure TDynGrid.sortGridCwComments(source: string; sortcol: string; sortdir: integer; var comments: DACwComment);
 var
-  a: integer;
+  dl, i, scol, smethode: integer;
+  gt: cardinal;
 begin
-  // TScrollCode = (scLineUp, scLineDown, scPageUp, scPageDown, scPosition,scTrack, scTop, scBottom, scEndScroll);
-  a := 0;
-  // klappt so nicht wie gewünscht da position nach +5 wieder als +1 kommt
-  // scrollbar1.position:=ScrollBar1.Position+5;//->stackoverflow
-  // if maxDataRows > 0 then
-  // gridHandler(self);
-  inc(scrollBar1RepeatCount);
-  if scrollBar1RepeatCount = 10 then
-  begin
-    ScrollBar1.smallChange := 10;
-    ScrollBar1.largechange := 200;
-  end;
-  if scrollBar1RepeatCount = 50 then
-  begin
-    ScrollBar1.smallChange := 100;
-    ScrollBar1.largechange := 1000;
-  end;
-  if scrollBar1RepeatCount = 100 then
-  begin
-    ScrollBar1.smallChange := 200;
-    ScrollBar1.largechange := 2000;
-  end;
+  gt := gettickcount;
 
-  if ScrollCode = scEndScroll then
+  dl := length(comments);
+
+  setlength(ixSorted, dl);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if ((source = 'cwcomments')) then
   begin
-    scrollBar1RepeatCount := 0;
-    ScrollBar1.smallChange := 1;
-    ScrollBar1.largechange := 20;
+    if sortcol = 'commentId' then
+      scol := 1;
+    if sortcol = 'comment' then
+      scol := 2;
+    if ((scol = 2))  then
+    begin
+      setlength(sSort, dl);
+      smethode:=2;
+    end
+    else
+      setlength(dSort, dl);
+
+    begin
+      for i := 0 to dl - 1 do
+      begin
+        ixSorted[i] := i;
+
+        if scol = 1 then
+        begin
+          dSort[i] :=comments[i].commentId;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          sSort[i] :=comments[i].text;
+          continue;
+        end;
+      end;
+    end;
+    // nun sortieren
+    if smethode = 1 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
   end;
+  lblTime.caption := inttostr(gettickcount - gt);
+  Panel2Resize(self);
 end;
+
+procedure TDynGrid.sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;var symbolsPlus:DACwSymbolPlus);
+var
+  dl, i, scol, smethode: integer;
+  gt: cardinal;
+begin
+  gt := gettickcount;
+
+  dl := length(symbols);
+
+  setlength(ixSorted, dl);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if ((source = 'cwsymbols')) then
+  begin
+
+
+if sortcol='symbolId' then scol:=1;
+if sortcol='brokerId' then scol:=2;
+if sortcol='digits' then scol:=3;
+if sortcol='tradeMode' then scol:=4;
+if sortcol='expiration' then scol:=5;
+if sortcol='contractSize' then scol:=6;
+if sortcol='tickValue' then scol:=7;
+if sortcol='tickSize' then scol:=8;
+if sortcol='type_' then scol:=9;
+if sortcol='trades' then scol:=10;
+if sortcol='volume' then scol:=11;
+if sortcol='profit' then scol:=12;
+if sortcol='symgroup' then scol:=13;
+if sortcol='name' then scol:=14;
+if sortcol='description' then scol:=15;
+if sortcol='currency' then scol:=16;
+if sortcol='margin_currency' then scol:=17;
+
+    if ((scol >13))  then
+    begin
+      setlength(sSort, dl);
+      smethode:=2;
+    end
+    else
+      setlength(dSort, dl);
+
+    begin
+      for i := 0 to dl - 1 do
+      begin
+        ixSorted[i] := i;
+
+        if scol = 1 then
+        begin
+          dSort[i] :=symbols[i].symbolId;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          dSort[i] :=symbols[i].brokerId;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          dSort[i] :=symbols[i].digits;
+          continue;
+        end;
+        if scol = 4 then
+        begin
+          dSort[i] :=symbols[i].tradeMode;
+          continue;
+        end;
+        if scol = 5 then
+        begin
+          dSort[i] :=symbols[i].expiration;
+          continue;
+        end;
+        if scol = 6 then
+        begin
+          dSort[i] :=symbols[i].contractSize;
+          continue;
+        end;
+        if scol = 7 then
+        begin
+          dSort[i] :=symbols[i].tickValue;
+          continue;
+        end;
+        if scol = 8 then
+        begin
+          dSort[i] :=symbols[i].tickSize;
+          continue;
+        end;
+        if scol = 9 then
+        begin
+          dSort[i] :=symbols[i].type_;
+          continue;
+        end;
+        if scol = 10 then
+        begin
+          dSort[i] :=symbolsplus[i].TradesCount;
+          continue;
+        end;
+        if scol = 11  then
+        begin
+          dSort[i] :=symbolsplus[i].TradesVolumeTotal;
+          continue;
+        end;
+        if scol = 12  then
+        begin
+          dSort[i] :=symbolsplus[i].TradesUsers;
+          continue;
+        end;
+        if scol = 13  then
+        begin
+          dSort[i] :=symbolsplus[i].TradesProfitTotal;
+          continue;
+        end;
+        if scol = 14  then
+        begin
+          sSort[i] :=symbols[i].name;
+          continue;
+        end;
+        if scol = 15 then
+        begin
+          sSort[i] :=symbols[i].description;
+          continue;
+        end;
+        if scol = 16 then
+        begin
+          sSort[i] :=symbols[i].currency;
+          continue;
+        end;
+        if scol = 17 then
+        begin
+          sSort[i] :=symbols[i].margin_currency;
+          continue;
+        end;
+      end;
+    end;
+    // nun sortieren
+    if smethode = 1 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
+  end;
+  lblTime.caption := inttostr(gettickcount - gt);
+  Panel2Resize(self);
+end;
+
+procedure TDynGrid.sortGridCwSymbolsGroups(source: string; sortcol: string; sortdir: integer; var symbolsGroups: DACwSymbolGroup);
+var
+  dl, i, scol, smethode: integer;
+  gt: cardinal;
+begin
+  gt := gettickcount;
+
+  dl := length(symbolsGroups);
+
+  setlength(ixSorted, dl);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if ((source = 'cwsymbolsgroups')or(source='cwfilteredsymbolsgroups')) then
+  begin
+if sortcol='TradesCount' then scol:=1;
+if sortcol='TradesVolumeTotal' then scol:=2;
+if sortcol='TradesUsers' then scol:=3;
+if sortcol='TradesProfitTotal' then scol:=4;
+if sortcol='name' then scol:=5;
+if sortcol='sourceNames' then scol:=6;
+if sortcol='sourceIds' then scol:=7;
+    if ((scol > 4 ))  then
+    begin
+      setlength(sSort, dl);
+      smethode:=2;
+    end
+    else
+      setlength(dSort, dl);
+
+    begin
+      for i := 0 to dl - 1 do
+      begin
+        ixSorted[i] := i;
+
+        if scol = 1 then
+        begin
+          dSort[i] :=symbolsGroups[i].TradesCount;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          dSort[i] :=symbolsGroups[i].TradesVolumeTotal;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          dSort[i] :=symbolsGroups[i].TradesUsers;
+          continue;
+        end;
+        if scol = 4 then
+        begin
+          dSort[i] :=symbolsGroups[i].TradesProfitTotal;
+          continue;
+        end;
+        if scol = 5 then
+        begin
+          sSort[i] :=symbolsGroups[i].name;
+          continue;
+        end;
+        if scol = 6 then
+        begin
+          sSort[i] :=symbolsGroups[i].sourceNames;
+          continue;
+        end;
+        if scol = 7 then
+        begin
+          sSort[i] :=symbolsGroups[i].sourceIds;
+          continue;
+        end;
+      end;
+    end;
+    // nun sortieren
+    if smethode = 1 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
+  end;
+  lblTime.caption := inttostr(gettickcount - gt);
+  Panel2Resize(self);
+end;
+
+
 
 procedure TDynGrid.gridHandler(Sender: TObject);
 var
@@ -455,10 +1078,22 @@ begin
 
   if source = 'cwactions' then
     maxDataRows := length(cwactions);
-  if source = 'cwactionsselection' then
-    maxDataRows := length(cwactionsselection);
+  if source = 'cwfilteredactions' then
+    maxDataRows := length(cwFilteredActions);
   if source = 'cwsingleuseractions' then
     maxDataRows := length(cwSingleUserActions);
+  if source='cwsymbols' then
+    maxDataRows := length(cwSymbols);
+  if source='cwusers' then
+    maxDataRows := length(cwUsers);
+  if source='cwcomments' then
+    maxDataRows := length(cwComments);
+  if source='cwsymbolsgroups' then
+    maxDataRows := length(cwSymbolsGroups);
+  if source='cwfilteredsymbolsgroups' then
+    maxDataRows := length(cwFilteredSymbolsGroups);
+
+
 
   vscrollbis := vScrollvon + vRows;
   if vscrollbis > maxDataRows then
@@ -466,98 +1101,24 @@ begin
   // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
   // daher wäre es besser das Sortierarray gehört zum Grid
   if source = 'cwactions' then
-    doActionsGridCWFast(SG, SGFieldCol, ixSorted, cwactions, vScrollvon, vscrollbis - 1);
-  if source = 'cwactionsselection' then
-    doActionsGridCWFast(SG, SGFieldCol, ixSorted, cwactionsselection, vScrollvon, vscrollbis - 1);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, vScrollvon, vscrollbis - 1);
+  if source = 'cwfilteredactions' then
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwFilteredActions, vScrollvon, vscrollbis - 1);
   if source = 'cwsingleuseractions' then
-    doActionsGridCWFast(SG, SGFieldCol, ixSorted, cwSingleUserActions, vScrollvon, vscrollbis - 1);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, vScrollvon, vscrollbis - 1);
+
+  if source='cwsymbols' then
+    doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwsymbols,cwsymbolsplus, vScrollvon, vscrollbis - 1);
+  if source='cwusers' then
+    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwusers,cwusersplus, vScrollvon, vscrollbis - 1);
+  if source='cwcomments' then
+    doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwcomments, vScrollvon, vscrollbis - 1);
+  if source='cwsymbolsgroups' then
+    doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbolsGroups, vScrollvon, vscrollbis - 1);
+  if source='cwfilteredsymbolsgroups' then
+    doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwFilteredSymbolsGroups, vScrollvon, vscrollbis - 1);
 
   // end;
-end;
-
-// procedure TDynGrid.SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
-// begin
-// // Beispiel für selbst gezeichnete Zelle
-// // in SG.Objects[] steckt in diesem Fall die Farbe
-// // procedure TForm46.SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
-// //
-// // var
-// // count, r, C: integer;
-// // begin
-// // r := ARow; // Copy variable 'row' as it only  seems to be valid for a short time
-// // C := ACol; // yes I know this should not be required for new delphi versions
-// // count := ((ARow - 1) * SG.colcount) + ACol; // calculate our position in the stringlist
-// //
-// // with (Sender as tstringgrid) do
-// // begin
-// // if State = [] then // dont overwrite fixed areas
-// // begin
-// // // if R  = Foundrow then
-// // // canvas.brush.color := Findcolor
-// // // else
-// //
-// // canvas.brush.color := (Objects[C, r] as TCellColor).Backcolor;
-// // canvas.fillrect(Rect);
-// // canvas.font.color := (Objects[C, r] as TCellColor).Fontcolor;
-// // canvas.textout(Rect.left + 4, Rect.top + 4, Cells[ACol, ARow]);
-// // end;
-// // end;
-// //
-// // end;
-// end;
-
-procedure TDynGrid.SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
-var
-  s: String;
-  r: TRect;
-  gt: cardinal;
-  i, j: integer;
-  sp: integer;
-  rc:integer;
-begin
-  rc:=(Sender as Tstringgrid).rowcount;
-  if arow>=(Sender as Tstringgrid).rowcount then
-  begin
-    exit;
-  end;
-
-  sp := scrollPosition + ARow - 1;
-  if sp < 0 then
-    exit;
-
-  if length(ixSorted) <= sp then
-    exit;
-
-  if selSorted[ixSorted[sp]] = 1 then
-
-    with Sender as TStringGrid do
-
-    begin
-
-      s := cells[ACol, ARow];
-      Canvas.Brush.Color := clGray;
-      r := Rect;
-      r.left := r.left - 4; // -4 wird ganz gefüllt
-      Canvas.FillRect(r);
-
-      // gt := gettickcount;
-      // for i := 1 to 100000 do
-      // Canvas.FillRect(r);
-      // showmessage(inttostr(gettickcount - gt));
-      //
-      // r.Bottom := r.Top;
-      // for i := 1 to 100000 do
-      // for j := 0 to 20 do
-      //
-      // Canvas.FillRect(r);
-      // showmessage(inttostr(gettickcount - gt));
-
-      // den Text am alten Rect ausrichten sonstzu weit links
-      Canvas.Pen.Color := clBlue;
-      r.left := r.left + 6;
-      r.Top := r.Top + 4;
-      DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
-    end;
 end;
 
 procedure TDynGrid.SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
@@ -605,10 +1166,24 @@ begin
           grid.Selection := NoSelection;
           if source = 'cwactions' then
             sortGridCwactions(source, sortcol, sortdir, cwactions);
-          if source = 'cwactionsselection' then
-            sortGridCwactions(source, sortcol, sortdir, cwactionsselection);
+          if source = 'cwfilteredactions' then
+            sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
           if source = 'cwsingleuseractions' then
             sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
+  if source='cwsymbols' then
+    sortGridCwsymbols(source, sortcol, sortdir, cwSymbols,cwsymbolsplus);
+  if source='cwusers' then
+    sortGridCwusers(source, sortcol, sortdir, cwUsers,cwUsersplus);
+  if source='cwcomments' then
+    sortGridCwcomments(source, sortcol, sortdir, cwComments);
+  if source='cwsymbolsgroups' then
+    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwSymbolsGroups);
+  if  source='cwfilteredsymbolsgroups' then
+    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
+
+
+
+
         end
         else if fixedCol then
           // Right-click in a "row header"
@@ -624,7 +1199,7 @@ begin
     end;
   end;
 
-  procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
   var
     col, row, merk, i, nr, anr, fall, seltop, selbottom: integer;
     grid: FTCommons.TStringGridSorted;
@@ -645,18 +1220,21 @@ begin
       mucol := col;
       murow := row;
       // showmessage(inttostr(mdcol)+'/'+inttostr(mucol));
+      //dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
       if Cursor = crDrag then
       begin
         if (murow = 0) and (mdrow = 0) then
         begin
           if (mucol <> mdcol) then
           begin
+          // col wurde verschiben
             setlength(SGColField, length(SGFieldCol));
             for i := 0 to length(SGFieldCol) - 1 do
               SGColField[SGFieldCol[i]] := i;
 
             if (mucol > mdcol) then
             begin
+              //nach rechts verschoben
               merk := SGColField[mdcol];
               for i := mdcol to mucol - 1 do
                 SGColField[i] := SGColField[i + 1];
@@ -664,6 +1242,7 @@ begin
             end
             else
             begin
+              // nach links verschoben
               merk := SGColField[mdcol];
               for i := mdcol downto mucol + 1 do
                 SGColField[i] := SGColField[i - 1];
@@ -686,11 +1265,21 @@ begin
 
                 if source = 'cwactions' then
                   found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, mucol, such)
-                else if source = 'cwactionsselection' then
-                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwactionsselection, i, mucol, such)
+                else if source = 'cwfilteredactions' then
+                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, mucol, such)
                 else if source = 'cwsingleuseractions' then
-                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such);
-
+                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such)
+  else if source='cwsymbols' then
+    found:=-1
+  else if source='cwusers' then
+    found:=-1
+  else if source='cwcomments' then
+    found:=-1
+  else if source='cwsymbolsgroups' then
+    found:=-1
+  else if source='cwfilteredsymbolsgroups' then
+    found:=-1
+  ;
                 if found > -1 then
                   ScrollBar1.Position := found;
                 showmessage('z:' + inttostr(gettickcount - gt));
@@ -792,21 +1381,5 @@ begin
 
   end;
 
-  procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
-  var
-    i: integer;
-  begin
-    //
-    exit;
-
-    i := SGFieldCol[FromIndex];
-    SGFieldCol[FromIndex] := SGFieldCol[ToIndex];
-    SGFieldCol[ToIndex] := i;
-    for i := 0 to SG.Colcount - 1 do
-    begin
-      // sgcolfield(sg.Cols[i,0].Text
-
-    end;
-  end;
 
 end.
