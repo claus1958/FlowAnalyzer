@@ -296,7 +296,7 @@ begin
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
   scol := 1;
-  if ((source = 'cwactions') or (source = 'cwFilteredActions') or (source = 'cwsingleuseractions')) then
+  if ((source = 'cwactions') or (source = 'cwfilteredactions') or (source = 'cwsingleuseractions')) then
   begin
     if sortcol = 'actionId' then
       scol := 1;
@@ -977,14 +977,17 @@ begin
   scol := 1;
   if ((source = 'cwsymbolsgroups')or(source='cwfilteredsymbolsgroups')) then
   begin
-if sortcol='TradesCount' then scol:=1;
-if sortcol='TradesVolumeTotal' then scol:=2;
-if sortcol='TradesUsers' then scol:=3;
-if sortcol='TradesProfitTotal' then scol:=4;
-if sortcol='name' then scol:=5;
-if sortcol='sourceNames' then scol:=6;
-if sortcol='sourceIds' then scol:=7;
-    if ((scol > 4 ))  then
+
+  if sortcol='tradesCount' then scol:=1;
+if sortcol='tradesVolumeTotal' then scol:=2;
+if sortcol='tradesUsers' then scol:=3;
+if sortcol='tradesProfitTotal' then scol:=4;
+if sortcol='name' then scol:=6;
+if sortcol='sourceNames' then scol:=7;
+if sortcol='sourceIds' then scol:=8;
+if sortcol='groupId' then scol:=5;
+
+    if ((scol > 5 ))  then
     begin
       setlength(sSort, dl);
       smethode:=2;
@@ -1019,15 +1022,20 @@ if sortcol='sourceIds' then scol:=7;
         end;
         if scol = 5 then
         begin
-          sSort[i] :=symbolsGroups[i].name;
+          dSort[i] :=i;
           continue;
         end;
         if scol = 6 then
         begin
-          sSort[i] :=symbolsGroups[i].sourceNames;
+          sSort[i] :=symbolsGroups[i].name;
           continue;
         end;
         if scol = 7 then
+        begin
+          sSort[i] :=symbolsGroups[i].sourceNames;
+          continue;
+        end;
+        if scol = 8 then
         begin
           sSort[i] :=symbolsGroups[i].sourceIds;
           continue;

@@ -1469,10 +1469,10 @@ begin
       SG.cells[SGFieldCol[0], 0] := 'groupId';
       // SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'name';
-      SG.cells[SGFieldCol[2], 0] := 'TradesCount';
-      SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
-      SG.cells[SGFieldCol[4], 0] := 'T.Users';
-      SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
+      SG.cells[SGFieldCol[2], 0] := 'tradesCount';
+      SG.cells[SGFieldCol[3], 0] := 'tradesVolumeTotal';
+      SG.cells[SGFieldCol[4], 0] := 'tradesUsers';
+      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'sourceNames';
       SG.cells[SGFieldCol[7], 0] := 'sourceIds';
       SG.Rows[0].endUpdate;
@@ -1484,7 +1484,7 @@ begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
 
-      SG.cells[SGFieldCol[0], row] := inttostr(k);
+      SG.cells[SGFieldCol[0], row] := inttostr(sort[k]);
       SG.cells[SGFieldCol[1], row] := symbolsGroups[sort[k]].name;
       SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
       SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);

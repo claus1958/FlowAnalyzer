@@ -59,7 +59,6 @@ type
     Panel4: TPanel;
     Panel5: TPanel;
     lblFilteredDataInfo: TLabel;
-    SGCacheCwSearch: FTCommons.TStringGridSorted;
     TabSheet4: TTabSheet;
     Panel1: TPanel;
     Panel2: TPanel;
@@ -89,11 +88,8 @@ type
     CategoryPanelGroup1: TCategoryPanelGroup;
     CategoryPanel4: TCategoryPanel;
     CategoryPanel3: TCategoryPanel;
-    SGCwUsers: FTCommons.TStringGridSorted;
     CategoryPanel2: TCategoryPanel;
-    SGCwSymbols: FTCommons.TStringGridSorted;
     CategoryPanel1: TCategoryPanel;
-    SGCwComments: FTCommons.TStringGridSorted;
     Panel3: TPanel;
     lblAllDataInfo: TLabel;
     Button3: TButton;
@@ -159,11 +155,16 @@ type
     btnPieChart1: TButton;
     btnPieChart2: TButton;
     btnPieChart3: TButton;
-    lblDemoText: TLabel;
     DynGrid5: TDynGrid;
     DynGrid6: TDynGrid;
     DynGrid7: TDynGrid;
     DynGrid8: TDynGrid;
+    TabSheet9: TTabSheet;
+    Panel21: TPanel;
+    SGCwSymbols: FTCommons.TStringGridSorted;
+    SGCwUsers: FTCommons.TStringGridSorted;
+    SGCwComments: FTCommons.TStringGridSorted;
+    SGCacheCwSearch: FTCommons.TStringGridSorted;
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean);

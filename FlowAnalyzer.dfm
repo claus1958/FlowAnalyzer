@@ -26,7 +26,7 @@ object Form2: TForm2
     Top = 0
     Width = 1604
     Height = 907
-    ActivePage = TabSheet4
+    ActivePage = TabSheet1
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -274,30 +274,18 @@ object Form2: TForm2
           TabOrder = 0
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          object SGCwComments: TStringGridSorted
-            AlignWithMargins = True
-            Left = 661
-            Top = 3
-            Width = 691
-            Height = 213
-            DefaultColWidth = 80
-            RowCount = 1
-            FixedRows = 0
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
-            TabOrder = 0
-            OnMouseDown = SGMouseDown
-          end
           inline DynGrid7: TDynGrid
-            Left = 8
+            Left = 0
             Top = 0
-            Width = 674
-            Height = 213
-            TabOrder = 1
+            Width = 1355
+            Height = 219
+            Align = alClient
+            TabOrder = 0
             ExplicitLeft = 8
             ExplicitWidth = 674
             ExplicitHeight = 213
             inherited Panel1: TPanel
-              Width = 674
+              Width = 1355
               Height = 5
               Align = alTop
               ExplicitWidth = 674
@@ -312,8 +300,8 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 674
-              Height = 208
+              Width = 1355
+              Height = 214
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
@@ -321,15 +309,15 @@ object Form2: TForm2
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 656
-                Height = 206
+                Width = 1337
+                Height = 212
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 656
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
-                Left = 657
-                Height = 206
+                Left = 1338
+                Height = 212
                 ExplicitLeft = 657
                 ExplicitHeight = 167
               end
@@ -343,30 +331,18 @@ object Form2: TForm2
           TabOrder = 1
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          object SGCwUsers: TStringGridSorted
-            AlignWithMargins = True
-            Left = 668
-            Top = 3
-            Width = 684
-            Height = 168
-            DefaultColWidth = 80
-            RowCount = 1
-            FixedRows = 0
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
-            TabOrder = 0
-            OnMouseDown = SGMouseDown
-          end
           inline DynGrid6: TDynGrid
-            Left = 4
+            Left = 0
             Top = 0
-            Width = 674
+            Width = 1355
             Height = 174
-            TabOrder = 1
+            Align = alClient
+            TabOrder = 0
             ExplicitLeft = 4
             ExplicitWidth = 674
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 674
+              Width = 1355
               Height = 5
               Align = alTop
               ExplicitWidth = 674
@@ -381,7 +357,7 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 674
+              Width = 1355
               Height = 169
               Align = alClient
               ExplicitLeft = 0
@@ -390,14 +366,14 @@ object Form2: TForm2
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 656
+                Width = 1337
                 Height = 167
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 656
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
-                Left = 657
+                Left = 1338
                 Height = 167
                 ExplicitLeft = 657
                 ExplicitHeight = 167
@@ -412,30 +388,17 @@ object Form2: TForm2
           TabOrder = 2
           OnCollapse = CategoryPanel1Collapse
           OnExpand = CategoryPanel1Expand
-          object SGCwSymbols: TStringGridSorted
-            AlignWithMargins = True
-            Left = 680
-            Top = 1
-            Width = 672
-            Height = 168
-            DefaultColWidth = 80
-            RowCount = 1
-            FixedRows = 0
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
-            TabOrder = 0
-            OnColumnMoved = SGCwSymbolsColumnMoved
-            OnMouseDown = SGMouseDown
-          end
           inline DynGrid5: TDynGrid
             Left = 0
             Top = 0
-            Width = 674
+            Width = 1355
             Height = 174
-            TabOrder = 1
+            Align = alClient
+            TabOrder = 0
             ExplicitWidth = 674
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 674
+              Width = 1355
               Height = 5
               Align = alTop
               ExplicitWidth = 1355
@@ -450,7 +413,7 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 674
+              Width = 1355
               Height = 169
               Align = alClient
               ExplicitLeft = 0
@@ -459,14 +422,14 @@ object Form2: TForm2
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 656
+                Width = 1337
                 Height = 167
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 1337
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
-                Left = 657
+                Left = 1338
                 Height = 167
                 ExplicitLeft = 1338
                 ExplicitHeight = 167
@@ -1113,39 +1076,14 @@ object Form2: TForm2
               ParentFont = False
               ExplicitWidth = 6
             end
-            object lblDemoText: TLabel
-              Left = 400
-              Top = 24
-              Width = 263
-              Height = 14
-              Alignment = taCenter
-              Caption = 'oben "altes" Grid und unten "Neues" ohne Limit'
-            end
-          end
-          object SGCacheCwSearch: TStringGridSorted
-            AlignWithMargins = True
-            Left = 4
-            Top = 45
-            Width = 1062
-            Height = 372
-            Align = alTop
-            ColCount = 1
-            DefaultColWidth = 80
-            FixedCols = 0
-            RowCount = 1
-            FixedRows = 0
-            Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
-            TabOrder = 1
-            Visible = False
-            OnMouseDown = SGMouseDown
           end
           inline DynGrid2: TDynGrid
             Left = 1
-            Top = 420
+            Top = 42
             Width = 1068
-            Height = 448
+            Height = 826
             Align = alClient
-            TabOrder = 2
+            TabOrder = 1
             ExplicitLeft = 1
             ExplicitTop = 420
             ExplicitWidth = 1068
@@ -1162,7 +1100,7 @@ object Form2: TForm2
               Left = 0
               Top = 0
               Width = 1068
-              Height = 448
+              Height = 826
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 0
@@ -1171,14 +1109,14 @@ object Form2: TForm2
               inherited SG: TStringGridSorted
                 Tag = 2
                 Width = 1050
-                Height = 446
+                Height = 824
                 Options = [goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 1050
                 ExplicitHeight = 446
               end
               inherited ScrollBar1: TScrollBar
                 Left = 1051
-                Height = 446
+                Height = 824
                 ExplicitLeft = 1051
                 ExplicitHeight = 446
               end
@@ -1615,33 +1553,19 @@ object Form2: TForm2
               OnCollapse = CategoryPanel9CollapseExpand
               OnExpand = CategoryPanel9CollapseExpand
               ExplicitWidth = 1329
-              object SGCwSymbolsGroups: TStringGridSorted
-                AlignWithMargins = True
-                Left = 840
-                Top = 3
-                Width = 484
-                Height = 270
-                DefaultColWidth = 80
-                RowCount = 1
-                FixedRows = 0
-                Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect, goFixedColClick]
-                TabOrder = 0
-                OnDrawCell = SGCwSymbolsGroupsDrawCell
-                OnMouseDown = SGMouseDown
-                OnMouseUp = SGCwSymbolsGroupsMouseUp
-              end
               inline DynGrid8: TDynGrid
-                Left = 12
-                Top = 4
-                Width = 674
-                Height = 213
-                TabOrder = 1
+                Left = 0
+                Top = 0
+                Width = 1310
+                Height = 274
+                Align = alClient
+                TabOrder = 0
                 ExplicitLeft = 12
                 ExplicitTop = 4
                 ExplicitWidth = 674
                 ExplicitHeight = 213
                 inherited Panel1: TPanel
-                  Width = 674
+                  Width = 1310
                   Height = 5
                   Align = alTop
                   ExplicitWidth = 674
@@ -1656,8 +1580,8 @@ object Form2: TForm2
                 inherited Panel2: TPanel
                   Left = 0
                   Top = 5
-                  Width = 674
-                  Height = 208
+                  Width = 1310
+                  Height = 269
                   Align = alClient
                   ExplicitLeft = 0
                   ExplicitTop = 5
@@ -1665,15 +1589,15 @@ object Form2: TForm2
                   ExplicitHeight = 208
                   inherited SG: TStringGridSorted
                     Tag = 3
-                    Width = 656
-                    Height = 206
+                    Width = 1292
+                    Height = 267
                     Options = [goColSizing, goFixedColClick, goFixedRowClick]
                     ExplicitWidth = 656
                     ExplicitHeight = 206
                   end
                   inherited ScrollBar1: TScrollBar
-                    Left = 657
-                    Height = 206
+                    Left = 1293
+                    Height = 267
                     ExplicitLeft = 657
                     ExplicitHeight = 206
                   end
@@ -3064,6 +2988,109 @@ object Form2: TForm2
         XAxisZoomSensitivity = 1.000000000000000000
         YAxisZoomSensitivity = 1.000000000000000000
         DoubleBuffered = True
+      end
+    end
+    object TabSheet9: TTabSheet
+      Caption = 'Gelber Sack'
+      ImageIndex = 8
+      object Panel21: TPanel
+        Left = 120
+        Top = 12
+        Width = 1401
+        Height = 829
+        Caption = 'Panel21'
+        TabOrder = 0
+        object SGCwSymbols: TStringGridSorted
+          AlignWithMargins = True
+          Left = 4
+          Top = 271
+          Width = 1393
+          Height = 168
+          Align = alTop
+          DefaultColWidth = 80
+          RowCount = 1
+          FixedRows = 0
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
+          TabOrder = 0
+          OnColumnMoved = SGCwSymbolsColumnMoved
+          OnMouseDown = SGMouseDown
+          ExplicitLeft = 365
+          ExplicitTop = 255
+          ExplicitWidth = 672
+        end
+        object SGCwUsers: TStringGridSorted
+          AlignWithMargins = True
+          Left = 4
+          Top = 445
+          Width = 1393
+          Height = 168
+          Align = alTop
+          DefaultColWidth = 80
+          RowCount = 1
+          FixedRows = 0
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
+          TabOrder = 1
+          OnMouseDown = SGMouseDown
+          ExplicitLeft = 365
+          ExplicitTop = 429
+          ExplicitWidth = 684
+        end
+        object SGCwComments: TStringGridSorted
+          AlignWithMargins = True
+          Left = 4
+          Top = 895
+          Width = 1393
+          Height = 213
+          Align = alTop
+          DefaultColWidth = 80
+          RowCount = 1
+          FixedRows = 0
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
+          TabOrder = 2
+          OnMouseDown = SGMouseDown
+          ExplicitLeft = 365
+          ExplicitTop = 603
+          ExplicitWidth = 691
+        end
+        object SGCacheCwSearch: TStringGridSorted
+          AlignWithMargins = True
+          Left = 4
+          Top = 4
+          Width = 1393
+          Height = 261
+          Align = alTop
+          ColCount = 1
+          DefaultColWidth = 80
+          FixedCols = 0
+          RowCount = 1
+          FixedRows = 0
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
+          TabOrder = 3
+          Visible = False
+          OnMouseDown = SGMouseDown
+          ExplicitLeft = 365
+          ExplicitTop = -12
+          ExplicitWidth = 1017
+        end
+        object SGCwSymbolsGroups: TStringGridSorted
+          AlignWithMargins = True
+          Left = 4
+          Top = 619
+          Width = 1393
+          Height = 270
+          Align = alTop
+          DefaultColWidth = 80
+          RowCount = 1
+          FixedRows = 0
+          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect, goFixedColClick]
+          TabOrder = 4
+          OnDrawCell = SGCwSymbolsGroupsDrawCell
+          OnMouseDown = SGMouseDown
+          OnMouseUp = SGCwSymbolsGroupsMouseUp
+          ExplicitLeft = 36
+          ExplicitTop = 507
+          ExplicitWidth = 484
+        end
       end
     end
   end
