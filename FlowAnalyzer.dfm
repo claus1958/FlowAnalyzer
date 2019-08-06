@@ -26,7 +26,7 @@ object Form2: TForm2
     Top = 0
     Width = 1604
     Height = 907
-    ActivePage = TabSheet1
+    ActivePage = TabSheet6
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -49,6 +49,10 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel10: TPanel
         AlignWithMargins = True
         Left = 568
@@ -216,9 +220,9 @@ object Form2: TForm2
           end
         end
         object Button8: TButton
-          Left = 36
+          Left = 33
           Top = 516
-          Width = 205
+          Width = 209
           Height = 25
           Caption = 'Update Data'
           TabOrder = 13
@@ -281,14 +285,13 @@ object Form2: TForm2
             Height = 219
             Align = alClient
             TabOrder = 0
-            ExplicitLeft = 8
-            ExplicitWidth = 674
-            ExplicitHeight = 213
+            ExplicitWidth = 1355
+            ExplicitHeight = 219
             inherited Panel1: TPanel
               Width = 1355
               Height = 5
               Align = alTop
-              ExplicitWidth = 674
+              ExplicitWidth = 1355
               ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
@@ -305,21 +308,21 @@ object Form2: TForm2
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
-              ExplicitWidth = 674
-              ExplicitHeight = 169
+              ExplicitWidth = 1355
+              ExplicitHeight = 214
               inherited SG: TStringGridSorted
                 Tag = 3
                 Width = 1337
                 Height = 212
-                Options = [goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 656
-                ExplicitHeight = 167
+                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
+                ExplicitWidth = 1337
+                ExplicitHeight = 212
               end
               inherited ScrollBar1: TScrollBar
                 Left = 1338
                 Height = 212
-                ExplicitLeft = 657
-                ExplicitHeight = 167
+                ExplicitLeft = 1338
+                ExplicitHeight = 212
               end
             end
           end
@@ -338,14 +341,13 @@ object Form2: TForm2
             Height = 174
             Align = alClient
             TabOrder = 0
-            ExplicitLeft = 4
-            ExplicitWidth = 674
+            ExplicitWidth = 1355
             ExplicitHeight = 174
             inherited Panel1: TPanel
               Width = 1355
               Height = 5
               Align = alTop
-              ExplicitWidth = 674
+              ExplicitWidth = 1355
               ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
@@ -362,20 +364,20 @@ object Form2: TForm2
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
-              ExplicitWidth = 674
+              ExplicitWidth = 1355
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
                 Width = 1337
                 Height = 167
-                Options = [goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 656
+                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
+                ExplicitWidth = 1337
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
                 Left = 1338
                 Height = 167
-                ExplicitLeft = 657
+                ExplicitLeft = 1338
                 ExplicitHeight = 167
               end
             end
@@ -395,7 +397,7 @@ object Form2: TForm2
             Height = 174
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 674
+            ExplicitWidth = 1355
             ExplicitHeight = 174
             inherited Panel1: TPanel
               Width = 1355
@@ -424,7 +426,7 @@ object Form2: TForm2
                 Tag = 3
                 Width = 1337
                 Height = 167
-                Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 1337
                 ExplicitHeight = 167
               end
@@ -479,22 +481,22 @@ object Form2: TForm2
               Height = 169
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 41
+              ExplicitTop = 5
               ExplicitWidth = 1355
-              ExplicitHeight = 133
+              ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
                 Width = 1337
                 Height = 167
-                Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 1337
-                ExplicitHeight = 131
+                ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
                 Left = 1338
                 Height = 167
                 ExplicitLeft = 1338
-                ExplicitHeight = 131
+                ExplicitHeight = 167
               end
             end
           end
@@ -782,6 +784,10 @@ object Form2: TForm2
       Font.Name = 'Tahoma'
       Font.Style = []
       ParentFont = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel26: TPanel
         Left = 0
         Top = 0
@@ -927,93 +933,20 @@ object Form2: TForm2
                 ExplicitLeft = 2
                 ExplicitTop = 8
                 inherited cbTopic: TComboBox
-                  Left = 32
-                  Top = 3
-                  Width = 129
                   Height = 22
-                  TabOrder = 0
-                  Text = 'BrokerId'
-                  Items.Strings = (
-                    'BrokerId'
-                    'AccountId'
-                    'SymbolId'
-                    'Symbol'
-                    'UserId'
-                    'UserName'
-                    'ActionType'
-                    'OpenDateTime'
-                    'CloseDateTime'
-                    'OpenPrice'
-                    'Profit'
-                    'Volume')
                   ExplicitHeight = 22
                 end
                 inherited cbOperator: TComboBox
-                  Left = 163
-                  Top = 3
-                  Width = 58
                   Height = 22
-                  ItemIndex = 0
-                  TabOrder = 1
-                  Text = '='
-                  Items.Strings = (
-                    '='
-                    '<>'
-                    '<'
-                    '>'
-                    '<='
-                    '>='
-                    'contains'
-                    'contains not')
                   ExplicitHeight = 22
                 end
                 inherited edValue: TEdit
-                  Left = 223
-                  Top = 3
-                  Width = 258
                   Height = 22
-                  TabOrder = 2
                   ExplicitHeight = 22
                 end
                 inherited dtPicker1: TDateTimePicker
-                  Left = 376
-                  Top = 3
-                  Width = 105
                   Height = 22
-                  Date = 43549.000000000000000000
-                  Time = 0.616624108799442200
-                  TabOrder = 3
-                  Visible = False
                   ExplicitHeight = 22
-                end
-                inherited chkActive: TCheckBox
-                  Left = 9
-                  Top = 4
-                  Width = 17
-                  Height = 17
-                  TabOrder = 4
-                end
-                inherited chkLB1: TComboBox
-                  Left = 223
-                  Top = 3
-                  Width = 258
-                  Height = 22
-                  Style = csOwnerDrawFixed
-                  DropDownCount = 24
-                  TabOrder = 6
-                  Items.Strings = ()
-                end
-                inherited btnMore: TButton
-                  Left = 483
-                  Top = 3
-                  Width = 22
-                  Height = 23
-                  Hint = 'Select from list...'
-                  Caption = '>'
-                  ParentShowHint = False
-                  ShowHint = True
-                  TabOrder = 5
-                  Visible = False
                 end
               end
             end
@@ -1063,7 +996,7 @@ object Form2: TForm2
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 1066
+              Width = 6
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -1074,7 +1007,6 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
-              ExplicitWidth = 6
             end
           end
           inline DynGrid2: TDynGrid
@@ -1085,9 +1017,9 @@ object Form2: TForm2
             Align = alClient
             TabOrder = 1
             ExplicitLeft = 1
-            ExplicitTop = 420
+            ExplicitTop = 42
             ExplicitWidth = 1068
-            ExplicitHeight = 448
+            ExplicitHeight = 826
             inherited Panel1: TPanel
               inherited lblTime: TLabel
                 Width = 38
@@ -1105,20 +1037,20 @@ object Form2: TForm2
               ExplicitLeft = 0
               ExplicitTop = 0
               ExplicitWidth = 1068
-              ExplicitHeight = 448
+              ExplicitHeight = 826
               inherited SG: TStringGridSorted
                 Tag = 2
                 Width = 1050
                 Height = 824
-                Options = [goColSizing, goFixedColClick, goFixedRowClick]
+                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
                 ExplicitWidth = 1050
-                ExplicitHeight = 446
+                ExplicitHeight = 824
               end
               inherited ScrollBar1: TScrollBar
                 Left = 1051
                 Height = 824
                 ExplicitLeft = 1051
-                ExplicitHeight = 446
+                ExplicitHeight = 824
               end
             end
           end
@@ -1134,6 +1066,10 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 3
       ParentFont = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 8
         Top = 24
@@ -1242,7 +1178,7 @@ object Form2: TForm2
           object btnListDoublesCw: TButton
             Left = 8
             Top = 240
-            Width = 65
+            Width = 105
             Height = 17
             Caption = 'List Doubles'
             TabOrder = 8
@@ -1362,6 +1298,10 @@ object Form2: TForm2
       ImageIndex = 5
       ParentFont = False
       TabVisible = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel12: TPanel
         Left = 0
         Top = 0
@@ -1560,15 +1500,13 @@ object Form2: TForm2
                 Height = 274
                 Align = alClient
                 TabOrder = 0
-                ExplicitLeft = 12
-                ExplicitTop = 4
-                ExplicitWidth = 674
-                ExplicitHeight = 213
+                ExplicitWidth = 1310
+                ExplicitHeight = 274
                 inherited Panel1: TPanel
                   Width = 1310
                   Height = 5
                   Align = alTop
-                  ExplicitWidth = 674
+                  ExplicitWidth = 1310
                   ExplicitHeight = 5
                   inherited lblTime: TLabel
                     Width = 53
@@ -1585,21 +1523,21 @@ object Form2: TForm2
                   Align = alClient
                   ExplicitLeft = 0
                   ExplicitTop = 5
-                  ExplicitWidth = 674
-                  ExplicitHeight = 208
+                  ExplicitWidth = 1310
+                  ExplicitHeight = 269
                   inherited SG: TStringGridSorted
                     Tag = 3
                     Width = 1292
                     Height = 267
-                    Options = [goColSizing, goFixedColClick, goFixedRowClick]
-                    ExplicitWidth = 656
-                    ExplicitHeight = 206
+                    Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
+                    ExplicitWidth = 1292
+                    ExplicitHeight = 267
                   end
                   inherited ScrollBar1: TScrollBar
                     Left = 1293
                     Height = 267
-                    ExplicitLeft = 657
-                    ExplicitHeight = 206
+                    ExplicitLeft = 1293
+                    ExplicitHeight = 267
                   end
                 end
               end
@@ -1611,7 +1549,6 @@ object Form2: TForm2
               TabOrder = 1
               OnCollapse = CategoryPanel9CollapseExpand
               OnExpand = CategoryPanel9CollapseExpand
-              ExplicitTop = 232
               ExplicitWidth = 1329
               object Panel20: TPanel
                 Left = 0
@@ -1621,10 +1558,6 @@ object Form2: TForm2
                 Align = alClient
                 Caption = 'Panel20'
                 TabOrder = 0
-                ExplicitLeft = 16
-                ExplicitTop = 8
-                ExplicitWidth = 669
-                ExplicitHeight = 561
                 object SymbolsGroupsPieChartView: TAdvGDIPChartView
                   Left = 1
                   Top = 1
@@ -1680,6 +1613,7 @@ object Form2: TForm2
                           Annotations = <>
                           ChartType = ctPie
                           Color = 22015
+                          CrossHairYValue.BorderWidth = 0
                           CrossHairYValue.Font.Charset = DEFAULT_CHARSET
                           CrossHairYValue.Font.Color = clWindowText
                           CrossHairYValue.Font.Height = -11
@@ -1823,10 +1757,6 @@ object Form2: TForm2
                   XAxisZoomSensitivity = 1.000000000000000000
                   YAxisZoomSensitivity = 1.000000000000000000
                   DoubleBuffered = True
-                  ExplicitLeft = -216
-                  ExplicitTop = 256
-                  ExplicitWidth = 597
-                  ExplicitHeight = 305
                 end
               end
             end
@@ -1838,6 +1768,10 @@ object Form2: TForm2
       Caption = 'TabSheet8'
       ImageIndex = 7
       TabVisible = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Button9: TButton
         Left = 36
         Top = 76
@@ -2638,6 +2572,7 @@ object Form2: TForm2
                 Annotations = <>
                 ChartType = ctPie
                 Color = 22015
+                CrossHairYValue.BorderWidth = 0
                 CrossHairYValue.Font.Charset = DEFAULT_CHARSET
                 CrossHairYValue.Font.Color = clWindowText
                 CrossHairYValue.Font.Height = -11
@@ -2993,6 +2928,10 @@ object Form2: TForm2
     object TabSheet9: TTabSheet
       Caption = 'Gelber Sack'
       ImageIndex = 8
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel21: TPanel
         Left = 120
         Top = 12
@@ -3014,9 +2953,6 @@ object Form2: TForm2
           TabOrder = 0
           OnColumnMoved = SGCwSymbolsColumnMoved
           OnMouseDown = SGMouseDown
-          ExplicitLeft = 365
-          ExplicitTop = 255
-          ExplicitWidth = 672
         end
         object SGCwUsers: TStringGridSorted
           AlignWithMargins = True
@@ -3031,9 +2967,6 @@ object Form2: TForm2
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
           TabOrder = 1
           OnMouseDown = SGMouseDown
-          ExplicitLeft = 365
-          ExplicitTop = 429
-          ExplicitWidth = 684
         end
         object SGCwComments: TStringGridSorted
           AlignWithMargins = True
@@ -3048,9 +2981,6 @@ object Form2: TForm2
           Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goColSizing, goColMoving, goRowSelect]
           TabOrder = 2
           OnMouseDown = SGMouseDown
-          ExplicitLeft = 365
-          ExplicitTop = 603
-          ExplicitWidth = 691
         end
         object SGCacheCwSearch: TStringGridSorted
           AlignWithMargins = True
@@ -3068,9 +2998,6 @@ object Form2: TForm2
           TabOrder = 3
           Visible = False
           OnMouseDown = SGMouseDown
-          ExplicitLeft = 365
-          ExplicitTop = -12
-          ExplicitWidth = 1017
         end
         object SGCwSymbolsGroups: TStringGridSorted
           AlignWithMargins = True
@@ -3087,9 +3014,6 @@ object Form2: TForm2
           OnDrawCell = SGCwSymbolsGroupsDrawCell
           OnMouseDown = SGMouseDown
           OnMouseUp = SGCwSymbolsGroupsMouseUp
-          ExplicitLeft = 36
-          ExplicitTop = 507
-          ExplicitWidth = 484
         end
       end
     end

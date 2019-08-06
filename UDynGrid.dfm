@@ -46,7 +46,7 @@ object DynGrid: TDynGrid
       DoubleBuffered = True
       FixedCols = 0
       RowCount = 2
-      Options = [goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
+      Options = [goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
       ParentDoubleBuffered = False
       ScrollBars = ssHorizontal
       TabOrder = 0

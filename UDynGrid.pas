@@ -20,13 +20,14 @@ type
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
     procedure sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
-    procedure sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;var usersplus:DACwUserPlus);
+    procedure sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;
+      var usersplus: DACwUserPlus);
 
     procedure sortGridCwComments(source: string; sortcol: string; sortdir: integer; var comments: DACwComment);
-    procedure sortGridCwSymbolsGroups(source: string; sortcol: string; sortdir: integer; var symbolsGroups: DACwSymbolGroup);
-    procedure sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;var symbolsPlus:DACwSymbolPlus);
-
-
+    procedure sortGridCwSymbolsGroups(source: string; sortcol: string; sortdir: integer;
+      var symbolsGroups: DACwSymbolGroup);
+    procedure sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;
+      var symbolsPlus: DACwSymbolPlus);
 
     procedure SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure gridHandler(Sender: TObject);
@@ -70,27 +71,26 @@ begin
   inherited Create(AOwner);
   initialized := true;
   maxDataRows := 0;
-  setlength(dSort, 0);//warum nur die ?
+  setlength(dSort, 0); // warum nur die ?
   setlength(sSort, 0);
 end;
 
-  procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
-  // diese gridinterne Funktion ist beim DynGrid abgeschaltet
-  var
-    i: integer;
+procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
+// diese gridinterne Funktion ist beim DynGrid abgeschaltet
+var
+  i: integer;
+begin
+  //
+  exit;
+
+  i := SGFieldCol[FromIndex];
+  SGFieldCol[FromIndex] := SGFieldCol[ToIndex];
+  SGFieldCol[ToIndex] := i;
+  for i := 0 to SG.Colcount - 1 do
   begin
-    //
-    exit;
-
-    i := SGFieldCol[FromIndex];
-    SGFieldCol[FromIndex] := SGFieldCol[ToIndex];
-    SGFieldCol[ToIndex] := i;
-    for i := 0 to SG.Colcount - 1 do
-    begin
-      // sgcolfield(sg.Cols[i,0].Text
-    end;
+    // sgcolfield(sg.Cols[i,0].Text
   end;
-
+end;
 
 procedure TDynGrid.SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
 var
@@ -99,10 +99,10 @@ var
   gt: cardinal;
   i, j: integer;
   sp: integer;
-  rc:integer;
+  rc: integer;
 begin
-  rc:=(Sender as Tstringgrid).rowcount;
-  if arow>=(Sender as Tstringgrid).rowcount then
+  rc := (Sender as Tstringgrid).rowcount;
+  if ARow >= (Sender as Tstringgrid).rowcount then
   begin
     exit;
   end;
@@ -116,7 +116,7 @@ begin
 
   if selSorted[ixSorted[sp]] = 1 then
 
-    with Sender as TStringGrid do
+    with Sender as Tstringgrid do
 
     begin
       s := cells[ACol, ARow];
@@ -132,7 +132,6 @@ begin
     end;
 end;
 
-
 procedure TDynGrid.Panel2Resize(Sender: TObject);
 var
   max: integer;
@@ -141,15 +140,14 @@ begin
   visibleRows := trunc((SG.height / SG.defaultrowheight)) + 1;
   visibleCols := trunc((SG.width / SG.defaultcolwidth)) + 1;
 
-  if SG.RowCount < visibleRows then
-    SG.RowCount := visibleRows;
+  if SG.rowcount < visibleRows then
+    SG.rowcount := visibleRows;
   // 1 fix Row erfordert min. 2 RowCount
-  if sg.rowcount>maxdatarows+1 then
-    sg.rowcount:=maxdatarows+1;
+  if SG.rowcount > maxDataRows + 1 then
+    SG.rowcount := maxDataRows + 1;
 
-
-  if SG.RowCount < 2 then
-    SG.RowCount := 2;
+  if SG.rowcount < 2 then
+    SG.rowcount := 2;
   if SG.fixedrows = 0 then
     SG.fixedrows := 1;
   ScrollBar1.Min := 0;
@@ -238,9 +236,9 @@ begin
     mrows := rows;
   end;
   // Problem: wenn alte Inhalte vorhanden sind werden sie bei Verkleinerung von Rowcount nicht entfernt !
-  SG.RowCount := mrows;
+  SG.rowcount := mrows;
   SG.Colcount := cols;
-  for j := 0 to SG.RowCount - 1 do
+  for j := 0 to SG.rowcount - 1 do
     for k := 0 to SG.Colcount - 1 do
       SG.cells[k, j] := '*';
 
@@ -262,16 +260,16 @@ begin
     sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
   if source = 'cwsingleuseractions' then
     sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
-  if source='cwsymbols' then
-    sortGridCwsymbols(source, sortcol, sortdir, cwSymbols,cwsymbolsplus);
-  if source='cwusers' then
-    sortGridCwusers(source, sortcol, sortdir, cwUsers,cwUsersplus);
-  if source='cwcomments' then
-    sortGridCwcomments(source, sortcol, sortdir, cwComments);
-  if source='cwsymbolsgroups' then
-    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwSymbolsGroups);
-  if  source='cwfilteredsymbolsgroups' then
-    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
+  if source = 'cwsymbols' then
+    sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
+  if source = 'cwusers' then
+    sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwUsersplus);
+  if source = 'cwcomments' then
+    sortGridCwComments(source, sortcol, sortdir, cwComments);
+  if source = 'cwsymbolsgroups' then
+    sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
+  if source = 'cwfilteredsymbolsgroups' then
+    sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
 
   autosized := false;
 
@@ -370,7 +368,7 @@ begin
     if ((scol = 22) or (scol = 23)) then
     begin
       setlength(sSort, dl);
-      smethode:=2;
+      smethode := 2;
     end
     else
       setlength(dSort, dl);
@@ -520,7 +518,8 @@ begin
   Panel2Resize(self);
 end;
 
-procedure TDynGrid.sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;var usersplus:DACwUserPlus);
+procedure TDynGrid.sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;
+  var usersplus: DACwUserPlus);
 var
   dl, i, scol, smethode: integer;
   gt: cardinal;
@@ -534,41 +533,66 @@ begin
   scol := 1;
   if ((source = 'cwusers')) then
 
-
-
   begin
-If sortcol ='userId' then scol:=1;
-If sortcol ='accountId' then scol:=2;
-If sortcol ='group' then scol:=3;
-If sortcol ='enable' then scol:=4;
-If sortcol ='registrationTime' then scol:=5;
-If sortcol ='lastLoginTime' then scol:=6;
-If sortcol ='leverage' then scol:=7;
-If sortcol ='balance' then scol:=8;
-If sortcol ='balancePreviousMonth' then scol:=9;
-If sortcol ='balancePreviousDay' then scol:=10;
-If sortcol ='credit' then scol:=11;
-If sortcol ='interestrate' then scol:=12;
-If sortcol ='taxes' then scol:=13;
-If sortcol ='name' then scol:=14;
-If sortcol ='country' then scol:=15;
-If sortcol ='city' then scol:=16;
-If sortcol ='state' then scol:=17;
-If sortcol ='zipcode' then scol:=18;
-If sortcol ='address' then scol:=19;
-If sortcol ='phone' then scol:=20;
-If sortcol ='email' then scol:=21;
-If sortcol ='socialNumber' then scol:=22;
-If sortcol ='comment' then scol:=23;
-If sortcol ='totalSymbols'then scol:=24;
-If sortcol ='totalTrades' then scol:=25;
-If sortcol ='totalProfit' then scol:=26;
-If sortcol ='totalBalance' then scol:=27;
+    If sortcol = 'userId' then
+      scol := 1;
+    If sortcol = 'accountId' then
+      scol := 2;
+    If sortcol = 'group' then
+      scol := 3;
+    If sortcol = 'enable' then
+      scol := 4;
+    If sortcol = 'registrationTime' then
+      scol := 5;
+    If sortcol = 'lastLoginTime' then
+      scol := 6;
+    If sortcol = 'leverage' then
+      scol := 7;
+    If sortcol = 'balance' then
+      scol := 8;
+    If sortcol = 'balancePreviousMonth' then
+      scol := 9;
+    If sortcol = 'balancePreviousDay' then
+      scol := 10;
+    If sortcol = 'credit' then
+      scol := 11;
+    If sortcol = 'interestrate' then
+      scol := 12;
+    If sortcol = 'taxes' then
+      scol := 13;
+    If sortcol = 'name' then
+      scol := 14;
+    If sortcol = 'country' then
+      scol := 15;
+    If sortcol = 'city' then
+      scol := 16;
+    If sortcol = 'state' then
+      scol := 17;
+    If sortcol = 'zipcode' then
+      scol := 18;
+    If sortcol = 'address' then
+      scol := 19;
+    If sortcol = 'phone' then
+      scol := 20;
+    If sortcol = 'email' then
+      scol := 21;
+    If sortcol = 'socialNumber' then
+      scol := 22;
+    If sortcol = 'comment' then
+      scol := 23;
+    If sortcol = 'totalSymbols' then
+      scol := 24;
+    If sortcol = 'totalTrades' then
+      scol := 25;
+    If sortcol = 'totalProfit' then
+      scol := 26;
+    If sortcol = 'totalBalance' then
+      scol := 27;
 
-    if ((scol = 3 )or((scol>=14)and(scol<=23)))  then
+    if ((scol = 3) or ((scol >= 14) and (scol <= 23))) then
     begin
       setlength(sSort, dl);
-      smethode:=2;
+      smethode := 2;
     end
     else
       setlength(dSort, dl);
@@ -580,140 +604,139 @@ If sortcol ='totalBalance' then scol:=27;
 
         if scol = 1 then
         begin
-          dSort[i] :=users[i].userId;
+          dSort[i] := users[i].userId;
           continue;
         end;
         if scol = 2 then
         begin
-          dSort[i] :=users[i].accountId;
+          dSort[i] := users[i].accountId;
           continue;
         end;
         if scol = 3 then
         begin
-          sSort[i] :=users[i].group;
+          sSort[i] := users[i].group;
           continue;
         end;
-        if scol = 4  then
+        if scol = 4 then
         begin
-          dSort[i] :=users[i].enable;
+          dSort[i] := users[i].enable;
           continue;
         end;
-        if scol = 5  then
+        if scol = 5 then
         begin
-          dSort[i] :=users[i].registrationTime;
+          dSort[i] := users[i].registrationTime;
           continue;
         end;
-        if scol = 6  then
+        if scol = 6 then
         begin
-          dSort[i] :=users[i].lastLoginTime;
+          dSort[i] := users[i].lastLoginTime;
           continue;
         end;
-        if scol = 7  then
+        if scol = 7 then
         begin
-          dSort[i] :=users[i].leverage;
+          dSort[i] := users[i].leverage;
           continue;
         end;
-        if scol = 8  then
+        if scol = 8 then
         begin
-          dSort[i] :=users[i].balance;
+          dSort[i] := users[i].balance;
           continue;
         end;
-        if scol = 9  then
+        if scol = 9 then
         begin
-          dSort[i] :=users[i].balancePreviousMonth;
+          dSort[i] := users[i].balancePreviousMonth;
           continue;
         end;
-        if scol = 10  then
+        if scol = 10 then
         begin
-          dSort[i] :=users[i].balancePreviousDay;
+          dSort[i] := users[i].balancePreviousDay;
           continue;
         end;
-        if scol = 11  then
+        if scol = 11 then
         begin
-          dSort[i] :=users[i].credit;
+          dSort[i] := users[i].credit;
           continue;
         end;
-        if scol = 12  then
+        if scol = 12 then
         begin
-          dSort[i] :=users[i].interestrate;
+          dSort[i] := users[i].interestrate;
           continue;
         end;
-        if scol = 13  then
+        if scol = 13 then
         begin
-          dSort[i] :=users[i].taxes;
+          dSort[i] := users[i].taxes;
           continue;
         end;
-        if scol = 14  then
+        if scol = 14 then
         begin
-          sSort[i] :=users[i].name;
+          sSort[i] := users[i].name;
           continue;
         end;
-        if scol = 15  then
+        if scol = 15 then
         begin
-          sSort[i] :=users[i].country;
+          sSort[i] := users[i].country;
           continue;
         end;
-        if scol = 16  then
+        if scol = 16 then
         begin
-          sSort[i] :=users[i].city;
+          sSort[i] := users[i].city;
           continue;
         end;
-        if scol = 17  then
+        if scol = 17 then
         begin
-          sSort[i] :=users[i].state;
+          sSort[i] := users[i].State;
           continue;
         end;
-        if scol = 18  then
+        if scol = 18 then
         begin
-          sSort[i] :=users[i].zipcode;
+          sSort[i] := users[i].zipcode;
           continue;
         end;
-        if scol = 19  then
+        if scol = 19 then
         begin
-          sSort[i] :=users[i].address;
+          sSort[i] := users[i].address;
           continue;
         end;
-        if scol = 20  then
+        if scol = 20 then
         begin
-          sSort[i] :=users[i].phone;
+          sSort[i] := users[i].phone;
           continue;
         end;
-        if scol = 21  then
+        if scol = 21 then
         begin
-          sSort[i] :=users[i].email;
+          sSort[i] := users[i].email;
           continue;
         end;
-        if scol = 22  then
+        if scol = 22 then
         begin
-          sSort[i] :=users[i].socialNumber;
+          sSort[i] := users[i].socialNumber;
           continue;
         end;
-        if scol = 23  then
+        if scol = 23 then
         begin
-          sSort[i] :=users[i].comment;
+          sSort[i] := users[i].comment;
           continue;
         end;
-        if scol = 24  then
+        if scol = 24 then
         begin
-          dSort[i] :=usersplus[i].totalSymbols;
+          dSort[i] := usersplus[i].totalSymbols;
           continue;
         end;
-        if scol = 25  then
+        if scol = 25 then
         begin
-          dSort[i] :=usersplus[i].totalTrades;
+          dSort[i] := usersplus[i].totalTrades;
           continue;
         end;
-        if scol = 26  then
+        if scol = 26 then
         begin
-          dSort[i] :=usersplus[i].totalProfit;
+          dSort[i] := usersplus[i].totalProfit;
           continue;
         end;
-        if scol = 27  then
+        if scol = 27 then
         begin
-          dSort[i] :=usersplus[i].totalBalance;
+          dSort[i] := usersplus[i].totalBalance;
           continue;
         end;
-
 
       end;
     end;
@@ -758,10 +781,10 @@ begin
       scol := 1;
     if sortcol = 'comment' then
       scol := 2;
-    if ((scol = 2))  then
+    if ((scol = 2)) then
     begin
       setlength(sSort, dl);
-      smethode:=2;
+      smethode := 2;
     end
     else
       setlength(dSort, dl);
@@ -773,12 +796,12 @@ begin
 
         if scol = 1 then
         begin
-          dSort[i] :=comments[i].commentId;
+          dSort[i] := comments[i].commentId;
           continue;
         end;
         if scol = 2 then
         begin
-          sSort[i] :=comments[i].text;
+          sSort[i] := comments[i].text;
           continue;
         end;
       end;
@@ -806,7 +829,8 @@ begin
   Panel2Resize(self);
 end;
 
-procedure TDynGrid.sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;var symbolsPlus:DACwSymbolPlus);
+procedure TDynGrid.sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;
+  var symbolsPlus: DACwSymbolPlus);
 var
   dl, i, scol, smethode: integer;
   gt: cardinal;
@@ -821,29 +845,45 @@ begin
   if ((source = 'cwsymbols')) then
   begin
 
+    if sortcol = 'symbolId' then
+      scol := 1;
+    if sortcol = 'brokerId' then
+      scol := 2;
+    if sortcol = 'digits' then
+      scol := 3;
+    if sortcol = 'tradeMode' then
+      scol := 4;
+    if sortcol = 'expiration' then
+      scol := 5;
+    if sortcol = 'contractSize' then
+      scol := 6;
+    if sortcol = 'tickValue' then
+      scol := 7;
+    if sortcol = 'tickSize' then
+      scol := 8;
+    if sortcol = 'type_' then
+      scol := 9;
+    if sortcol = 'trades' then
+      scol := 10;
+    if sortcol = 'volume' then
+      scol := 11;
+    if sortcol = 'profit' then
+      scol := 12;
+    if sortcol = 'symgroup' then
+      scol := 13;
+    if sortcol = 'name' then
+      scol := 14;
+    if sortcol = 'description' then
+      scol := 15;
+    if sortcol = 'currency' then
+      scol := 16;
+    if sortcol = 'margin_currency' then
+      scol := 17;
 
-if sortcol='symbolId' then scol:=1;
-if sortcol='brokerId' then scol:=2;
-if sortcol='digits' then scol:=3;
-if sortcol='tradeMode' then scol:=4;
-if sortcol='expiration' then scol:=5;
-if sortcol='contractSize' then scol:=6;
-if sortcol='tickValue' then scol:=7;
-if sortcol='tickSize' then scol:=8;
-if sortcol='type_' then scol:=9;
-if sortcol='trades' then scol:=10;
-if sortcol='volume' then scol:=11;
-if sortcol='profit' then scol:=12;
-if sortcol='symgroup' then scol:=13;
-if sortcol='name' then scol:=14;
-if sortcol='description' then scol:=15;
-if sortcol='currency' then scol:=16;
-if sortcol='margin_currency' then scol:=17;
-
-    if ((scol >13))  then
+    if ((scol > 13)) then
     begin
       setlength(sSort, dl);
-      smethode:=2;
+      smethode := 2;
     end
     else
       setlength(dSort, dl);
@@ -855,87 +895,87 @@ if sortcol='margin_currency' then scol:=17;
 
         if scol = 1 then
         begin
-          dSort[i] :=symbols[i].symbolId;
+          dSort[i] := symbols[i].symbolId;
           continue;
         end;
         if scol = 2 then
         begin
-          dSort[i] :=symbols[i].brokerId;
+          dSort[i] := symbols[i].brokerId;
           continue;
         end;
         if scol = 3 then
         begin
-          dSort[i] :=symbols[i].digits;
+          dSort[i] := symbols[i].digits;
           continue;
         end;
         if scol = 4 then
         begin
-          dSort[i] :=symbols[i].tradeMode;
+          dSort[i] := symbols[i].tradeMode;
           continue;
         end;
         if scol = 5 then
         begin
-          dSort[i] :=symbols[i].expiration;
+          dSort[i] := symbols[i].expiration;
           continue;
         end;
         if scol = 6 then
         begin
-          dSort[i] :=symbols[i].contractSize;
+          dSort[i] := symbols[i].contractSize;
           continue;
         end;
         if scol = 7 then
         begin
-          dSort[i] :=symbols[i].tickValue;
+          dSort[i] := symbols[i].tickValue;
           continue;
         end;
         if scol = 8 then
         begin
-          dSort[i] :=symbols[i].tickSize;
+          dSort[i] := symbols[i].tickSize;
           continue;
         end;
         if scol = 9 then
         begin
-          dSort[i] :=symbols[i].type_;
+          dSort[i] := symbols[i].type_;
           continue;
         end;
         if scol = 10 then
         begin
-          dSort[i] :=symbolsplus[i].TradesCount;
+          dSort[i] := symbolsPlus[i].TradesCount;
           continue;
         end;
-        if scol = 11  then
+        if scol = 11 then
         begin
-          dSort[i] :=symbolsplus[i].TradesVolumeTotal;
+          dSort[i] := symbolsPlus[i].TradesVolumeTotal;
           continue;
         end;
-        if scol = 12  then
+        if scol = 12 then
         begin
-          dSort[i] :=symbolsplus[i].TradesUsers;
+          dSort[i] := symbolsPlus[i].TradesUsers;
           continue;
         end;
-        if scol = 13  then
+        if scol = 13 then
         begin
-          dSort[i] :=symbolsplus[i].TradesProfitTotal;
+          dSort[i] := symbolsPlus[i].TradesProfitTotal;
           continue;
         end;
-        if scol = 14  then
+        if scol = 14 then
         begin
-          sSort[i] :=symbols[i].name;
+          sSort[i] := symbols[i].name;
           continue;
         end;
         if scol = 15 then
         begin
-          sSort[i] :=symbols[i].description;
+          sSort[i] := symbols[i].description;
           continue;
         end;
         if scol = 16 then
         begin
-          sSort[i] :=symbols[i].currency;
+          sSort[i] := symbols[i].currency;
           continue;
         end;
         if scol = 17 then
         begin
-          sSort[i] :=symbols[i].margin_currency;
+          sSort[i] := symbols[i].margin_currency;
           continue;
         end;
       end;
@@ -963,7 +1003,8 @@ if sortcol='margin_currency' then scol:=17;
   Panel2Resize(self);
 end;
 
-procedure TDynGrid.sortGridCwSymbolsGroups(source: string; sortcol: string; sortdir: integer; var symbolsGroups: DACwSymbolGroup);
+procedure TDynGrid.sortGridCwSymbolsGroups(source: string; sortcol: string; sortdir: integer;
+  var symbolsGroups: DACwSymbolGroup);
 var
   dl, i, scol, smethode: integer;
   gt: cardinal;
@@ -975,22 +1016,30 @@ begin
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
   scol := 1;
-  if ((source = 'cwsymbolsgroups')or(source='cwfilteredsymbolsgroups')) then
+  if ((source = 'cwsymbolsgroups') or (source = 'cwfilteredsymbolsgroups')) then
   begin
 
-  if sortcol='tradesCount' then scol:=1;
-if sortcol='tradesVolumeTotal' then scol:=2;
-if sortcol='tradesUsers' then scol:=3;
-if sortcol='tradesProfitTotal' then scol:=4;
-if sortcol='name' then scol:=6;
-if sortcol='sourceNames' then scol:=7;
-if sortcol='sourceIds' then scol:=8;
-if sortcol='groupId' then scol:=5;
+//    if sortcol = 'tradesCount' then
+//      scol := 1;
+//    if sortcol = 'tradesVolumeTotal' then
+//      scol := 2;
+//    if sortcol = 'tradesUsers' then
+//      scol := 3;
+//    if sortcol = 'tradesProfitTotal' then
+//      scol := 4;
+    if sortcol = 'name' then
+      scol := 6;
+    if sortcol = 'sourceNames' then
+      scol := 7;
+    if sortcol = 'sourceIds' then
+      scol := 8;
+    if sortcol = 'groupId' then
+      scol := 5;
 
-    if ((scol > 5 ))  then
+    if ((scol > 5)) then
     begin
       setlength(sSort, dl);
-      smethode:=2;
+      smethode := 2;
     end
     else
       setlength(dSort, dl);
@@ -1000,44 +1049,44 @@ if sortcol='groupId' then scol:=5;
       begin
         ixSorted[i] := i;
 
-        if scol = 1 then
-        begin
-          dSort[i] :=symbolsGroups[i].TradesCount;
-          continue;
-        end;
-        if scol = 2 then
-        begin
-          dSort[i] :=symbolsGroups[i].TradesVolumeTotal;
-          continue;
-        end;
-        if scol = 3 then
-        begin
-          dSort[i] :=symbolsGroups[i].TradesUsers;
-          continue;
-        end;
-        if scol = 4 then
-        begin
-          dSort[i] :=symbolsGroups[i].TradesProfitTotal;
-          continue;
-        end;
+//        if scol = 1 then
+//        begin
+//          dSort[i] := symbolsGroups[i].TradesCount;
+//          continue;
+//        end;
+//        if scol = 2 then
+//        begin
+//          dSort[i] := symbolsGroups[i].TradesVolumeTotal;
+//          continue;
+//        end;
+//        if scol = 3 then
+//        begin
+//          dSort[i] := symbolsGroups[i].TradesUsers;
+//          continue;
+//        end;
+//        if scol = 4 then
+//        begin
+//          dSort[i] := symbolsGroups[i].TradesProfitTotal;
+//          continue;
+//        end;
         if scol = 5 then
         begin
-          dSort[i] :=i;
+          dSort[i] := symbolsGroups[i].groupId;
           continue;
         end;
         if scol = 6 then
         begin
-          sSort[i] :=symbolsGroups[i].name;
+          sSort[i] := symbolsGroups[i].name;
           continue;
         end;
         if scol = 7 then
         begin
-          sSort[i] :=symbolsGroups[i].sourceNames;
+          sSort[i] := symbolsGroups[i].sourceNames;
           continue;
         end;
         if scol = 8 then
         begin
-          sSort[i] :=symbolsGroups[i].sourceIds;
+          sSort[i] := symbolsGroups[i].sourceIds;
           continue;
         end;
       end;
@@ -1064,8 +1113,6 @@ if sortcol='groupId' then scol:=5;
   lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
-
-
 
 procedure TDynGrid.gridHandler(Sender: TObject);
 var
@@ -1079,7 +1126,7 @@ begin
   //
   // with Sender as TDynGrid do
   // begin
-  rc := SG.RowCount;
+  rc := SG.rowcount;
   vCols := visibleCols; // cols und rows ändert sich dynamisch
   vRows := visibleRows;
   vScrollvon := scrollPosition; //
@@ -1090,18 +1137,16 @@ begin
     maxDataRows := length(cwFilteredActions);
   if source = 'cwsingleuseractions' then
     maxDataRows := length(cwSingleUserActions);
-  if source='cwsymbols' then
+  if source = 'cwsymbols' then
     maxDataRows := length(cwSymbols);
-  if source='cwusers' then
+  if source = 'cwusers' then
     maxDataRows := length(cwUsers);
-  if source='cwcomments' then
+  if source = 'cwcomments' then
     maxDataRows := length(cwComments);
-  if source='cwsymbolsgroups' then
+  if source = 'cwsymbolsgroups' then
     maxDataRows := length(cwSymbolsGroups);
-  if source='cwfilteredsymbolsgroups' then
+  if source = 'cwfilteredsymbolsgroups' then
     maxDataRows := length(cwFilteredSymbolsGroups);
-
-
 
   vscrollbis := vScrollvon + vRows;
   if vscrollbis > maxDataRows then
@@ -1115,15 +1160,15 @@ begin
   if source = 'cwsingleuseractions' then
     doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, vScrollvon, vscrollbis - 1);
 
-  if source='cwsymbols' then
-    doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwsymbols,cwsymbolsplus, vScrollvon, vscrollbis - 1);
-  if source='cwusers' then
-    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwusers,cwusersplus, vScrollvon, vscrollbis - 1);
-  if source='cwcomments' then
-    doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwcomments, vScrollvon, vscrollbis - 1);
-  if source='cwsymbolsgroups' then
+  if source = 'cwsymbols' then
+    doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
+  if source = 'cwusers' then
+    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwUsersplus, vScrollvon, vscrollbis - 1);
+  if source = 'cwcomments' then
+    doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, vScrollvon, vscrollbis - 1);
+  if source = 'cwsymbolsgroups' then
     doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbolsGroups, vScrollvon, vscrollbis - 1);
-  if source='cwfilteredsymbolsgroups' then
+  if source = 'cwfilteredsymbolsgroups' then
     doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwFilteredSymbolsGroups, vScrollvon, vscrollbis - 1);
 
   // end;
@@ -1178,19 +1223,16 @@ begin
             sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
           if source = 'cwsingleuseractions' then
             sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
-  if source='cwsymbols' then
-    sortGridCwsymbols(source, sortcol, sortdir, cwSymbols,cwsymbolsplus);
-  if source='cwusers' then
-    sortGridCwusers(source, sortcol, sortdir, cwUsers,cwUsersplus);
-  if source='cwcomments' then
-    sortGridCwcomments(source, sortcol, sortdir, cwComments);
-  if source='cwsymbolsgroups' then
-    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwSymbolsGroups);
-  if  source='cwfilteredsymbolsgroups' then
-    sortGridCwsymbolsgroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
-
-
-
+          if source = 'cwsymbols' then
+            sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
+          if source = 'cwusers' then
+            sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwUsersplus);
+          if source = 'cwcomments' then
+            sortGridCwComments(source, sortcol, sortdir, cwComments);
+          if source = 'cwsymbolsgroups' then
+            sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
+          if source = 'cwfilteredsymbolsgroups' then
+            sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
 
         end
         else if fixedCol then
@@ -1207,7 +1249,7 @@ begin
     end;
   end;
 
-procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+  procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
   var
     col, row, merk, i, nr, anr, fall, seltop, selbottom: integer;
     grid: FTCommons.TStringGridSorted;
@@ -1228,21 +1270,21 @@ procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShif
       mucol := col;
       murow := row;
       // showmessage(inttostr(mdcol)+'/'+inttostr(mucol));
-      //dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
+      // dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
       if Cursor = crDrag then
       begin
         if (murow = 0) and (mdrow = 0) then
         begin
           if (mucol <> mdcol) then
           begin
-          // col wurde verschiben
+            // col wurde verschiben
             setlength(SGColField, length(SGFieldCol));
             for i := 0 to length(SGFieldCol) - 1 do
               SGColField[SGFieldCol[i]] := i;
 
             if (mucol > mdcol) then
             begin
-              //nach rechts verschoben
+              // nach rechts verschoben
               merk := SGColField[mdcol];
               for i := mdcol to mucol - 1 do
                 SGColField[i] := SGColField[i + 1];
@@ -1277,17 +1319,16 @@ procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShif
                   found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, mucol, such)
                 else if source = 'cwsingleuseractions' then
                   found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such)
-  else if source='cwsymbols' then
-    found:=-1
-  else if source='cwusers' then
-    found:=-1
-  else if source='cwcomments' then
-    found:=-1
-  else if source='cwsymbolsgroups' then
-    found:=-1
-  else if source='cwfilteredsymbolsgroups' then
-    found:=-1
-  ;
+                else if source = 'cwsymbols' then
+                  found := -1
+                else if source = 'cwusers' then
+                  found := -1
+                else if source = 'cwcomments' then
+                  found := -1
+                else if source = 'cwsymbolsgroups' then
+                  found := -1
+                else if source = 'cwfilteredsymbolsgroups' then
+                  found := -1;
                 if found > -1 then
                   ScrollBar1.Position := found;
                 showmessage('z:' + inttostr(gettickcount - gt));
@@ -1388,6 +1429,5 @@ procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShif
     // gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
 
   end;
-
 
 end.

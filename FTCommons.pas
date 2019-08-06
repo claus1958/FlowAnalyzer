@@ -129,7 +129,7 @@ type
   DACwAction = array of cwAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
   cwActionPlus = packed Record
-    test: string;
+    userIndex: integer; //für die schnellere Suche !
   End;
 
   DACwActionPlus = array of cwActionPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -144,14 +144,24 @@ type
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
-  cwSymbolGroup = packed Record
-    name: string; // GE30
-    sourceNames: string; // GE30-Apr;GE30-Jul...
-    sourceIds: string; // 122;133;155;...
+
+  cwSummary = packed Record
+    par1:string;
+    par2:string;
+    par3:string;
     TradesCount: integer;
     TradesVolumeTotal: integer;
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
+  End;
+
+  DACwSummary = array of cwSummary;
+
+  cwSymbolGroup = packed Record
+    groupId: integer;
+    name: string; // GE30
+    sourceNames: string; // GE30-Apr;GE30-Jul...
+    sourceIds: string; // 122;133;155;...
   End;
 
   DACwSymbolGroup = array of cwSymbolGroup;
@@ -321,6 +331,7 @@ procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DA
 
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
+function BinSearchString3(var Index: intArray; var v: integer): integer;
 function BinSearchInt(var Ints: intArray; v: integer): integer;
 function BinSearchInt64(var Ints: int64Array; v: int64): integer;
 function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
@@ -340,6 +351,10 @@ var
   cwSymbols: DACwSymbol;
   cwSymbolsPlus: DACwSymbolPlus;
   cwSymbolsCt: integer;
+
+  cwSummaries: DACwSummary;
+  cwSummariesCt: integer;
+
 
   cwSymbolsGroups: DACwSymbolGroup;
   cwSymbolsGroupsCt: integer;
@@ -362,7 +377,7 @@ var
   cwActionsPlus: DACwActionPlus; // 'Alle' Actions
   cwActionsCt: integer;
   cwFilteredActions: DACwAction; // die herausgesuchten Actions
-  cwFilteredActionPlus: DACwActionPlus; // die herausgesuchten Actions
+  cwFilteredActionsPlus: DACwActionPlus; // die herausgesuchten Actions
   cwFilteredActionCt: integer;
   cwRatings: DACwRating;
   lboxDebug: TListBox;
@@ -1227,6 +1242,8 @@ begin
       SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
       SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
       SG.cells[SGFieldCol[23], 0] := 'marginRate';
+      SG.cells[SGFieldCol[24], 0] := 'symGroupId';
+
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1259,6 +1276,9 @@ begin
       SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
       SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
       SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
+      if cwSymbolsGroupsCt > 0 then
+        SG.cells[SGFieldCol[24], row] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
+
       SG.Rows[row].endUpdate;
     end;
   except
@@ -1281,8 +1301,8 @@ begin
     if (justone = false) then
     begin
       SG.Rows[0].BeginUpdate;
-      SG.cells[SGFieldCol[0],0] := 'commentId';
-      SG.cells[SGFieldCol[1],0] := 'comment';
+      SG.cells[SGFieldCol[0], 0] := 'commentId';
+      SG.cells[SGFieldCol[1], 0] := 'comment';
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1417,6 +1437,7 @@ begin
       SG.cells[SGFieldCol[14], 0] := 'Volume';
       SG.cells[SGFieldCol[15], 0] := 'Profit';
       SG.cells[SGFieldCol[16], 0] := 'symGroup';
+      SG.cells[SGFieldCol[17], 0] := 'symGroupId';
 
       SG.Rows[0].endUpdate;
     end;
@@ -1443,7 +1464,10 @@ begin
       SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[sort[k]].TradesVolumeTotal);
       SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesProfitTotal);
       if cwSymbolsGroupsCt > 0 then
+      begin
         SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[sort[k]].groupId].name;
+        SG.cells[SGFieldCol[17], row] := inttostr(symbolsPlus[sort[k]].groupId);
+      end;
       SG.Rows[row].endUpdate;
     end;
   except
@@ -1469,10 +1493,10 @@ begin
       SG.cells[SGFieldCol[0], 0] := 'groupId';
       // SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'name';
-      SG.cells[SGFieldCol[2], 0] := 'tradesCount';
-      SG.cells[SGFieldCol[3], 0] := 'tradesVolumeTotal';
-      SG.cells[SGFieldCol[4], 0] := 'tradesUsers';
-      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
+//      SG.cells[SGFieldCol[2], 0] := 'tradesCount';
+//      SG.cells[SGFieldCol[3], 0] := 'tradesVolumeTotal';
+//      SG.cells[SGFieldCol[4], 0] := 'tradesUsers';
+//      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'sourceNames';
       SG.cells[SGFieldCol[7], 0] := 'sourceIds';
       SG.Rows[0].endUpdate;
@@ -1484,12 +1508,12 @@ begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
 
-      SG.cells[SGFieldCol[0], row] := inttostr(sort[k]);
+      SG.cells[SGFieldCol[0], row] := inttostr(symbolsGroups[sort[k]].groupId);
       SG.cells[SGFieldCol[1], row] := symbolsGroups[sort[k]].name;
-      SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
-      SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);
-      SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
-      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
+//      SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
+//      SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);
+//      SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
+//      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := symbolsGroups[sort[k]].sourceNames;
       SG.cells[SGFieldCol[7], row] := symbolsGroups[sort[k]].sourceIds;
 
@@ -1994,10 +2018,10 @@ begin
     SG.cells[SGFieldCol[0], 0] := 'groupId';
     // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'name';
-    SG.cells[SGFieldCol[2], 0] := 'TradesCount';
-    SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
-    SG.cells[SGFieldCol[4], 0] := 'T.Users';
-    SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
+//    SG.cells[SGFieldCol[2], 0] := 'TradesCount';
+//    SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
+//    SG.cells[SGFieldCol[4], 0] := 'T.Users';
+//    SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
     SG.cells[SGFieldCol[6], 0] := 'sourceNames';
     SG.cells[SGFieldCol[7], 0] := 'sourceIds';
     row := 0;
@@ -2007,12 +2031,12 @@ begin
       row := row + 1;
       if (row < (total + 1)) then
       begin
-        SG.cells[SGFieldCol[0], row] := inttostr(k);
+        SG.cells[SGFieldCol[0], row] := inttostr(symbolsGroups[k].groupId);
         SG.cells[SGFieldCol[1], row] := symbolsGroups[k].name;
-        SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
-        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesVolumeTotal);
-        SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
-        SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
+//        SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
+//        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesVolumeTotal);
+//        SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
+//        SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
         SG.cells[SGFieldCol[6], row] := symbolsGroups[k].sourceNames;
         SG.cells[SGFieldCol[7], row] := symbolsGroups[k].sourceIds;
 
@@ -3158,7 +3182,7 @@ begin
 end;
 
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
-// ich nehme zwei Arrays nehmen: eines it 12345=45678 und eines nur 12345 damit man die strtoint-Berechnung spart
+// ich nehme zwei Arrays : eines it 12345=45678 und eines nur 12345 damit man die strtoint-Berechnung spart
 var
   // spezielle Variante die nach 12345 in 12345=45678 sucht und 45678 liefert
   first: integer;
@@ -3201,6 +3225,53 @@ begin
       first := Pivot + 1;
   end;
 end;
+
+function BinSearchString3(var Index: intArray; var v: integer): integer;
+// ich nur ein Array. Macht aber keinen Unterschied
+var
+  // spezielle Variante die nach 12345 in 12345=45678 sucht und 45678 liefert
+  first: integer;
+  Last: integer;
+  Pivot: integer;
+  Found: Boolean;
+  substr: string;
+  ps: string;
+  p: integer;
+  pi: integer;
+begin
+
+    // inttostr ist halb so schnell wie strtoint
+  first := Low(index); // Sets the first item of the range
+  Last := High(index); // Sets the last item of the range
+  Found := false; // Initializes the Found flag (Not found yet)
+  result := -1; // Initializes the Result
+  // substr := inttostr(v);
+  // If First > Last then the searched item doesn't exist
+  // If the item is found the loop will stop
+  while (first <= Last) and (not Found) do
+  begin
+    // Gets the middle of the selected range
+    Pivot := (first + Last) div 2;
+    // Compares the String in the middle with the searched one
+    // p := pos('=', Strings[Pivot]);
+    // ps := leftstr(Strings[Pivot], p - 1);
+    // pi := strtoint(ps);
+    if index[Pivot] = v then
+    // if ps = substr then
+    begin
+      Found := true;
+      result := Pivot;
+    end
+    // If the Item in the middle has a bigger value than
+    // the searched item, then select the first half
+    else if index[Pivot] > v then
+      Last := Pivot - 1
+      // else select the second half
+    else
+      first := Pivot + 1;
+  end;
+end;
+
 
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 var
@@ -3323,6 +3394,7 @@ begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
   // mit Binsearch2 sinds: 850  Super:-)
   i := BinSearchString2(cwUsersSortIndex, cwUsersSortIndex2, userId);
+//  i := BinSearchString3(cwUsersSortIndex2, userId);
   if (i > -1) then
   begin
     p := pos('=', cwUsersSortIndex[i]);
@@ -3333,54 +3405,59 @@ begin
 end;
 
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
-var
-  i, j, symbolId, groupId: integer;
-  TradesCount: integer;
-  TradesVolumeTotal: integer;
-  TradesProfitTotal: double;
-  sum: double;
+//var
+//  i, j, symbolId, groupId: integer;
+//  TradesCount: integer;
+//  TradesVolumeTotal: integer;
+//  TradesProfitTotal: double;
+//  sum: double;
 begin
-  TradesCount := 0;
-  TradesVolumeTotal := 0;
-  TradesProfitTotal := 0;
-  for i := 0 to length(groups) - 1 do
-  begin
-    groups[i].TradesCount := 0;
-    groups[i].TradesVolumeTotal := 0;
-    groups[i].TradesUsers := 0;
-    groups[i].TradesProfitTotal := 0;
-    groups[i].sourceNames := '';
-    groups[i].sourceIds := '';
-  end;
-  for i := 0 to cwSymbolsCt - 1 do
-  begin
-    j := cwSymbolsPlus[i].groupId;
-    groups[j].sourceNames := groups[j].sourceNames + cwSymbols[i].name + ';';
-    groups[j].sourceIds := groups[j].sourceIds + inttostr(i) + ';';
-  end;
-
-  for i := 0 to length(actions) - 1 do
-  begin
-    // Balance rauslassen ? Ist aber auch interessant
-    symbolId := actions[i].symbolId;
-    groupId := cwSymbolsPlus[symbolId].groupId;
-    Inc(groups[groupId].TradesCount);
-    Inc(TradesCount);
-    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
-    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
-    groups[groupId].TradesUsers := 0;
-    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
-    TradesProfitTotal := TradesProfitTotal + actions[i].swap + actions[i].profit;
-  end;
-  lb.items.Clear;
-  lb.items.add('Actions:' + #9 + inttostr(length(actions)));
-  lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
-  lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));
-  lb.items.add('BalanceTotal:' + #9 + FormatFloat(',#0.00', groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
-  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId]
-    .TradesCount));
-  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
-    .TradesProfitTotal));
+//  TradesCount := 0;
+//  TradesVolumeTotal := 0;
+//  TradesProfitTotal := 0;
+//  for i := 0 to length(groups) - 1 do
+//  begin
+//    //die folgenden sind hier aus den actions berechenbar
+//    groups[i].TradesCount := 0;
+//    groups[i].TradesVolumeTotal := 0;
+//    groups[i].TradesProfitTotal := 0;
+//    //die folgenden hier nicht direkt berechenbar
+//    groups[i].TradesUsers := 0;
+//    groups[i].sourceNames := '';
+//    groups[i].sourceIds := '';
+//    groups[i].groupId := i;
+//
+//  end;
+//
+//  for i := 0 to cwSymbolsCt - 1 do
+//  begin
+//    j := cwSymbolsPlus[i].groupId;
+//    groups[j].sourceNames := groups[j].sourceNames + cwSymbols[i].name + ';';
+//    groups[j].sourceIds := groups[j].sourceIds + inttostr(i) + ';';
+//  end;
+//
+//  for i := 0 to length(actions) - 1 do
+//  begin
+//    // Balance rauslassen ? Ist aber auch interessant
+//    symbolId := actions[i].symbolId;
+//    groupId := cwSymbolsPlus[symbolId].groupId;
+//    // direkt nach Symbolen(ohne Gruppe) wäre hier symbolId zu verwenden und cwSymbolsCt wäre die Größe der 'group'
+//    Inc(groups[groupId].TradesCount);
+//    Inc(TradesCount);
+//    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
+//    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
+//    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
+//    TradesProfitTotal := TradesProfitTotal + actions[i].swap + actions[i].profit;
+//  end;
+//  lb.items.Clear;
+//  lb.items.add('Actions:' + #9 + inttostr(length(actions)));
+//  lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
+//  lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));
+//  lb.items.add('BalanceTotal:' + #9 + FormatFloat(',#0.00', groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
+//  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId]
+//    .TradesCount));
+//  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
+//    .TradesProfitTotal));
 
 end;
 

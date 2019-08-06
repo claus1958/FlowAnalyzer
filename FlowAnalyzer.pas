@@ -228,8 +228,8 @@ type
     procedure CategoryPanelCollapse2(Sender: TObject);
     procedure btnGroupSymbolsClick(Sender: TObject);
     procedure btnOnePageClick(Sender: TObject);
-    procedure doGroupSymbols(quelle:string;var actions: DACwAction; var groups: DACwSymbolGroup; var groupsCt: Integer;
-      SG: FTCommons.TStringGridSorted; lb: TListBox);
+    procedure doGroupSymbols(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
+      var groups: DACwSymbolGroup; var groupsCt: Integer; SG: FTCommons.TStringGridSorted; lb: TListBox);
     procedure CategoryPanel9CollapseExpand(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure btnPieChartClick(Sender: TObject);
@@ -239,7 +239,7 @@ type
     procedure SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
     procedure SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: Integer);
-
+    procedure machActionsUserIndex;
   private
     { Private-Deklarationen }
   public
@@ -593,7 +593,7 @@ begin
   SetLength(cwSingleUserActionsPlus, fz + 1);
   cwsingleuseractionsCt := fz + 1;
 
-  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 24 + 3);
+  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 25);
 
   // max := cwsingleuseractionsCt;
   // if max > maxActionsPerGrid then
@@ -630,19 +630,21 @@ begin
     nam := name;
   if (nam = 'btnGroupSymbolsAllActions') then
   begin
-    pnlPieButtons.Visible:=false;
-    doGroupSymbols('cwsymbolsgroups',cwActions, cwsymbolsgroups, cwsymbolsgroupsCt, SGCwSymbolsGroups, lbSymbolsGroupsInfo);
+    pnlPieButtons.Visible := false;
+    doGroupSymbols('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, SGCwSymbolsGroups,
+      lbSymbolsGroupsInfo);
 
   end;
   if (nam = 'btnGroupSymbolsFilteredActions') then
   begin
-    pnlPieButtons.Visible:=true;
-    doGroupSymbols('cwfilteredsymbolsgroups',cwFilteredActions, cwFilteredSymbolsGroups, cwFilteredSymbolsGroupsct, SGCwSymbolsGroups,lbSymbolsGroupsInfo);
+    pnlPieButtons.Visible := true;
+    doGroupSymbols('cwfilteredsymbolsgroups', cwFilteredActions, cwFilteredActionsPlus, cwFilteredSymbolsGroups,
+      cwFilteredSymbolsGroupsct, SGCwSymbolsGroups, lbSymbolsGroupsInfo);
   end;
 end;
 
-procedure TForm2.doGroupSymbols(quelle:string;var actions: DACwAction; var groups: DACwSymbolGroup; var groupsCt: Integer;
-  SG: FTCommons.TStringGridSorted; lb: TListBox);
+procedure TForm2.doGroupSymbols(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
+  var groups: DACwSymbolGroup; var groupsCt: Integer; SG: FTCommons.TStringGridSorted; lb: TListBox);
 // aus den actions (alle oder eine Teilmenge) werden Symbolgruppen gebildet mit ähnlichen Namen
 // die Symbolgruppe aller Actions ändert sich im Verlauf nicht
 // die Symbolgruppe der Teilmenge von Actions ändert sich
@@ -662,7 +664,7 @@ var
 label weiter;
 
 begin
-
+  gt := GetTickCount;
   typ := 0;
 
   t := TStringList.Create;
@@ -682,7 +684,6 @@ begin
     if s <> smerk then
     begin
       t.Add(s);
-
       smerk := s;
     end
     else
@@ -702,12 +703,10 @@ begin
       else
       // die 5 Buchstaben wiederholen sich also kein neues Groupsymbol anlegen
       begin
-
         t2.Strings[t2.Count - 1] := leftstr(t2.Strings[t2.Count - 1], 5);
       end;;
       smerk5 := s5;
     end;
-
   end;
   // jetzt könnten noch spezielle Fälle eliminiert werden
   // HOil NGas OJ
@@ -728,14 +727,14 @@ begin
   SetLength(groups, groupsCt);
   for i := 0 to groupsCt - 1 do
   begin
+    groups[i].groupId := i;
     groups[i].name := t2.Strings[i];
     groups[i].sourceNames := '';
     groups[i].sourceIds := '';
-    groups[i].TradesCount := 0;
-    groups[i].TradesVolumeTotal := 0;
-    groups[i].TradesUsers := 0;
-    groups[i].TradesProfitTotal := 0;
-
+//    groups[i].TradesCount := 0;
+//    groups[i].TradesVolumeTotal := 0;
+//    groups[i].TradesUsers := 0;
+//    groups[i].TradesProfitTotal := 0;
   end;
 
   t.Free;
@@ -753,7 +752,7 @@ begin
           if leftstr(groups[j].name, k) = s6 then
           begin
             found := j;
-            cwSymbolsPlus[i].GroupId := j;
+            cwSymbolsPlus[i].groupId := j;
             goto weiter;
           end;
         end;
@@ -761,64 +760,95 @@ begin
     end;
   weiter:
   end;
+  lbCSVError.Items.Add('Z:Build SymbolGroups:' + inttostr(GetTickCount - gt));
 
-  // Problem: die Actions werden zwar selektiert verwendet aber die groups ist das 'große' Array mit allen Symbolen - auch den in den Actions nicht verwendeten
-  // die Zuordnung jedoch stimmt zwischen groups und cwsymbolsplus. Lediglich die Summen stellen Teilsummen dar aus der Untergruppe der gefilterten Actions
-  computeSymbolGroupValues(actions, groups, lb);
+  //damit sind die SymbolGroups ermittelt und können ab jetzt verwendet werden
 
-  // User zählen über ein Riesenarray
-  gt := GetTickCount;
-  SetLength(aba, groupsCt);
-  ll := length(cwUsers);
-  for i := 0 to groupsCt - 1 do
-  begin
-    SetLength(aba[i], ll);
-  end;
-
-  for i := 0 to groupsCt - 1 do
-    for j := 0 to length(cwUsers) - 1 do
-      aba[i][j] := 0;
-  for i := 0 to length(actions) - 1 do
-  begin
-    inc(aba[cwSymbolsPlus[cwActions[i].symbolId].GroupId, finduserindex(actions[i].userId)]);
-  end;
-
-  for i := 0 to groupsCt - 1 do
-  begin
-    ct := 0;
-    for j := 0 to length(cwUsers) - 1 do
-    begin
-      if aba[i, j] > 0 then
-        ct := ct + 1;
-
-    end;
-    if (ct > 0) then
-    begin
-      groups[i].TradesUsers := ct;
-    end;
-  end;
-  lbCSVError.Items.Add('Z:Usercount:' + inttostr(GetTickCount - gt));
-
-  // ausdünnen der Symbole ohne Trades
-  // damit wird aber cwsymbolsplus().groupid FALSCH
-  j := -1;
-  for i := 0 to groupsCt - 1 do
-  begin
-    if groups[i].TradesCount <> 0 then
-    begin
-      inc(j);
-      groups[j] := groups[i];
-    end;
-  end;
-  groupsCt := j + 1;
-  SetLength(groups, groupsCt);
-  lb.Items.Add('Used Sym.groups:'+#9 + inttostr(groupsCt));
-
-  doSymbolsGroupsGridCW(SGCwSymbolsGroups, SGFieldCol, groups, length(groups), maxActionsPerGrid, 1);
-  autosizegrid(SGCwSymbolsGroups);
-  DynGrid8.initGrid(quelle, 'groupId', 1, length(groups),17);
+  //Der Rest ist hinfällig weil künftig anders gelöst !
 
 
+
+//  // Problem: die Actions werden zwar selektiert verwendet aber die groups ist das 'große' Array mit allen Symbolen
+//  // - auch den in den selektierten Actions nicht verwendeten
+//  // die Zuordnung jedoch stimmt zwischen groups und cwsymbolsplus.
+//  // Lediglich die Summen stellen Teilsummen aus der Untergruppe der gefilterten Actions dar
+//  // die ganzen Werte können aus den actions gebildet werden (aufsummieren zB Volume) aber nicht direkt
+//  // die Anzahl verschiedener User
+//  gt:=gettickcount;
+//  computeSymbolGroupValues(actions, groups, lb);
+//  lbCSVError.Items.Add('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
+//
+//  gt := GetTickCount;
+//  // User zählen über ein Riesenarray
+//
+//  // aba = Array of ByteArray
+//  SetLength(aba, groupsCt);
+//  ll := length(cwUsers);
+//  for i := 0 to groupsCt - 1 do
+//  begin
+//    SetLength(aba[i], ll);
+//  end;
+//  // ganze Matrix nullsetzen
+//  for i := 0 to groupsCt - 1 do
+//    for j := 0 to length(cwUsers) - 1 do
+//      aba[i][j] := 0;
+//  lbCSVError.Items.Add('Z:Usercount vorbereiten:' + inttostr(GetTickCount - gt));
+//
+//  gt := GetTickCount;
+//  for i := 0 to length(actions) - 1 do
+//  begin
+//    // alle Actions mit Gruppe/UserID in Matrix um 1 erhöhen
+//    // alte Variante
+//    // inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]);
+//    inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, actionsPlus[i].userIndex]);
+//  end;
+//  lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
+//
+//
+//  gt := GetTickCount;
+//  for i := 0 to groupsCt - 1 do
+//  begin
+//    ct := 0;
+//    for j := 0 to length(cwUsers) - 1 do
+//    begin
+//      if aba[i, j] > 0 then
+//        ct := ct + 1;
+//    end;
+//    if (ct > 0) then
+//    begin
+//      groups[i].TradesUsers := ct;
+//    end;
+//  end;
+//
+//  lbCSVError.Items.Add('Z:Gruppen Userwerte zuordnen:' + inttostr(GetTickCount - gt));
+//
+//  if (1 = 0) then
+//  begin
+//    // ausdünnen der Symbole ohne Trades
+//    // damit wird aber cwsymbolsplus().groupid FALSCH
+//    j := -1;
+//    for i := 0 to groupsCt - 1 do
+//    begin
+//      if groups[i].TradesCount <> 0 then
+//      begin
+//        inc(j);
+//        groups[j] := groups[i];
+//      end;
+//    end;
+//    groupsCt := j + 1;
+//    SetLength(groups, groupsCt);
+//    lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
+//
+//  end;
+//
+//  // 'cwsymbolsgroups'
+//  // 'cwfilteredsymbolsgroups'
+//
+//  doSymbolsGroupsGridCW(SGCwSymbolsGroups, SGFieldCol, groups, length(groups), maxActionsPerGrid, 1);
+//  autosizegrid(SGCwSymbolsGroups);
+//  DynGrid8.initGrid(quelle, 'groupId', 1, length(groups), 18);
+
+  // nochmal die Symbol-Liste neu darstellen weil jetzt die Symbolgruppen drin sind
   btnCwSymbolsToGridClick(nil);
 end;
 
@@ -941,10 +971,10 @@ begin
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10 +
     ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
-  TabSheet1.TabVisible := true;//Filter
-  TabSheet6.TabVisible := true;//All Data
-  TabSheet5.TabVisible := true;//User
-  TabSheet7.TabVisible := true;//SymbolsGroups
+  TabSheet1.TabVisible := true; // Filter
+  TabSheet6.TabVisible := true; // All Data
+  TabSheet5.TabVisible := true; // User
+  TabSheet7.TabVisible := true; // SymbolsGroups
 
   PageControl1.TabIndex := 1;
 
@@ -981,13 +1011,15 @@ begin
     cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
   end;
 
+  machActionsUserIndex();
+
   btnDoUsersPlusClick(nil); // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus
 
-  //den ersten User 'anklicken' und dessen actions im Grid darstellen
+  // den ersten User 'anklicken' und dessen actions im Grid darstellen
   edSingleUserActionsId.text := inttostr(cwActions[0].userId);
   btnGetSingleUserActionsClick(nil);
 
-  //die 4 Grids in Alle befüllen
+  // die 4 Grids in Alle befüllen
   btnCwSymbolsToGridClick(nil);
   btnCwusersToGridClick(nil);
   btnCwCommentsToGridClick(nil);
@@ -1005,6 +1037,22 @@ begin
   Memo1.lines.Add(s);
   // lblLoadInfo.Repaint;
   lbLoadInfo.Repaint;
+end;
+
+procedure TForm2.machActionsUserIndex;
+var
+  i, j: Integer;
+  index: Integer;
+  gt: Cardinal;
+begin
+  //
+  gt := GetTickCount;
+  for i := 0 to length(cwActions) - 1 do
+  begin
+    index := finduserindex(cwActions[i].userId);
+    cwActionsPlus[i].userIndex := index;
+  end;
+  lbCSVError.Items.Add('Z:MachActionsUserIndex:' + inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.machPieChart(data: DAPieValue; datact: Integer; para: TPieParameters; cv: TAdvGDIPChartView;
@@ -1081,7 +1129,7 @@ procedure TForm2.btnSelectClearCwClick(Sender: TObject);
 begin
   cwFilteredActionCt := 0;
   SetLength(cwFilteredActions, 0);
-  SetLength(cwFilteredActionPlus, 0);
+  SetLength(cwFilteredActionsPlus, 0);
   if 1 = 1 then
   begin
     ClearStringGridSorted(SGCacheCwSearch);
@@ -1111,7 +1159,7 @@ begin
   // autosizegrid(SGCwCache);
   //
   // doCacheGridCwInfo;
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 24 + 3);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 25);
 end;
 
 procedure TForm2.btnPieChartClick(Sender: TObject);
@@ -1122,14 +1170,17 @@ var
   i, j: Integer;
   serie: Integer;
   pane: Integer;
-  styp:integer;
+  styp: Integer;
 begin
   // die Top-X und den Rest als Piechart darstellen
   // TPieValue DAPieValue
 
-  if (Sender = btnPieChart1) then styp:=1;
-  if (Sender = btnPieChart2) then styp:=2;
-  if (Sender = btnPieChart3) then styp:=3;
+  if (Sender = btnPieChart1) then
+    styp := 1;
+  if (Sender = btnPieChart2) then
+    styp := 2;
+  if (Sender = btnPieChart3) then
+    styp := 3;
 
   para.header := 'test';
   pane := 0;
@@ -1138,9 +1189,12 @@ begin
   SetLength(data, datact);
   for i := 0 to datact - 1 do
   begin
-    if styp=1 then data[i].value := cwFilteredSymbolsGroups[i].TradesCount; // , cwFilteredSymbolsGroupsct;
-    if styp=2 then data[i].value := cwFilteredSymbolsGroups[i].TradesVolumeTotal; // , cwFilteredSymbolsGroupsct;
-    if styp=3 then data[i].value := cwFilteredSymbolsGroups[i].TradesProfitTotal; // , cwFilteredSymbolsGroupsct;
+    if styp = 1 then
+      data[i].value :=0;// cwFilteredSymbolsGroups[i].TradesCount; // , cwFilteredSymbolsGroupsct;
+    if styp = 2 then
+      data[i].value :=0;// cwFilteredSymbolsGroups[i].TradesVolumeTotal; // , cwFilteredSymbolsGroupsct;
+    if styp = 3 then
+      data[i].value :=0;// cwFilteredSymbolsGroups[i].TradesProfitTotal; // , cwFilteredSymbolsGroupsct;
     data[i].text := cwFilteredSymbolsGroups[i].name;
     data[i].color1 := random($1000000);
     data[i].color2 := random($1000000);
@@ -1228,6 +1282,7 @@ begin
     cwUsersPlus[i].totaltrades := 0;
     cwUsersPlus[i].totalprofit := 0;
     cwUsersPlus[i].totalsymbols := 0;
+    cwUsersPlus[i].totalbalance := 0;
   end;
 
   for i := 0 to length(cwActions) - 1 do
@@ -1239,14 +1294,16 @@ begin
     cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal +
       cwActions[i].profit + cwActions[i].swap;
 
-    index := finduserindex(cwActions[i].userId);
+    // NEU: die schnelle Variante
+    // index := finduserindex(cwActions[i].userId);
+    index := cwActionsPlus[i].userIndex;
     if index > -1 then
     begin
       // cwusersplus[index].totalSymbols:=0;
       inc(cwUsersPlus[index].totaltrades);
       if cwActions[i].typeId = 7 then
       begin
-        cwUsersPlus[index].totalBalance := cwUsersPlus[index].totalBalance + cwActions[i].profit;
+        cwUsersPlus[index].totalbalance := cwUsersPlus[index].totalbalance + cwActions[i].profit;
       end
       else
       begin
@@ -1267,8 +1324,28 @@ var
   max, fzmax: Integer;
   gt: Cardinal;
   chk: array of boolean;
-label weiter;
+  faktivCt: Integer;
+
+label weiter, weiter1;
 begin
+
+  faktivCt := 0;
+  for i := 1 to FilterCt do
+  begin
+    if Filter[i].chkActive.Checked = true then
+      inc(faktivCt);
+  end;
+  if faktivCt = 0 then
+  begin
+    SetLength(cwFilteredActions, length(cwActions));
+    SetLength(cwFilteredActionsPlus, length(cwActions));
+    for i := 0 to length(cwActions) - 1 do
+      cwFilteredActions[i] := cwActions[i];
+    cwFilteredActionCt := length(cwActions);
+
+    goto weiter1;
+  end;
+
   SetLength(cwfilterParameter, FilterCt + 1);
   SetLength(chk, FilterCt + 1);
   for i := 1 to FilterCt do
@@ -1310,7 +1387,7 @@ begin
       begin
         fzmax := fzmax + 1000;
         SetLength(cwFilteredActions, fzmax);
-        SetLength(cwFilteredActionPlus, fzmax);
+        SetLength(cwFilteredActionsPlus, fzmax);
       end;
       cwFilteredActions[fz] := cwActions[i];
 
@@ -1319,13 +1396,15 @@ begin
   weiter:
 
   end;
+
   lblFilterResult.Caption := (inttostr(timegettime - gt) + ' ct1:' + inttostr(Filter[1].counter) + ' ct2:' +
     inttostr(Filter[2].counter) + ' ct3:' + inttostr(Filter[3].counter));
 
   cwFilteredActionCt := fz + 1;
-  SetLength(cwFilteredActions, fz + 1); // vergessen
-  SetLength(cwFilteredActionPlus, fz + 1); // vergessen
+  SetLength(cwFilteredActions, fz + 1);
+  SetLength(cwFilteredActionsPlus, fz + 1);
 
+weiter1:
   max := maxActionsPerGrid;
   if cwFilteredActionCt < max then
     max := cwFilteredActionCt;
@@ -1348,10 +1427,10 @@ begin
     ' of ' + inttostr(length(cwActions));
   if max < cwFilteredActionCt then
   begin
-    lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption + ' Grid:' + inttostr(max);
+    lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption;
   end;
 
-  DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 24 + 3);
+  DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 25);
 end;
 
 procedure TForm2.Button5Click(Sender: TObject);
@@ -1415,6 +1494,7 @@ begin
     if (cwActions[i].accountId = 4) then
       if (cwActions[i].typeId = 7) then
       begin
+
         // if vergleichInteger(cwActions[i].typeId, 7, 1) = true then
         // begin
         // hinzufügen
@@ -1424,7 +1504,7 @@ begin
           begin
             fzmax := fzmax + 50000;
             SetLength(cwFilteredActions, fzmax);
-            SetLength(cwFilteredActionPlus, fzmax);
+            SetLength(cwFilteredActionsPlus, fzmax);
           end;
           cwFilteredActions[fz] := cwActions[i];
         end;
@@ -1435,7 +1515,7 @@ begin
   showmessage('z:' + inttostr(timegettime - gt) + ' ' + inttostr(timegettime - tg));
   cwFilteredActionCt := fz + 1;
   SetLength(cwFilteredActions, fz + 1); // vergessen
-  SetLength(cwFilteredActionPlus, fz + 1); // vergessen
+  SetLength(cwFilteredActionsPlus, fz + 1); // vergessen
 
   max := maxActionsPerGrid;
   if cwFilteredActionCt < max then
@@ -1471,8 +1551,7 @@ end;
 
 procedure TForm2.Button7Click(Sender: TObject);
 begin
-  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 24 + 3);
-  // nGrid2.initGrid('cwactions', 'userId', 1, length(cwActions), 20);
+  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 25);
 end;
 
 procedure TForm2.Button8Click(Sender: TObject);
@@ -1913,7 +1992,7 @@ begin
   TabSheet6.TabVisible := false;
   TabSheet5.TabVisible := false;
   TabSheet7.TabVisible := false;
-  //TabSheet4.TabVisible := false;
+  // TabSheet4.TabVisible := false;
 
   brokerShort[1] := 'LCG';
   brokerShort[2] := 'AT';
@@ -1986,7 +2065,7 @@ procedure TForm2.btnCwactionsToGridClick(Sender: TObject);
 begin
   // doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
   // autosizegrid(SGCwCache);
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 24 + 3);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 25);
 end;
 
 procedure TForm2.btnCwCommentsToGridClick(Sender: TObject);
@@ -1999,7 +2078,7 @@ end;
 procedure TForm2.btnCwSymbolsToGridClick(Sender: TObject);
 begin
   doSymbolsGridCW(SGCwSymbols, SGFieldCol, cwSymbols, cwSymbolsPlus, length(cwSymbols), maxActionsPerGrid, 1);
-  DynGrid5.initGrid('cwsymbols', 'symbolId', 1, length(cwsymbols), 17);
+  DynGrid5.initGrid('cwsymbols', 'symbolId', 1, length(cwSymbols), 18);
 
   autosizegrid(SGCwSymbols);
 
@@ -2009,7 +2088,7 @@ procedure TForm2.btnCwusersToGridClick(Sender: TObject);
 begin
   doUsersGridCW(SGCwUsers, SGFieldCol, cwUsers, cwUsersPlus, length(cwUsers), maxActionsPerGrid, 1);
   autosizegrid(SGCwUsers);
-  DynGrid6.initGrid('cwusers', 'userId', 1, length(cwusers), 26);
+  DynGrid6.initGrid('cwusers', 'userId', 1, length(cwUsers), 26);
 
 end;
 
@@ -2151,7 +2230,7 @@ begin
   cwFilteredActions := Copy(dummy, 0, cwFilteredActionCt);
   cwFilteredActionCt := dptr + 1;
   SetLength(cwFilteredActions, cwFilteredActionCt);
-  SetLength(cwFilteredActionPlus, cwFilteredActionCt);
+  SetLength(cwFilteredActionsPlus, cwFilteredActionCt);
 
   doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt, 1);
   // lblCacheCwSearchResult.Caption := inttostr(cwFilteredActionCt);
@@ -2196,33 +2275,34 @@ end;
 // end;
 
 procedure TForm2.SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: Integer);
-var s:string;
-// das Verschieben wird intern im Grid behandelt und schlägt sich nicht in den Variablen nieder
+var
+  s: string;
+  // das Verschieben wird intern im Grid behandelt und schlägt sich nicht in den Variablen nieder
 begin
-s:='';
+  s := '';
 end;
 
 procedure TForm2.SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
 var
   s: string;
   r: TRect;
-  merkColor:integer;
+  merkColor: Integer;
 begin
   with Sender as TStringGrid do
 
   begin
-    if ((ARow = 0) and (ACol=SGCwSymbolsGroups.tag)) then
+    if ((ARow = 0) and (ACol = SGCwSymbolsGroups.tag)) then
     begin
       s := Cells[ACol, ARow];
-      merkColor:=Canvas.Brush.Color;
+      merkColor := Canvas.Brush.Color;
       Canvas.Brush.Color := clGray;
 
       r := Rect;
       r.left := r.left - 4; // -4 wird ganz gefüllt
       Canvas.FillRect(r);
-      //Canvas.Pen.Color := clBlue;
+      // Canvas.Pen.Color := clBlue;
       r.left := r.left + 6;
-      r.Top := r.Top + 4;
+      r.top := r.top + 4;
       DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
 
       Canvas.Brush.Color := merkColor;
@@ -2230,453 +2310,448 @@ begin
   end;
 end;
 
-
-
-
 procedure TForm2.SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-  var
-    grid: FTCommons.TStringGridSorted;
-    col, row: Integer;
+var
+  grid: FTCommons.TStringGridSorted;
+  col, row: Integer;
 
+begin
+  // nur in der obersten Fix row
+  if Button = mbleft then
   begin
-     //nur in der obersten Fix row
-    if Button = mbleft then
-    begin
-      grid := Sender as FTCommons.TStringGridSorted;
-      grid.MouseToCell(X, Y, col, row); //Schutzverletzung
-      grid.Cells[col, row];
-      if row=0  then
-        grid.Repaint;
-    end;
+    grid := Sender as FTCommons.TStringGridSorted;
+    grid.MouseToCell(X, Y, col, row); // Schutzverletzung
+    grid.Cells[col, row];
+    if row = 0 then
+      grid.Repaint;
+  end;
 
 end;
 
-
 procedure TForm2.SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-//gemeinsamer Handler für alle normalen TStringGridSorted
-  var
-    i: Integer;
-    grid: FTCommons.TStringGridSorted;
-    col, row: Integer;
-    fixedCol, fixedRow: boolean;
-    gt: Cardinal;
-    Cursor: TCursor;
-    header: string;
+// gemeinsamer Handler für alle normalen TStringGridSorted
+var
+  i: Integer;
+  grid: FTCommons.TStringGridSorted;
+  col, row: Integer;
+  fixedCol, fixedRow: boolean;
+  gt: Cardinal;
+  Cursor: TCursor;
+  header: string;
+begin
+  gt := timegettime();
+  grid := Sender as FTCommons.TStringGridSorted;
+  // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
+  if Button = mbleft then
   begin
-    gt := timegettime();
-    grid := Sender as FTCommons.TStringGridSorted;
-    // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
-    if Button = mbleft then
+    grid.MouseToCell(X, Y, col, row);
+    grid.Cells[col, row];
+
+    // hier kann dann individuell gehandelt werden !
+    gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
+    ClipBoard.AsText := grid.Cells[col, row];
+    if row = 0 then
     begin
+
+      grid.tag := col;
+      // grid.invalidate;
+    end;
+    exit;
+  end;
+  if Button = mbright then
+  begin
+    Cursor := Screen.Cursor;
+    try
+      Screen.Cursor := crHourGlass;
       grid.MouseToCell(X, Y, col, row);
-      grid.Cells[col, row];
 
-      // hier kann dann individuell gehandelt werden !
-      gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
-      ClipBoard.AsText := grid.Cells[col, row];
-      if row=0  then
+      fixedCol := col < grid.FixedCols;
+      fixedRow := row < grid.FixedRows;
+
+      if fixedRow then
+      // Rechtsclick in den Header -> Sortieren
       begin
-
-      grid.tag:=col;
-      //grid.invalidate;
-      end;
-      exit;
-    end;
-    if Button = mbright then
-    begin
-      Cursor := Screen.Cursor;
-      try
-        Screen.Cursor := crHourGlass;
-        grid.MouseToCell(X, Y, col, row);
-
-        fixedCol := col < grid.FixedCols;
-        fixedRow := row < grid.FixedRows;
-
-        if fixedRow then
-        // Rechtsclick in den Header -> Sortieren
+        header := grid.Cells[col, 0];
+        // speziell bei den Datumsfelder auf eine andere Spalte umlenken
+        if header = 'openTime' then
         begin
-          header := grid.Cells[col, 0];
-          // speziell bei den Datumsfelder auf eine andere Spalte umlenken
-          if header = 'openTime' then
+          for i := 0 to grid.ColCount - 1 do
           begin
-            for i := 0 to grid.ColCount - 1 do
+            if grid.Cells[i, 0] = 'openTimeUnix' then
             begin
-              if grid.Cells[i, 0] = 'openTimeUnix' then
-              begin
-                col := i;
-                break;
-              end;
+              col := i;
+              break;
             end;
           end;
-          if header = 'closeTime' then
+        end;
+        if header = 'closeTime' then
+        begin
+          for i := 0 to grid.ColCount - 1 do
           begin
-            for i := 0 to grid.ColCount - 1 do
+            if grid.Cells[i, 0] = 'closeTimeUnix' then
             begin
-              if grid.Cells[i, 0] = 'closeTimeUnix' then
-              begin
-                col := i;
-                break;
-              end;
+              col := i;
+              break;
             end;
           end;
+        end;
 
-          if (grid.sortTyp[col] = 0) then
-            grid.sortTyp[col] := 1
-          else
-            grid.sortTyp[col] := -grid.sortTyp[col];
-
-          if gridsortmethode2 = false then
-            SortStringGrid(grid, col, grid.sortTyp[col])
-          else
-            // diese Methode kann nur bei Zahlen angewendet werden - nicht für Sortieren von Text !
-            SortStringGridCW(grid, col, grid.sortTyp[col]);
-          // Selektion löschen
-          grid.Selection := NoSelection;
-
-        end
-        else if fixedCol then
-          // Right-click in a "row header"
+        if (grid.sortTyp[col] = 0) then
+          grid.sortTyp[col] := 1
         else
-          // Right-click in a non-fixed cell
-        finally
-          Screen.Cursor := Cursor;
-        end;
-        LbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
-      end;
-    end;
+          grid.sortTyp[col] := -grid.sortTyp[col];
 
-    procedure TForm2.SortStringGridCW(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
+        if gridsortmethode2 = false then
+          SortStringGrid(grid, col, grid.sortTyp[col])
+        else
+          // diese Methode kann nur bei Zahlen angewendet werden - nicht für Sortieren von Text !
+          SortStringGridCW(grid, col, grid.sortTyp[col]);
+        // Selektion löschen
+        grid.Selection := NoSelection;
 
-    const
-      // Define the Separator
-      TheSeparator = '@';
-    var
-      CountItem, i, k: Integer;
-      MyList: TStringList;
-      da: doublearray;
-      ia: intarray;
-      gt: Cardinal;
-    begin
-      // Give the number of rows in the StringGrid
-      CountItem := genstrgrid.rowcount;
-      // Create the List
-      MyList := TStringList.Create;
-      MyList.sorted := false;
-      SetLength(ia, CountItem - 1);
-      SetLength(da, CountItem - 1);
-
-      try
-        begin
-          for i := 1 to (CountItem - 1) do
-          begin
-            // zB 1.234@name|test|kurs|usw
-            // MyList.Add(GenStrGrid.Rows[i].Strings[ThatCol] + TheSeparator + GenStrGrid.Rows[i].Text);
-            da[i - 1] := myStringToFloat(genstrgrid.Rows[i].Strings[ThatCol]);
-            // da[i - 1] := StrToFloat(GenStrGrid.Rows[i].Strings[ThatCol]);   // !! muss aber auch ein passendes Feld sein !!
-            ia[i - 1] := i;
-          end;
-          // in da[] sind nun ab 0 bis countItem-2  die Werte von Row 1 bis countItem-1 enthalten  Row 0 bleibt - da ist der Header drin
-          // Sort the List
-          gt := GetTickCount();
-          if (sortTyp = -1) then
-            // MyList.CustomSort(StringListSortComparefnDown);
-            // Immer nach Value sortieren
-            FastSort2ArrayDouble(da, ia, 'VUA');
-          if (sortTyp = 1) then
-            FastSort2ArrayDouble(da, ia, 'VDA');
-          LbDebug('Sort:' + inttostr(GetTickCount - gt));
-          gt := GetTickCount();
-          for k := 0 to CountItem - 1 do
-          begin
-            MyList.Add(genstrgrid.Rows[k].text);
-            // MyList ist nun quasi die Kopie des StringGrids ab unterhalb der Überschrift
-          end;
-          LbDebug('Mylist:' + inttostr(GetTickCount - gt));
-          gt := GetTickCount();
-
-          for k := 1 to CountItem - 1 do
-          begin
-            genstrgrid.Rows[k].BeginUpdate;
-            genstrgrid.Rows[k].text := MyList.Strings[ia[k - 1]];
-            genstrgrid.Rows[k].EndUpdate;
-            if k = 50 then
-              genstrgrid.Repaint;
-          end;
-          LbDebug('Grid neu:' + inttostr(GetTickCount - gt));
-
-        end;
+      end
+      else if fixedCol then
+        // Right-click in a "row header"
+      else
+        // Right-click in a non-fixed cell
       finally
-        // Free the List
-        MyList.Free;
+        Screen.Cursor := Cursor;
       end;
-
+      LbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
     end;
+  end;
 
-    procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
+  procedure TForm2.SortStringGridCW(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
 
-    const
-      // Define the Separator
-      TheSeparator = #1;
-    var
-      CountItem, i, j, k, ThePosition: Integer;
-      MyList: TStringList;
-      gt: Cardinal;
-    begin
-      // Give the number of rows in the StringGrid
-      CountItem := genstrgrid.rowcount;
-      // Create the List
-      MyList := TStringList.Create;
-      MyList.sorted := false;
-      try
+  const
+    // Define the Separator
+    TheSeparator = '@';
+  var
+    CountItem, i, k: Integer;
+    MyList: TStringList;
+    da: doublearray;
+    ia: intarray;
+    gt: Cardinal;
+  begin
+    // Give the number of rows in the StringGrid
+    CountItem := genstrgrid.rowcount;
+    // Create the List
+    MyList := TStringList.Create;
+    MyList.sorted := false;
+    SetLength(ia, CountItem - 1);
+    SetLength(da, CountItem - 1);
+
+    try
+      begin
+        for i := 1 to (CountItem - 1) do
         begin
-          gt := timegettime;
-          for i := 1 to (CountItem - 1) do
-            // zB 1.234@name|test|kurs|usw
-            // die zu sortierende Spalte vorne an die Row anhängen - dazwischen den Separator
-            MyList.Add(genstrgrid.Rows[i].Strings[ThatCol] + TheSeparator + genstrgrid.Rows[i].text);
-
-          // Sort the List
-          LbDebug('Sort MyList:' + inttostr(timegettime - gt));
-          gt := timegettime;
-          if (sortTyp = -1) then
-            MyList.CustomSort(StringListSortComparefnDown);
-          if (sortTyp = 1) then
-            MyList.CustomSort(StringListSortComparefnUp);
-          LbDebug('Sort CustomSort:' + inttostr(timegettime - gt));
-
-          gt := timegettime;
-
-          for k := 1 to MyList.Count do
-          begin
-            // Take the String of the line (K – 1)
-            // MyString := MyList.Strings[(k - 1)];
-            // Find the position of the Separator in the String
-            ThePosition := pos(TheSeparator, MyList.Strings[(k - 1)]); // MyString);
-            // TempString := '';
-            { Eliminate the Text of the column on which we have sorted the StringGrid }
-            // TempString := Copy(MyString, (ThePosition + 1), length(MyString));
-            // MyList.Strings[(k - 1)] := '';
-            MyList.Strings[(k - 1)] := Copy(MyList.Strings[(k - 1)], (ThePosition + 1),
-              length(MyList.Strings[(k - 1)]));
-            // TempString;
-          end;
-          LbDebug('Sort MyList gen:' + inttostr(timegettime - gt));
-
-          // Refill the StringGrid       - ca 75% der Zeit hierfür
-          gt := timegettime;
-          for j := 1 to (CountItem - 1) do
-          begin
-            genstrgrid.Rows[j].BeginUpdate;
-            genstrgrid.Rows[j].text := MyList.Strings[(j - 1)]; // hier ist der Zeitfresser
-            genstrgrid.Rows[j].EndUpdate;
-            if (j = 50) then // schonmal anzeigen !
-              genstrgrid.Repaint;
-          end;
-          genstrgrid.rowcount := CountItem;
-
-          LbDebug('Sort ->Grid:' + inttostr(timegettime - gt));
+          // zB 1.234@name|test|kurs|usw
+          // MyList.Add(GenStrGrid.Rows[i].Strings[ThatCol] + TheSeparator + GenStrGrid.Rows[i].Text);
+          da[i - 1] := myStringToFloat(genstrgrid.Rows[i].Strings[ThatCol]);
+          // da[i - 1] := StrToFloat(GenStrGrid.Rows[i].Strings[ThatCol]);   // !! muss aber auch ein passendes Feld sein !!
+          ia[i - 1] := i;
         end;
-      finally
-        // Free the List
-        MyList.Free;
+        // in da[] sind nun ab 0 bis countItem-2  die Werte von Row 1 bis countItem-1 enthalten  Row 0 bleibt - da ist der Header drin
+        // Sort the List
+        gt := GetTickCount();
+        if (sortTyp = -1) then
+          // MyList.CustomSort(StringListSortComparefnDown);
+          // Immer nach Value sortieren
+          FastSort2ArrayDouble(da, ia, 'VUA');
+        if (sortTyp = 1) then
+          FastSort2ArrayDouble(da, ia, 'VDA');
+        LbDebug('Sort:' + inttostr(GetTickCount - gt));
+        gt := GetTickCount();
+        for k := 0 to CountItem - 1 do
+        begin
+          MyList.Add(genstrgrid.Rows[k].text);
+          // MyList ist nun quasi die Kopie des StringGrids ab unterhalb der Überschrift
+        end;
+        LbDebug('Mylist:' + inttostr(GetTickCount - gt));
+        gt := GetTickCount();
+
+        for k := 1 to CountItem - 1 do
+        begin
+          genstrgrid.Rows[k].BeginUpdate;
+          genstrgrid.Rows[k].text := MyList.Strings[ia[k - 1]];
+          genstrgrid.Rows[k].EndUpdate;
+          if k = 50 then
+            genstrgrid.Repaint;
+        end;
+        LbDebug('Grid neu:' + inttostr(GetTickCount - gt));
+
       end;
-
+    finally
+      // Free the List
+      MyList.Free;
     end;
 
-    procedure TForm2.TabSheet2Resize(Sender: TObject);
-    begin
-      Panel10.left := trunc(TabSheet2.Width / 2) - trunc(Panel10.Width / 2);
-    end;
+  end;
 
-    procedure TForm2.zeigUserInfo(id: Integer; lb: TListBox);
-    var
-      k: Integer;
-    begin
-      k := finduserindex(id);
-      lb.Items.clear;
+  procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
 
-      lb.Items.Add('userId' + #9 + inttostr(cwUsers[k].userId));
-      lb.Items.Add('accountId' + #9 + inttostr(cwUsers[k].accountId));
-      lb.Items.Add('group' + #9 + cwUsers[k].group);
-      lb.Items.Add('enable' + #9 + inttostr(cwUsers[k].enable));
-      lb.Items.Add('registrationTime' + #9 + inttostr(cwUsers[k].registrationTime));
-      lb.Items.Add('lastLoginTime' + #9 + inttostr(cwUsers[k].lastLoginTime));
-      lb.Items.Add('leverage' + #9 + inttostr(cwUsers[k].leverage));
-      lb.Items.Add('balance' + #9 + floattostr(cwUsers[k].balance));
-      lb.Items.Add('balPrevMonth' + #9 + floattostr(cwUsers[k].balancePreviousMonth));
-      lb.Items.Add('balPrevDay' + #9 + floattostr(cwUsers[k].balancePreviousDay));
-      lb.Items.Add('credit' + #9 + floattostr(cwUsers[k].credit));
-      lb.Items.Add('interestrate' + #9 + floattostr(cwUsers[k].interestrate));
-      lb.Items.Add('taxes' + #9 + floattostr(cwUsers[k].taxes));
-      lb.Items.Add('name' + #9 + cwUsers[k].name);
-      lb.Items.Add('country' + #9 + cwUsers[k].country);
-      lb.Items.Add('city' + #9 + cwUsers[k].city);
-      lb.Items.Add('state' + #9 + cwUsers[k].State);
-      lb.Items.Add('zipcode' + #9 + cwUsers[k].zipcode);
-      lb.Items.Add('address' + #9 + cwUsers[k].address);
-      lb.Items.Add('phone' + #9 + cwUsers[k].phone);
-      lb.Items.Add('email' + #9 + cwUsers[k].email);
-      lb.Items.Add('soc.number' + #9 + cwUsers[k].socialNumber);
-      lb.Items.Add('comment' + #9 + cwUsers[k].comment);
-      lb.Items.Add('totalTrades' + #9 + inttostr(cwUsersPlus[k].totaltrades));
-      lb.Items.Add('totalProfit' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalprofit));
-      lb.Items.Add('totalBalance' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalBalance));
-    end;
-
-    procedure TForm2.StartHTTPWorker();
-    var
-      s: string;
-    begin
-      try
-        HTTPWorker1 := THTTPWorker.Create();
-        HTTPWorker1.OnTerminate := HTTPOnTerminate;
-        HTTPWorker1.ResultList := TStringList.Create;
-        HTTPWorker1.RequestBusy := false;
-        HTTPWorker1.machfehler := false;
-        HTTPWorker1Aktiv := true;
-
-      except
-        on E: Exception do
-          s := E.ToString;
-      end;
-
-    end;
-
-    procedure TForm2.HTTPOnTerminate(Sender: TObject);
-    begin
-      // debug('terminated');
-      if HTTPWorker1Aktiv = true then
+  const
+    // Define the Separator
+    TheSeparator = #1;
+  var
+    CountItem, i, j, k, ThePosition: Integer;
+    MyList: TStringList;
+    gt: Cardinal;
+  begin
+    // Give the number of rows in the StringGrid
+    CountItem := genstrgrid.rowcount;
+    // Create the List
+    MyList := TStringList.Create;
+    MyList.sorted := false;
+    try
       begin
-        // der Thread sollte eigentlich laufen - also wieder starten
-        // StartHTTPWorker;
-        lbLoadInfo.Items.Add('HTTPWorker Thread terminated');
-      end;
+        gt := timegettime;
+        for i := 1 to (CountItem - 1) do
+          // zB 1.234@name|test|kurs|usw
+          // die zu sortierende Spalte vorne an die Row anhängen - dazwischen den Separator
+          MyList.Add(genstrgrid.Rows[i].Strings[ThatCol] + TheSeparator + genstrgrid.Rows[i].text);
 
+        // Sort the List
+        LbDebug('Sort MyList:' + inttostr(timegettime - gt));
+        gt := timegettime;
+        if (sortTyp = -1) then
+          MyList.CustomSort(StringListSortComparefnDown);
+        if (sortTyp = 1) then
+          MyList.CustomSort(StringListSortComparefnUp);
+        LbDebug('Sort CustomSort:' + inttostr(timegettime - gt));
+
+        gt := timegettime;
+
+        for k := 1 to MyList.Count do
+        begin
+          // Take the String of the line (K – 1)
+          // MyString := MyList.Strings[(k - 1)];
+          // Find the position of the Separator in the String
+          ThePosition := pos(TheSeparator, MyList.Strings[(k - 1)]); // MyString);
+          // TempString := '';
+          { Eliminate the Text of the column on which we have sorted the StringGrid }
+          // TempString := Copy(MyString, (ThePosition + 1), length(MyString));
+          // MyList.Strings[(k - 1)] := '';
+          MyList.Strings[(k - 1)] := Copy(MyList.Strings[(k - 1)], (ThePosition + 1), length(MyList.Strings[(k - 1)]));
+          // TempString;
+        end;
+        LbDebug('Sort MyList gen:' + inttostr(timegettime - gt));
+
+        // Refill the StringGrid       - ca 75% der Zeit hierfür
+        gt := timegettime;
+        for j := 1 to (CountItem - 1) do
+        begin
+          genstrgrid.Rows[j].BeginUpdate;
+          genstrgrid.Rows[j].text := MyList.Strings[(j - 1)]; // hier ist der Zeitfresser
+          genstrgrid.Rows[j].EndUpdate;
+          if (j = 50) then // schonmal anzeigen !
+            genstrgrid.Repaint;
+        end;
+        genstrgrid.rowcount := CountItem;
+
+        LbDebug('Sort ->Grid:' + inttostr(timegettime - gt));
+      end;
+    finally
+      // Free the List
+      MyList.Free;
     end;
 
-    procedure TForm2.lbCSVErrorClick(Sender: TObject);
-    begin
-      lbCSVError.Items.clear;
+  end;
+
+  procedure TForm2.TabSheet2Resize(Sender: TObject);
+  begin
+    Panel10.left := trunc(TabSheet2.Width / 2) - trunc(Panel10.Width / 2);
+  end;
+
+  procedure TForm2.zeigUserInfo(id: Integer; lb: TListBox);
+  var
+    k: Integer;
+  begin
+    k := finduserindex(id);
+    lb.Items.clear;
+
+    lb.Items.Add('userId' + #9 + inttostr(cwUsers[k].userId));
+    lb.Items.Add('accountId' + #9 + inttostr(cwUsers[k].accountId));
+    lb.Items.Add('group' + #9 + cwUsers[k].group);
+    lb.Items.Add('enable' + #9 + inttostr(cwUsers[k].enable));
+    lb.Items.Add('registrationTime' + #9 + inttostr(cwUsers[k].registrationTime));
+    lb.Items.Add('lastLoginTime' + #9 + inttostr(cwUsers[k].lastLoginTime));
+    lb.Items.Add('leverage' + #9 + inttostr(cwUsers[k].leverage));
+    lb.Items.Add('balance' + #9 + floattostr(cwUsers[k].balance));
+    lb.Items.Add('balPrevMonth' + #9 + floattostr(cwUsers[k].balancePreviousMonth));
+    lb.Items.Add('balPrevDay' + #9 + floattostr(cwUsers[k].balancePreviousDay));
+    lb.Items.Add('credit' + #9 + floattostr(cwUsers[k].credit));
+    lb.Items.Add('interestrate' + #9 + floattostr(cwUsers[k].interestrate));
+    lb.Items.Add('taxes' + #9 + floattostr(cwUsers[k].taxes));
+    lb.Items.Add('name' + #9 + cwUsers[k].name);
+    lb.Items.Add('country' + #9 + cwUsers[k].country);
+    lb.Items.Add('city' + #9 + cwUsers[k].city);
+    lb.Items.Add('state' + #9 + cwUsers[k].State);
+    lb.Items.Add('zipcode' + #9 + cwUsers[k].zipcode);
+    lb.Items.Add('address' + #9 + cwUsers[k].address);
+    lb.Items.Add('phone' + #9 + cwUsers[k].phone);
+    lb.Items.Add('email' + #9 + cwUsers[k].email);
+    lb.Items.Add('soc.number' + #9 + cwUsers[k].socialNumber);
+    lb.Items.Add('comment' + #9 + cwUsers[k].comment);
+    lb.Items.Add('totalTrades' + #9 + inttostr(cwUsersPlus[k].totaltrades));
+    lb.Items.Add('totalProfit' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalprofit));
+    lb.Items.Add('totalBalance' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalbalance));
+  end;
+
+  procedure TForm2.StartHTTPWorker();
+  var
+    s: string;
+  begin
+    try
+      HTTPWorker1 := THTTPWorker.Create();
+      HTTPWorker1.OnTerminate := HTTPOnTerminate;
+      HTTPWorker1.ResultList := TStringList.Create;
+      HTTPWorker1.RequestBusy := false;
+      HTTPWorker1.machfehler := false;
+      HTTPWorker1Aktiv := true;
+
+    except
+      on E: Exception do
+        s := E.ToString;
     end;
 
-    function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): Integer;
-    var
-      flag: Integer;
-      gt, ngt: Cardinal;
+  end;
 
-      li: Integer;
-      liText: array [1 .. 15] of string;
-
+  procedure TForm2.HTTPOnTerminate(Sender: TObject);
+  begin
+    // debug('terminated');
+    if HTTPWorker1Aktiv = true then
     begin
-      while (HTTPWorker1.RequestBusy = true) do
-      begin
-        dosleep(100);
-      end;
+      // der Thread sollte eigentlich laufen - also wieder starten
+      // StartHTTPWorker;
+      lbLoadInfo.Items.Add('HTTPWorker Thread terminated');
+    end;
 
-      EnterCriticalSection(HTTPWorkCriticalSection);
-      HTTPWorker1.ct := HTTPWorker1.ct + 1;
-      // debugThread(inttostr(HTTPWorker1.ct) + ' HTTPWorker1. S Request Start:' + Url);
-      HTTPWorker1.url := url;
-      HTTPWorker1.SendString := ''; // hier nicht
-      HTTPWorker1.HError := 0;
-      HTTPWorker1.SendType := 3; // String  2=MemoryStream     3=get ByteArray
-      HTTPWorker1.RequestBusy := true;
-      HTTPWorker1.Caption := 'HTTPWorker1';
-      HTTPWorker1.bArray := bArray;
+  end;
 
-      leaveCriticalSection(HTTPWorkCriticalSection);
-      // damit sind die Variablen gesetzt und der Thread kann ab jetzt arbeiten
-      flag := 0;
-      lblWarten.Caption := '********************';
-      liText[1] :=
-        'Beim ersten Laden der Actions wird ein Cache angelegt, der später für einen schnellen Programmstart sorgt';
-      liText[2] :=
-        'Das erste Laden aller über 3 Millionen Actions kann je nach Internetgeschwindigkeit etliche Minuten dauern';
-      liText[3] := 'Die Grids können durch Rechtsclick in die Spaltenheader sortiert werden';
-      liText[4] := 'Es kann sich nur noch um Stunden handeln ... noch etwas Geduld !';
-      liText[5] := 'Es wurden inzwischen ' + inttostr(length(cwSymbols)) + ' Symbole geladen';
-      liText[6] := 'Es wurden inzwischen ' + inttostr(length(cwUsers)) + ' User geladen';
-      liText[7] := 'Es wurden inzwischen ' + inttostr(length(cwComments)) + ' Kommentare geladen';
+  procedure TForm2.lbCSVErrorClick(Sender: TObject);
+  begin
+    lbCSVError.Items.clear;
+  end;
+
+  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): Integer;
+  var
+    flag: Integer;
+    gt, ngt: Cardinal;
+
+    li: Integer;
+    liText: array [1 .. 15] of string;
+
+  begin
+    while (HTTPWorker1.RequestBusy = true) do
+    begin
+      dosleep(100);
+    end;
+
+    EnterCriticalSection(HTTPWorkCriticalSection);
+    HTTPWorker1.ct := HTTPWorker1.ct + 1;
+    // debugThread(inttostr(HTTPWorker1.ct) + ' HTTPWorker1. S Request Start:' + Url);
+    HTTPWorker1.url := url;
+    HTTPWorker1.SendString := ''; // hier nicht
+    HTTPWorker1.HError := 0;
+    HTTPWorker1.SendType := 3; // String  2=MemoryStream     3=get ByteArray
+    HTTPWorker1.RequestBusy := true;
+    HTTPWorker1.Caption := 'HTTPWorker1';
+    HTTPWorker1.bArray := bArray;
+
+    leaveCriticalSection(HTTPWorkCriticalSection);
+    // damit sind die Variablen gesetzt und der Thread kann ab jetzt arbeiten
+    flag := 0;
+    lblWarten.Caption := '********************';
+    liText[1] :=
+      'Beim ersten Laden der Actions wird ein Cache angelegt, der später für einen schnellen Programmstart sorgt';
+    liText[2] :=
+      'Das erste Laden aller über 3 Millionen Actions kann je nach Internetgeschwindigkeit etliche Minuten dauern';
+    liText[3] := 'Die Grids können durch Rechtsclick in die Spaltenheader sortiert werden';
+    liText[4] := 'Es kann sich nur noch um Stunden handeln ... noch etwas Geduld !';
+    liText[5] := 'Es wurden inzwischen ' + inttostr(length(cwSymbols)) + ' Symbole geladen';
+    liText[6] := 'Es wurden inzwischen ' + inttostr(length(cwUsers)) + ' User geladen';
+    liText[7] := 'Es wurden inzwischen ' + inttostr(length(cwComments)) + ' Kommentare geladen';
+    gt := GetTickCount;
+    ngt := gt + 1000;
+    li := 0;
+    while (HTTPWorker1.RequestBusy = true) do
+    begin
       gt := GetTickCount;
-      ngt := gt + 1000;
-      li := 0;
-      while (HTTPWorker1.RequestBusy = true) do
+      dosleep(100);
+      if flag < 20 then
       begin
-        gt := GetTickCount;
-        dosleep(100);
-        if flag < 20 then
-        begin
-          inc(flag);
-          lblWarten.Caption := '*' + lblWarten.Caption;
-        end
+        inc(flag);
+        lblWarten.Caption := '*' + lblWarten.Caption;
+      end
+      else
+      begin
+        flag := 0;
+        if HTTPWorker1.Finished then
+          lblWarten.Caption := '?' + lblWarten.Caption
         else
-        begin
-          flag := 0;
-          if HTTPWorker1.Finished then
-            lblWarten.Caption := '?' + lblWarten.Caption
-          else
 
-            lblWarten.Caption := '>' + lblWarten.Caption;
-        end;
-        lblWarten.Caption := leftstr(lblWarten.Caption, 20);
-
-        if gt > ngt then
-        begin
-          li := li + 1;
-          if (li < high(liText)) then
-          begin
-            if liText[li] = '' then
-              li := 1;
-            Memo1.lines.clear;
-            Memo1.lines.Add(liText[li]);
-          end;
-          ngt := gt + 8000;
-
-        end;
+          lblWarten.Caption := '>' + lblWarten.Caption;
       end;
-      // debugThread(inttostr(HTTPWorker1.ct) + 'HTTPWorker1. S Request Ende:' + Url);
-      lblWarten.Caption := 'Loading Finished';
-      Memo1.lines.clear;
-      // in HTTWorkerResultList stehen die Meldungen
-      bArray := HTTPWorker1.bArray;
-      result := HTTPWorker1.HError; // hier noch was anders machen !
-    end;
+      lblWarten.Caption := leftstr(lblWarten.Caption, 20);
 
-    procedure TForm2.dosleep(t: Integer);
-    var
-      gt: Cardinal;
-    begin
-      gt := GetTickCount();
-      repeat
-        Application.ProcessMessages;
-      until (GetTickCount - gt) > t;
-      // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
-    end;
-
-    procedure TForm2.FormDestroy(Sender: TObject);
-    begin
-      if HTTPWorker1.Finished = false then
+      if gt > ngt then
       begin
-        HTTPWorker1.Terminate;
-        HTTPWorker1.waitfor;
-        HTTPWorker1.Free;
-        HTTPWorker1.ResultList.Free;
-        HTTPWorker1Aktiv := false;
-        dosleep(10);
+        li := li + 1;
+        if (li < high(liText)) then
+        begin
+          if liText[li] = '' then
+            li := 1;
+          Memo1.lines.clear;
+          Memo1.lines.Add(liText[li]);
+        end;
+        ngt := gt + 8000;
+
       end;
-      DeleteCriticalSection(HTTPWorkCriticalSection);
-
     end;
+    // debugThread(inttostr(HTTPWorker1.ct) + 'HTTPWorker1. S Request Ende:' + Url);
+    lblWarten.Caption := 'Loading Finished';
+    Memo1.lines.clear;
+    // in HTTWorkerResultList stehen die Meldungen
+    bArray := HTTPWorker1.bArray;
+    result := HTTPWorker1.HError; // hier noch was anders machen !
+  end;
 
-    procedure TForm2.Button3Click(Sender: TObject);
+  procedure TForm2.dosleep(t: Integer);
+  var
+    gt: Cardinal;
+  begin
+    gt := GetTickCount();
+    repeat
+      Application.ProcessMessages;
+    until (GetTickCount - gt) > t;
+    // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
+  end;
+
+  procedure TForm2.FormDestroy(Sender: TObject);
+  begin
+    if HTTPWorker1.Finished = false then
     begin
-      maxActionsPerGrid := strtoint(edMaxActionsPerGrid.text);
-      btnCwactionsToGridClick(nil);
+      HTTPWorker1.Terminate;
+      HTTPWorker1.waitfor;
+      HTTPWorker1.Free;
+      HTTPWorker1.ResultList.Free;
+      HTTPWorker1Aktiv := false;
+      dosleep(10);
     end;
+    DeleteCriticalSection(HTTPWorkCriticalSection);
 
-    procedure TForm2.Button4Click(Sender: TObject);
-    begin
-      StartHTTPWorker;
-    end;
+  end;
+
+  procedure TForm2.Button3Click(Sender: TObject);
+  begin
+    maxActionsPerGrid := strtoint(edMaxActionsPerGrid.text);
+    btnCwactionsToGridClick(nil);
+  end;
+
+  procedure TForm2.Button4Click(Sender: TObject);
+  begin
+    StartHTTPWorker;
+  end;
 
 end.
