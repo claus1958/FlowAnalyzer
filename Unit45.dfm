@@ -24,8 +24,8 @@ object Form45: TForm45
     ExplicitHeight = 89
   end
   object Button1: TButton
-    Left = 128
-    Top = 160
+    Left = 40
+    Top = 46
     Width = 49
     Height = 17
     Caption = 'Button1'
@@ -33,8 +33,8 @@ object Form45: TForm45
     OnClick = Button1Click
   end
   object ListBox1: TListBox
-    Left = 128
-    Top = 184
+    Left = 40
+    Top = 70
     Width = 297
     Height = 201
     ItemHeight = 13
@@ -51,8 +51,8 @@ object Form45: TForm45
     ExplicitHeight = 89
   end
   object Button2: TButton
-    Left = 183
-    Top = 161
+    Left = 95
+    Top = 47
     Width = 105
     Height = 17
     Caption = 'Button2'
@@ -60,8 +60,8 @@ object Form45: TForm45
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 304
-    Top = 160
+    Left = 216
+    Top = 46
     Width = 81
     Height = 18
     Caption = 'Button3'
@@ -76,5 +76,14 @@ object Form45: TForm45
     Caption = 'Button4'
     TabOrder = 6
     OnClick = Button4Click
+  end
+  object Button5: TButton
+    Left = 32
+    Top = 304
+    Width = 77
+    Height = 21
+    Caption = 'Button5'
+    TabOrder = 7
+    OnClick = Button5Click
   end
 end

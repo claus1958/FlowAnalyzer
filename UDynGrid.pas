@@ -28,6 +28,8 @@ type
       var symbolsGroups: DACwSymbolGroup);
     procedure sortGridCwSymbols(source: string; sortcol: string; sortdir: integer; var symbols: DACwSymbol;
       var symbolsPlus: DACwSymbolPlus);
+    procedure sortGridCw3Summaries(source: string; sortcol: string; sortdir: integer; var summaries: DA3CwSummary);
+    procedure sortGridCwSummaries(source: string; sortcol: string; sortdir: integer; var summaries: DACwSummary);
 
     procedure SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure gridHandler(Sender: TObject);
@@ -270,6 +272,10 @@ begin
     sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
   if source = 'cwfilteredsymbolsgroups' then
     sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
+  if source = 'cw3summaries' then
+    sortGridCw3Summaries(source, sortcol, sortdir, cw3summaries);
+  if source = 'cwsummaries' then
+    sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
 
   autosized := false;
 
@@ -869,7 +875,7 @@ begin
       scol := 11;
     if sortcol = 'profit' then
       scol := 12;
-    if sortcol = 'symgroup' then
+    if sortcol = 'symGroup' then
       scol := 13;
     if sortcol = 'name' then
       scol := 14;
@@ -1019,14 +1025,14 @@ begin
   if ((source = 'cwsymbolsgroups') or (source = 'cwfilteredsymbolsgroups')) then
   begin
 
-//    if sortcol = 'tradesCount' then
-//      scol := 1;
-//    if sortcol = 'tradesVolumeTotal' then
-//      scol := 2;
-//    if sortcol = 'tradesUsers' then
-//      scol := 3;
-//    if sortcol = 'tradesProfitTotal' then
-//      scol := 4;
+    if sortcol = 'tradesCount' then
+      scol := 1;
+    if sortcol = 'tradesVolumeTotal' then
+      scol := 2;
+    if sortcol = 'tradesUsers' then
+      scol := 3;
+    if sortcol = 'tradesProfitTotal' then
+      scol := 4;
     if sortcol = 'name' then
       scol := 6;
     if sortcol = 'sourceNames' then
@@ -1049,26 +1055,26 @@ begin
       begin
         ixSorted[i] := i;
 
-//        if scol = 1 then
-//        begin
-//          dSort[i] := symbolsGroups[i].TradesCount;
-//          continue;
-//        end;
-//        if scol = 2 then
-//        begin
-//          dSort[i] := symbolsGroups[i].TradesVolumeTotal;
-//          continue;
-//        end;
-//        if scol = 3 then
-//        begin
-//          dSort[i] := symbolsGroups[i].TradesUsers;
-//          continue;
-//        end;
-//        if scol = 4 then
-//        begin
-//          dSort[i] := symbolsGroups[i].TradesProfitTotal;
-//          continue;
-//        end;
+        if scol = 1 then
+        begin
+          dSort[i] := symbolsGroups[i].TradesCount;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          dSort[i] := symbolsGroups[i].TradesVolumeTotal;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          dSort[i] := symbolsGroups[i].TradesUsers;
+          continue;
+        end;
+        if scol = 4 then
+        begin
+          dSort[i] := symbolsGroups[i].TradesProfitTotal;
+          continue;
+        end;
         if scol = 5 then
         begin
           dSort[i] := symbolsGroups[i].groupId;
@@ -1091,6 +1097,232 @@ begin
         end;
       end;
     end;
+    // nun sortieren
+    if smethode = 1 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
+  end;
+  lblTime.caption := inttostr(gettickcount - gt);
+  Panel2Resize(self);
+end;
+
+procedure TDynGrid.sortGridCw3Summaries(source: string; sortcol: string; sortdir: integer; var summaries: DA3CwSummary);
+var
+  dl1, dl2, dl3, dls, i, j, k, l, scol, smethode: integer;
+  gt: cardinal;
+begin
+  gt := gettickcount;
+
+  dl1 := length(summaries);
+  dl2 := length(summaries[0]);
+  dl3 := length(summaries[0][0]);
+  dls := dl1 * dl2 * dl3;
+  setlength(ixSorted, dls);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if (source = 'cw3summaries') then
+  begin
+    if sortcol = 'par0' then
+      scol := 1;
+    if sortcol = 'par1' then
+      scol := 2;
+    if sortcol = 'par2' then
+      scol := 3;
+    if sortcol = 'tradesCount' then
+      scol := 4;
+    if sortcol = 'tradesVolumeTotal' then
+      scol := 5;
+    if sortcol = 'tradesProfitTotal' then
+      scol := 6;
+    if sortcol = 'tradesUsers' then
+      scol := 7;
+
+    if ((scol < 4)) then
+    begin
+      setlength(sSort, dls);
+      smethode := 2;
+    end
+    else
+      setlength(dSort, dls);
+    l := -1;
+    begin
+      for i := 0 to dl1 - 1 do
+        for j := 0 to dl2 - 1 do
+          for k := 0 to dl3 - 1 do
+          begin
+            inc(l);
+            ixSorted[l] := l;
+            if scol = 1 then
+            begin
+              sSort[l] := summaries[i][j][k].par0;
+              continue;
+            end;
+            if scol = 2 then
+            begin
+              sSort[l] := summaries[i][j][k].par1;
+              continue;
+            end;
+            if scol = 3 then
+            begin
+              sSort[l] := summaries[i][j][k].par2;
+              continue;
+            end;
+
+            if scol = 4 then
+            begin
+              dSort[l] := summaries[i][j][k].TradesCount;
+              continue;
+            end;
+            if scol = 5 then
+            begin
+              dSort[l] := summaries[i][j][k].TradesVolumeTotal;
+              continue;
+            end;
+            if scol = 6 then
+            begin
+              dSort[l] := summaries[i][j][k].TradesProfitTotal;
+              continue;
+            end;
+            if scol = 7 then
+            begin
+              dSort[l] := summaries[i][j][k].TradesUsers;
+              continue;
+            end;
+          end;
+    end;
+
+    // nun sortieren
+    if smethode = 1 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
+  end;
+  lblTime.caption := inttostr(gettickcount - gt);
+  Panel2Resize(self);
+end;
+
+procedure TDynGrid.sortGridCwSummaries(source: string; sortcol: string; sortdir: integer; var summaries: DACwSummary);
+var
+  dls, i, j, k, l, scol, smethode: integer;
+  gt: cardinal;
+  sError: string;
+begin
+  gt := gettickcount;
+
+  dls := length(summaries);
+  setlength(ixSorted, dls);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if (source = 'cwsummaries') then
+  begin
+    // die umgelabelten Überschriften von par0 par1 par2
+    if sortcol = cwgrouping.element[0].styp then
+      scol := 1;
+    if sortcol = cwgrouping.element[1].styp then
+      scol := 2;
+    if sortcol = cwgrouping.element[2].styp then
+      scol := 3;
+
+    if sortcol = 'par0' then
+      scol := 1;
+    if sortcol = 'par1' then
+      scol := 2;
+    if sortcol = 'par2' then
+      scol := 3;
+    if sortcol = 'tradesCount' then
+      scol := 4;
+    if sortcol = 'tradesVolumeTotal' then
+      scol := 5;
+    if sortcol = 'tradesProfitTotal' then
+      scol := 6;
+    if sortcol = 'tradesUsers' then
+      scol := 7;
+
+    if ((scol < 4)) then
+    begin
+      try
+        setlength(sSort, dls);
+        smethode := 2;
+      except
+
+        on E: Exception do
+          sError := E.ToString;
+      end;
+    end
+    else
+      setlength(dSort, dls);
+    l := -1;
+    begin
+      for i := 0 to dls do
+      begin
+        inc(l);
+        ixSorted[l] := l;
+        if scol = 1 then
+        begin
+          sSort[l] := summaries[i].par0;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          sSort[l] := summaries[i].par1;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          sSort[l] := summaries[i].par2;
+          continue;
+        end;
+
+        if scol = 4 then
+        begin
+          dSort[l] := summaries[i].TradesCount;
+          continue;
+        end;
+        if scol = 5 then
+        begin
+          dSort[l] := summaries[i].TradesVolumeTotal;
+          continue;
+        end;
+        if scol = 6 then
+        begin
+          dSort[l] := summaries[i].TradesProfitTotal;
+          continue;
+        end;
+        if scol = 7 then
+        begin
+          dSort[l] := summaries[i].TradesUsers;
+          continue;
+        end;
+      end;
+    end;
+
     // nun sortieren
     if smethode = 1 then
     begin
@@ -1147,6 +1379,10 @@ begin
     maxDataRows := length(cwSymbolsGroups);
   if source = 'cwfilteredsymbolsgroups' then
     maxDataRows := length(cwFilteredSymbolsGroups);
+  if source = 'cw3summaries' then
+    maxDataRows := length(cw3summaries);
+  if source = 'cwsummaries' then
+    maxDataRows := length(cwsummaries);
 
   vscrollbis := vScrollvon + vRows;
   if vscrollbis > maxDataRows then
@@ -1170,6 +1406,10 @@ begin
     doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbolsGroups, vScrollvon, vscrollbis - 1);
   if source = 'cwfilteredsymbolsgroups' then
     doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwFilteredSymbolsGroups, vScrollvon, vscrollbis - 1);
+  if source = 'cw3summaries' then
+    doSummaries3GridCWDyn(SG, SGFieldCol, ixSorted, cw3summaries, vScrollvon, vscrollbis - 1);
+  if source = 'cwsummaries' then
+    doSummariesGridCWDyn(SG, SGFieldCol, ixSorted, cwsummaries, vScrollvon, vscrollbis - 1);
 
   // end;
 end;
@@ -1193,6 +1433,7 @@ begin
     mdcol := col;
     mdrow := row;
     if (row = 0) then
+      // Dragmodus der Col einleiten - Mauscursor umschalten
       Screen.Cursor := crDrag;
 
     // ClipBoard.AsText := grid.Cells[col, row];
@@ -1201,6 +1442,7 @@ begin
 
   end;
   if Button = mbright then
+  // Rechte Maus = Sortieren der Col
   begin
     Cursor := Screen.Cursor;
     try
@@ -1213,6 +1455,7 @@ begin
 
         if fixedRow then
         // Rechtsclick in den Header -> Sortieren
+        // Das Sortieren erfolgt spezifisch zum Thema des Grids
         begin
           sortcol := grid.cells[col, 0];
           sortdir := -sortdir;
@@ -1233,9 +1476,12 @@ begin
             sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
           if source = 'cwfilteredsymbolsgroups' then
             sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
+          if source = 'cwsummaries' then
+            sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
 
         end
         else if fixedCol then
+          // die restlichen Rechtsclicks bewirken nichts
           // Right-click in a "row header"
         else
           // Right-click in a non-fixed cell
@@ -1272,12 +1518,13 @@ begin
       // showmessage(inttostr(mdcol)+'/'+inttostr(mucol));
       // dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
       if Cursor = crDrag then
+      // im Verschiebemodus der Cols wurde die Maus losgelassen
       begin
         if (murow = 0) and (mdrow = 0) then
         begin
           if (mucol <> mdcol) then
           begin
-            // col wurde verschiben
+            // col wurde verschoben
             setlength(SGColField, length(SGFieldCol));
             for i := 0 to length(SGFieldCol) - 1 do
               SGColField[SGFieldCol[i]] := i;
@@ -1345,7 +1592,7 @@ begin
       end
       else
       begin
-        // selektion bearbeiten
+        // Selektion bearbeiten
         // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
         nr := scrollPosition + murow - 1;
         anr := ixSorted[nr];

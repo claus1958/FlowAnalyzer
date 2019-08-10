@@ -1,3 +1,4 @@
+{$RANGECHECKS ON}
 unit FlowAnalyzer;
 
 interface
@@ -8,7 +9,7 @@ uses
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
   Vcl.Themes, UDynGrid, AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
   AdvChartPaneEditor,
-  AdvChartSerieEditor;
+  AdvChartSerieEditor, GroupControl,DateUtils;
 
 type
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -23,7 +24,6 @@ type
     TabSheet2: TTabSheet;
     Panel10: TPanel;
     Label1: TLabel;
-    Label3: TLabel;
     lblWarten: TLabel;
     clbBrokers: TCheckListBox;
     lbLoadInfo: TListBox;
@@ -32,7 +32,6 @@ type
     btnLoadData: TButton;
     cbLoadActionsFromCache: TCheckBox;
     Button1: TButton;
-    edMaxActionsPerGrid: TEdit;
     TabSheet5: TTabSheet;
     Panel6: TPanel;
     Panel7: TPanel;
@@ -52,7 +51,6 @@ type
     Label10: TLabel;
     btnDoubleRemoveCw: TButton;
     btnSelectClearCw: TButton;
-    btnDoFilter: TButton;
     Button5: TButton;
     pnlFilter: TPanel;
     FilterElemente1: TFilterElemente;
@@ -92,7 +90,6 @@ type
     CategoryPanel1: TCategoryPanel;
     Panel3: TPanel;
     lblAllDataInfo: TLabel;
-    Button3: TButton;
     Button4: TButton;
     Button6: TButton;
     CheckBox1: TCheckBox;
@@ -112,7 +109,7 @@ type
     DynGrid2: TDynGrid;
     DynGrid3: TDynGrid;
     DynGrid4: TDynGrid;
-    btnDoUsersPlus: TButton;
+    btnDoUsersAndSymbolsPlus: TButton;
     Splitter1: TSplitter;
     Panel13: TPanel;
     Label2: TLabel;
@@ -128,7 +125,6 @@ type
     TabSheet7: TTabSheet;
     Panel15: TPanel;
     Panel16: TPanel;
-    btnGroupSymbolsAllActions: TButton;
     Panel17: TPanel;
     Panel18: TPanel;
     Panel19: TPanel;
@@ -165,6 +161,15 @@ type
     SGCwUsers: FTCommons.TStringGridSorted;
     SGCwComments: FTCommons.TStringGridSorted;
     SGCacheCwSearch: FTCommons.TStringGridSorted;
+    btnSymbolGroups: TButton;
+    Button3: TButton;
+    Panel22: TPanel;
+    Grouping0: TGroupControl;
+    Grouping1: TGroupControl;
+    Grouping2: TGroupControl;
+    btnDoFilter: TButton;
+    Label3: TLabel;
+    DynGrid9: TDynGrid;
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean);
@@ -195,6 +200,7 @@ type
     procedure btnGetSingleUserActionsClick(Sender: TObject);
     procedure TabSheet2Resize(Sender: TObject);
     procedure btnDoFilterClick(Sender: TObject);
+
     procedure Button5Click(Sender: TObject);
     procedure edSingleUserActionsIdChange(Sender: TObject);
     procedure CategoryPanel1Collapse(Sender: TObject);
@@ -205,12 +211,12 @@ type
     procedure FormDestroy(Sender: TObject);
     function doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): Integer;
     procedure dosleep(t: Integer);
-    procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
     procedure btnSampleClick(Sender: TObject);
     procedure doFilter();
+    procedure doGroup();
     procedure Button2Click(Sender: TObject);
     procedure lbCSVErrorClick(Sender: TObject);
     procedure cbStylesChange(Sender: TObject);
@@ -220,16 +226,19 @@ type
     procedure PageControl1DrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect; Active: boolean);
     procedure PageControl1Change(Sender: TObject);
     procedure PageControl1Changing(Sender: TObject; var AllowChange: boolean);
-    procedure btnDoUsersPlusClick(Sender: TObject);
+    procedure btnDoUsersAndSymbolsPlusClick(Sender: TObject);
     procedure CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure zeigUserInfo(id: Integer; lb: TListBox);
     procedure CategoryPanelExpand2(Sender: TObject);
     procedure CategoryPanelCollapse2(Sender: TObject);
-    procedure btnGroupSymbolsClick(Sender: TObject);
+    procedure btnSymbolGroupsClick(Sender: TObject);
     procedure btnOnePageClick(Sender: TObject);
-    procedure doGroupSymbols(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-      var groups: DACwSymbolGroup; var groupsCt: Integer; SG: FTCommons.TStringGridSorted; lb: TListBox);
+    procedure doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
+      var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+    procedure doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
+      var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+
     procedure CategoryPanel9CollapseExpand(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure btnPieChartClick(Sender: TObject);
@@ -240,6 +249,10 @@ type
     procedure SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: Integer);
     procedure machActionsUserIndex;
+    procedure Button3Click(Sender: TObject);
+    function groupingTyp(styp: string): Integer;
+    function trimYear(year:integer):integer;
+    procedure testFilteredUsers();
   private
     { Private-Deklarationen }
   public
@@ -622,29 +635,29 @@ begin
 
 end;
 
-procedure TForm2.btnGroupSymbolsClick(Sender: TObject);
+procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
 var
   nam: string;
 begin
-  with (Sender as TButton) do
-    nam := name;
-  if (nam = 'btnGroupSymbolsAllActions') then
-  begin
-    pnlPieButtons.Visible := false;
-    doGroupSymbols('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, SGCwSymbolsGroups,
-      lbSymbolsGroupsInfo);
 
-  end;
-  if (nam = 'btnGroupSymbolsFilteredActions') then
-  begin
-    pnlPieButtons.Visible := true;
-    doGroupSymbols('cwfilteredsymbolsgroups', cwFilteredActions, cwFilteredActionsPlus, cwFilteredSymbolsGroups,
-      cwFilteredSymbolsGroupsct, SGCwSymbolsGroups, lbSymbolsGroupsInfo);
-  end;
+  doSymbolGroups('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, lbSymbolsGroupsInfo);
+  doSymbolGroupValues('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt,
+    lbSymbolsGroupsInfo);
+  DynGrid8.initGrid('cwsymbolsgroups', 'groupId', 1, cwSymbolsGroupsCt, 18);
+  // nochmal die Symbol-Liste neu darstellen weil jetzt die Symbolgruppen drin sind
+  btnCwSymbolsToGridClick(nil);
+
+  // //das entfällt
+  // if (nam = 'btnGroupSymbolsFilteredActions') then
+  // begin
+  // pnlPieButtons.Visible := true;
+  // doSymbolGroups('cwfilteredsymbolsgroups', cwFilteredActions, cwFilteredActionsPlus, cwFilteredSymbolsGroups,
+  // cwFilteredSymbolsGroupsct, SGCwSymbolsGroups, lbSymbolsGroupsInfo);
+  // end;
 end;
 
-procedure TForm2.doGroupSymbols(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-  var groups: DACwSymbolGroup; var groupsCt: Integer; SG: FTCommons.TStringGridSorted; lb: TListBox);
+procedure TForm2.doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
+  var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
 // aus den actions (alle oder eine Teilmenge) werden Symbolgruppen gebildet mit ähnlichen Namen
 // die Symbolgruppe aller Actions ändert sich im Verlauf nicht
 // die Symbolgruppe der Teilmenge von Actions ändert sich
@@ -655,11 +668,6 @@ var
   nam: string;
   found: Integer;
   typ: Integer;
-
-  ba: Bytearray;
-  aba: array of Bytearray;
-  ll: Integer;
-  ct: Integer;
   gt: Cardinal;
 label weiter;
 
@@ -708,6 +716,7 @@ begin
       smerk5 := s5;
     end;
   end;
+
   // jetzt könnten noch spezielle Fälle eliminiert werden
   // HOil NGas OJ
 
@@ -731,10 +740,10 @@ begin
     groups[i].name := t2.Strings[i];
     groups[i].sourceNames := '';
     groups[i].sourceIds := '';
-//    groups[i].TradesCount := 0;
-//    groups[i].TradesVolumeTotal := 0;
-//    groups[i].TradesUsers := 0;
-//    groups[i].TradesProfitTotal := 0;
+    groups[i].TradesCount := 0;
+    groups[i].TradesVolumeTotal := 0;
+    groups[i].TradesUsers := 0;
+    groups[i].TradesProfitTotal := 0;
   end;
 
   t.Free;
@@ -762,94 +771,71 @@ begin
   end;
   lbCSVError.Items.Add('Z:Build SymbolGroups:' + inttostr(GetTickCount - gt));
 
-  //damit sind die SymbolGroups ermittelt und können ab jetzt verwendet werden
+  // damit sind die SymbolGroups ermittelt und können ab jetzt verwendet werden
 
-  //Der Rest ist hinfällig weil künftig anders gelöst !
+  // Der Rest ist hinfällig weil künftig anders gelöst !
+  // Problem: die Actions werden zwar selektiert verwendet aber die groups ist das 'große' Array mit allen Symbolen
+  // - auch den in den selektierten Actions nicht verwendeten
+  // die Zuordnung jedoch stimmt zwischen groups und cwsymbolsplus.
+  // Lediglich die Summen stellen Teilsummen aus der Untergruppe der gefilterten Actions dar
+  // die ganzen Werte können aus den actions gebildet werden (aufsummieren zB Volume) aber nicht direkt
+  // die Anzahl verschiedener User
+end;
 
+procedure TForm2.doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
+  var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+var
+  gt: Cardinal;
+  ba: Bytearray;
+  aba: array of Bytearray;
+  i, j, ll, ct: Integer;
+begin
+  gt := GetTickCount;
+  computeSymbolGroupValues(actions, groups, lb);
+  lbCSVError.Items.Add('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
 
+  gt := GetTickCount;
+  // User zählen über ein 2-dimensionales Riesenarray
+  // aba = Array of ByteArray
+  SetLength(aba, groupsCt);
+  ll := length(cwUsers);
+  for i := 0 to groupsCt - 1 do
+  begin
+    SetLength(aba[i], ll);
+  end;
+  // ganze Matrix nullsetzen
+  for i := 0 to groupsCt - 1 do
+    for j := 0 to length(cwUsers) - 1 do
+      aba[i][j] := 0;
+  lbCSVError.Items.Add('Z:Usercount vorbereiten:' + inttostr(GetTickCount - gt));
 
-//  // Problem: die Actions werden zwar selektiert verwendet aber die groups ist das 'große' Array mit allen Symbolen
-//  // - auch den in den selektierten Actions nicht verwendeten
-//  // die Zuordnung jedoch stimmt zwischen groups und cwsymbolsplus.
-//  // Lediglich die Summen stellen Teilsummen aus der Untergruppe der gefilterten Actions dar
-//  // die ganzen Werte können aus den actions gebildet werden (aufsummieren zB Volume) aber nicht direkt
-//  // die Anzahl verschiedener User
-//  gt:=gettickcount;
-//  computeSymbolGroupValues(actions, groups, lb);
-//  lbCSVError.Items.Add('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
-//
-//  gt := GetTickCount;
-//  // User zählen über ein Riesenarray
-//
-//  // aba = Array of ByteArray
-//  SetLength(aba, groupsCt);
-//  ll := length(cwUsers);
-//  for i := 0 to groupsCt - 1 do
-//  begin
-//    SetLength(aba[i], ll);
-//  end;
-//  // ganze Matrix nullsetzen
-//  for i := 0 to groupsCt - 1 do
-//    for j := 0 to length(cwUsers) - 1 do
-//      aba[i][j] := 0;
-//  lbCSVError.Items.Add('Z:Usercount vorbereiten:' + inttostr(GetTickCount - gt));
-//
-//  gt := GetTickCount;
-//  for i := 0 to length(actions) - 1 do
-//  begin
-//    // alle Actions mit Gruppe/UserID in Matrix um 1 erhöhen
-//    // alte Variante
-//    // inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]);
-//    inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, actionsPlus[i].userIndex]);
-//  end;
-//  lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
-//
-//
-//  gt := GetTickCount;
-//  for i := 0 to groupsCt - 1 do
-//  begin
-//    ct := 0;
-//    for j := 0 to length(cwUsers) - 1 do
-//    begin
-//      if aba[i, j] > 0 then
-//        ct := ct + 1;
-//    end;
-//    if (ct > 0) then
-//    begin
-//      groups[i].TradesUsers := ct;
-//    end;
-//  end;
-//
-//  lbCSVError.Items.Add('Z:Gruppen Userwerte zuordnen:' + inttostr(GetTickCount - gt));
-//
-//  if (1 = 0) then
-//  begin
-//    // ausdünnen der Symbole ohne Trades
-//    // damit wird aber cwsymbolsplus().groupid FALSCH
-//    j := -1;
-//    for i := 0 to groupsCt - 1 do
-//    begin
-//      if groups[i].TradesCount <> 0 then
-//      begin
-//        inc(j);
-//        groups[j] := groups[i];
-//      end;
-//    end;
-//    groupsCt := j + 1;
-//    SetLength(groups, groupsCt);
-//    lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
-//
-//  end;
-//
-//  // 'cwsymbolsgroups'
-//  // 'cwfilteredsymbolsgroups'
-//
-//  doSymbolsGroupsGridCW(SGCwSymbolsGroups, SGFieldCol, groups, length(groups), maxActionsPerGrid, 1);
-//  autosizegrid(SGCwSymbolsGroups);
-//  DynGrid8.initGrid(quelle, 'groupId', 1, length(groups), 18);
+  gt := GetTickCount;
+  for i := 0 to length(actions) - 1 do
+  begin
+    // alle Actions mit Gruppe/UserID in Matrix um 1 erhöhen
+    // alte Variante
+    // inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]);
+    inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, actionsPlus[i].userIndex]);
+  end;
+  lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
 
-  // nochmal die Symbol-Liste neu darstellen weil jetzt die Symbolgruppen drin sind
-  btnCwSymbolsToGridClick(nil);
+  gt := GetTickCount;
+  for i := 0 to groupsCt - 1 do
+  begin
+    ct := 0;
+    for j := 0 to length(cwUsers) - 1 do
+    begin
+      if aba[i, j] > 0 then
+        ct := ct + 1;
+    end;
+    if (ct > 0) then
+    begin
+      groups[i].TradesUsers := ct;
+    end;
+  end;
+
+  lbCSVError.Items.Add('Z:Gruppen Userwerte zuordnen:' + inttostr(GetTickCount - gt));
+
 end;
 
 procedure TForm2.btnListDoublesCwClick(Sender: TObject);
@@ -997,8 +983,9 @@ begin
   // symbole sortieren in einem extra Feld
   cwUsersCt := length(cwUsers);
   SetLength(isort, cwUsersCt);
-  SetLength(cwUsersSortindex, cwUsersCt);
-  SetLength(cwUsersSortindex2, cwUsersCt);
+  //findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
+  SetLength(cwUsersSortindex, cwUsersCt);    // cwUsersSortIndex(111)='8212345=111'
+  SetLength(cwUsersSortindex2, cwUsersCt);   // cwUsersSortIndex2(111)=8212345
   for i := 0 to cwUsersCt - 1 do
   begin
     isort[i] := cwUsers[i].userId;
@@ -1011,13 +998,16 @@ begin
     cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
   end;
 
-  machActionsUserIndex();
+  machActionsUserIndex(); // einmalig die Userindices aus den Useraccountnummern berechnen
 
-  btnDoUsersPlusClick(nil); // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus
+  btnDoUsersAndSymbolsPlusClick(nil);
+  // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus  und cwsymbolsplus
 
   // den ersten User 'anklicken' und dessen actions im Grid darstellen
   edSingleUserActionsId.text := inttostr(cwActions[0].userId);
   btnGetSingleUserActionsClick(nil);
+
+  btnSymbolGroupsClick(nil); // Symbolgruppen erzeugen und anschliessend Werte berechnen
 
   // die 4 Grids in Alle befüllen
   btnCwSymbolsToGridClick(nil);
@@ -1190,11 +1180,11 @@ begin
   for i := 0 to datact - 1 do
   begin
     if styp = 1 then
-      data[i].value :=0;// cwFilteredSymbolsGroups[i].TradesCount; // , cwFilteredSymbolsGroupsct;
+      data[i].value := 0; // cwFilteredSymbolsGroups[i].TradesCount; // , cwFilteredSymbolsGroupsct;
     if styp = 2 then
-      data[i].value :=0;// cwFilteredSymbolsGroups[i].TradesVolumeTotal; // , cwFilteredSymbolsGroupsct;
+      data[i].value := 0; // cwFilteredSymbolsGroups[i].TradesVolumeTotal; // , cwFilteredSymbolsGroupsct;
     if styp = 3 then
-      data[i].value :=0;// cwFilteredSymbolsGroups[i].TradesProfitTotal; // , cwFilteredSymbolsGroupsct;
+      data[i].value := 0; // cwFilteredSymbolsGroups[i].TradesProfitTotal; // , cwFilteredSymbolsGroupsct;
     data[i].text := cwFilteredSymbolsGroups[i].name;
     data[i].color1 := random($1000000);
     data[i].color2 := random($1000000);
@@ -1259,13 +1249,66 @@ begin
   end
 end;
 
+procedure TForm2.Button3Click(Sender: TObject);
+var
+  b3: byteArray3;
+  i, j, k: Integer;
+
+begin
+  SetLength(b3, 2);
+  for i := 0 to 1 do
+  begin
+    SetLength(b3[i], 3);
+    for j := 0 to 2 do
+    begin
+      SetLength(b3[i][j], 4);
+      for k := 0 to 3 do
+      begin
+        b3[i][j][k] := k + 10 * j + 100 * i;
+      end;
+    end;
+  end;
+
+end;
+
 procedure TForm2.btnDoFilterClick(Sender: TObject);
 begin
   FilterTopic := 'manual';
   doFilter();
+  // -> cwFilteredActions cwFilteredActionsCt
+  // nun geht es weiter mit dem Gruppieren
+  testFilteredUsers();
+  doGroup();
 end;
 
-procedure TForm2.btnDoUsersPlusClick(Sender: TObject);
+procedure TForm2.testFilteredUsers();
+var
+  i,ix,ct:integer;
+  v:array of cwuser;
+  u:array of integer;
+  gt:cardinal;
+begin
+  gt:=gettickcount;
+  setlength(u,cwusersct);
+  for i:=0 to cwfilteredactionct-1 do
+    begin
+      ix:=finduserindex(cwfilteredactions[i].userid);
+      u[ix]:=u[ix]+1;
+    end;
+    ct:=0;
+    setlength(v,cwusersct);
+  for i:= 0 to cwusersct-1 do
+    if(u[i]>0) then
+    begin
+     ct:=ct+1;
+     v[ct-1]:=cwusers[i];
+    end;
+  setlength(v,ct+1);
+
+  lbCsvError.Items.Add('Z:F.UserGrtoup:'+inttostr(gettickcount-gt));
+end;
+
+procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
 var
   i, index, j, total: Integer;
   sum: double;
@@ -1273,7 +1316,8 @@ var
 
 begin
   // zusätzliche Berechnungen durchführen
-  // Ausgangsdaten sind alle cwactions
+  // das passiert gleich im Anschluss an das Laden der Actions
+  // Ausgangsdaten sind ALLE cwactions
   gt := GetTickCount;
   sum := 0;
   total := 0;
@@ -1296,6 +1340,7 @@ begin
 
     // NEU: die schnelle Variante
     // index := finduserindex(cwActions[i].userId);
+    // Die actions habe eigentlich nur eine Useraccountnummer. Hieraus errechne ich einmalig in cwActionsPlus einen Userindex der direkt in cwusers zeigt
     index := cwActionsPlus[i].userIndex;
     if index > -1 then
     begin
@@ -1314,6 +1359,250 @@ begin
 
   end;
   // showmessage(inttostr(GetTickCount - gt));
+end;
+
+procedure TForm2.doGroup();
+var
+  i, j, k, l: Integer;
+  gt: Cardinal;
+  s: string;
+  ct: Integer;
+  ctmax: Integer;
+  le: array [0 .. 2] of Integer;
+  // cw3Summaries: DA3CwSummary;
+  // cw3SummariesCt: integer;
+  max1, max2, max3, max: Integer;
+  fall: array [0 .. 9] of Integer; // wie oft kommt welche Gruppe vor
+  p: array [0 .. 2] of Integer;
+  par: array [0 .. 2] of string;
+  TradesCount: Integer;
+  TradesVolumeTotal: double;
+  TradesProfitTotal: double;
+begin
+
+  if (Grouping0.chkActive.Checked = true) then
+  begin
+    cwgrouping.element[0].styp := Grouping0.cbTopic.text;
+    cwgrouping.element[0].typ := groupingTyp(Grouping0.cbTopic.text);
+  end
+  else
+  begin
+    cwgrouping.element[0].styp := 'unused';
+    cwgrouping.element[0].typ := 0;
+  end;
+
+  if (Grouping1.chkActive.Checked = true) then
+  begin
+    cwgrouping.element[1].styp := Grouping1.cbTopic.text;
+    cwgrouping.element[1].typ := groupingTyp(Grouping1.cbTopic.text);
+  end
+  else
+  begin
+    cwgrouping.element[1].styp := 'unused';
+    cwgrouping.element[1].typ := 0;
+  end;
+
+  if (Grouping2.chkActive.Checked = true) then
+  begin
+    cwgrouping.element[2].styp := Grouping2.cbTopic.text;
+    cwgrouping.element[2].typ := groupingTyp(Grouping2.cbTopic.text);
+  end
+  else
+  begin
+    cwgrouping.element[2].styp := 'unused';
+    cwgrouping.element[2].typ := 0;
+  end;
+
+  for i := 0 to 2 do
+  begin
+    // unused
+    // SymbolGroup
+    // User
+    // Years
+    // Months
+    // DateSpecial
+
+    if (cwgrouping.element[i].styp = 'unused') then // unused
+    begin
+      le[i] := 1;
+      inc(fall[0]);
+    end;
+    if (cwgrouping.element[i].styp) = 'SymbolGroup' then
+    begin
+      le[i] := cwSymbolsGroupsCt;
+      inc(fall[1]);
+    end;
+    if (cwgrouping.element[i].styp) = 'User' then
+    begin
+      le[i] := length(cwUsers);
+      inc(fall[2]);
+    end;
+    if (cwgrouping.element[i].styp) = 'YearsOpen' then
+    begin
+      le[i] := 12;
+      inc(fall[3]);
+    end;
+    if (cwgrouping.element[i].styp) = 'YearsClose' then
+    begin
+      le[i] := 12;
+      inc(fall[4]);
+    end;
+  end;
+
+
+
+  max := le[0] * le[1] * le[2];
+  SetLength(cw3summaries, le[0], le[1], le[2]);
+  max1 := length(cw3summaries);
+  max2 := length(cw3summaries[0]);
+  max3 := length(cw3summaries[0][0]);
+  // alles nullsetzen
+  for i := 0 to max1 - 1 do
+    for j := 0 to max2 - 1 do
+      for k := 0 to max3 - 1 do
+      begin
+        cw3summaries[i][j][k].par0 := '';
+        cw3summaries[i][j][k].par1 := '';
+        cw3summaries[i][j][k].par2 := '';
+        cw3summaries[i][j][k].TradesCount := 0;
+        cw3summaries[i][j][k].TradesVolumeTotal := 0;
+        cw3summaries[i][j][k].TradesProfitTotal := 0;
+        cw3summaries[i][j][k].TradesUsers := 0;
+      end;
+
+  for i := 0 to cwFilteredActionCt - 1 do
+  begin
+    for j := 0 to 2 do
+    begin
+      case cwgrouping.element[j].typ of
+        0: // unused
+          begin
+            p[j] := 0;
+            par[j] := '.';
+          end;
+        1: // SymbolGroup
+          begin
+            p[j] := cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId;
+            s := inttostr(cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId); // oder der Name !
+            par[j] := cwSymbolsGroups[cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId].name + '/' + s;
+            // oder der Name !
+          end;
+        2: // User
+          begin
+            p[j] := finduserindex(cwFilteredActions[i].userId);
+            par[j] := inttostr(cwFilteredActions[i].userId); // oder Username
+          end;
+        3: // YearsOpen
+          begin
+            p[j] :=trimyear(yearof( unixtodatetime(cwFilteredActions[i].openTime)));
+            par[j] := inttostr(yearof( unixtodatetime(cwFilteredActions[i].openTime)));
+          end;
+        4: // YearsClose
+          begin
+            p[j] :=trimyear(yearof( unixtodatetime(cwFilteredActions[i].closeTime)));
+            par[j] := inttostr(yearof( unixtodatetime(cwFilteredActions[i].closeTime)));
+          end
+      else
+        begin
+          p[j] := 0;
+          par[j] := '?';
+        end;
+        ;
+      end;
+    end;
+
+    // jetzt sind alle "Kästchen" im 3D-Array gefüllt
+    cw3summaries[p[0], p[1], p[2]].par0 := par[0];
+    cw3summaries[p[0], p[1], p[2]].par1 := par[1];
+    cw3summaries[p[0], p[1], p[2]].par2 := par[2];
+    cw3summaries[p[0], p[1], p[2]].TradesCount := cw3summaries[p[0], p[1], p[2]].TradesCount + 1;
+    cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal := cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal +
+      cwFilteredActions[i].volume;
+    cw3summaries[p[0], p[1], p[2]].TradesProfitTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitTotal +
+      cwFilteredActions[i].swap + cwFilteredActions[i].profit;
+
+    TradesCount := TradesCount + 1;
+    TradesVolumeTotal := TradesVolumeTotal + cwFilteredActions[i].volume;
+    TradesProfitTotal := TradesProfitTotal + cwFilteredActions[i].swap + cwFilteredActions[i].profit;
+
+  end;
+
+  // Ausdünnen
+  //
+  // if (1 = 0) then
+  // begin
+  // // ausdünnen der Symbole ohne Trades
+  // // damit wird aber cwsymbolsplus().groupid FALSCH
+  // j := -1;
+  // for i := 0 to groupsCt - 1 do
+  // begin
+  // if groups[i].TradesCount <> 0 then
+  // begin
+  // inc(j);
+  // groups[j] := groups[i];
+  // end;
+  // end;
+  // groupsCt := j + 1;
+  // SetLength(groups, groupsCt);
+  // lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
+  // end;
+  ctmax := 10000;
+  SetLength(cwsummaries, ctmax+1);
+  ct := -1;
+  try
+  for i := 0 to max1 - 1 do
+    for j := 0 to max2 - 1 do
+      for k := 0 to max3 - 1 do
+      begin
+        if cw3summaries[i][j][k].par0 <> '' then
+        begin
+          inc(ct);
+          cwsummaries[ct] := cw3summaries[i][j][k];
+          if (ct = ctmax) then
+          begin
+            ctmax := ctmax + 10000;
+            SetLength(cwsummaries, ctmax+1);
+          end;
+
+        end;
+
+      end;
+      //hier ist der Moment wo der SPeicherplatzbedarf am grössten ist
+      //mit User SymbolGroups und YearsOpen sind es um die 950 MB
+  except
+      on E: Exception do
+        s := E.ToString;
+
+  end;
+  SetLength(cwsummaries, ct + 1);
+  SetLength(cw3summaries, 0, 0, 0);
+
+  // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
+  DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 8);
+end;
+
+function TForm2.trimYear(year:integer):integer;
+begin
+  //2012 bis 2023 sind die 12 Jahre auf die getrimmt wird
+  if year<2012 then year:=2012;//2012-12;
+  if year>2023 then year:=2023;//2023-12;
+  result:=year-2012;
+
+end;
+
+function TForm2.groupingTyp(styp: string): Integer;
+begin
+  if (styp = 'unused') then
+    result := 0;
+  if styp = ('SymbolGroup') then
+    result := 1;
+  if styp = ('User') then
+    result := 2;
+  if styp = ('YearsOpen') then
+    result := 3;
+  if styp = ('YearsClose') then
+    result := 4;
+
 end;
 
 procedure TForm2.doFilter();
@@ -2008,7 +2297,6 @@ begin
   end;
 
   maxActionsPerGrid := 10000;
-  edMaxActionsPerGrid.text := inttostr(maxActionsPerGrid);
 
   lboxDebug := lbCSVError;
   lboxInfo := lbCSVError;
@@ -2741,12 +3029,6 @@ begin
     end;
     DeleteCriticalSection(HTTPWorkCriticalSection);
 
-  end;
-
-  procedure TForm2.Button3Click(Sender: TObject);
-  begin
-    maxActionsPerGrid := strtoint(edMaxActionsPerGrid.text);
-    btnCwactionsToGridClick(nil);
   end;
 
   procedure TForm2.Button4Click(Sender: TObject);

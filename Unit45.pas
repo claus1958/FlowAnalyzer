@@ -7,10 +7,17 @@ uses
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, Vcl.FileCtrl,
   System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
   psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, AdvChartSelectors,
-  Vcl.CheckLst, Unit4,mmsystem;
+  Vcl.CheckLst, Unit4, mmsystem;
 
 // RSChartPanel, RSCharts, RSBarCharts,
 type
+  usertyp = packed record
+    name: string;
+    plz: integer;
+  end;
+
+  DAuser = array of usertyp;
+
   aInt = array of integer;
   aaint = array of aInt;
 
@@ -22,6 +29,7 @@ type
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
+    Button5: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     function vergleichInteger(was, mit: integer; op: string): boolean;
@@ -32,6 +40,7 @@ type
     function vergleichIntegerArray3(var was: array of integer; var mit: integer): boolean;
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -70,9 +79,9 @@ var
   i, j: integer;
   s: String;
   c: integer;
-  aa:array of integer;
+  aa: array of integer;
 
-  begin
+begin
   j := 12;
   c := 0;
   s := 'Broker';
@@ -123,62 +132,92 @@ var
   showmessage(inttostr(gettickcount - gt) + ' ' + inttostr(c));
 
   c := 0;
-  setlength(aa,1);
-  aa[0]:=1;
+  setlength(aa, 1);
+  aa[0] := 1;
   gt := gettickcount;
   for i := 1 to 40000000 do
   begin
 
-      if vergleichIntegerArray(aa,j,'=') = true then
-        c := c + 1;
+    if vergleichIntegerArray(aa, j, '=') = true then
+      c := c + 1;
   end;
   showmessage(inttostr(gettickcount - gt) + ' ' + inttostr(c));
 
-    c := 0;
-  setlength(aa,1);
-  aa[0]:=1;
+  c := 0;
+  setlength(aa, 1);
+  aa[0] := 1;
   gt := gettickcount;
   for i := 1 to 40000000 do
   begin
 
-      if vergleichIntegerArray2(aa,j,1) = true then
-        c := c + 1;
+    if vergleichIntegerArray2(aa, j, 1) = true then
+      c := c + 1;
   end;
   showmessage(inttostr(gettickcount - gt) + ' ' + inttostr(c));
 
-    c := 0;
-  setlength(aa,1);
-  aa[0]:=1;
+  c := 0;
+  setlength(aa, 1);
+  aa[0] := 1;
   gt := gettickcount;
   for i := 1 to 40000000 do
   begin
 
-  if vergleichIntegerArray3(aa,j) = true then
-        c := c + 1;
+    if vergleichIntegerArray3(aa, j) = true then
+      c := c + 1;
   end;
   showmessage(inttostr(gettickcount - gt) + ' ' + inttostr(c));
 
-
-  end;
+end;
 
 procedure TForm45.Button3Click(Sender: TObject);
 var
-T,u:cardinal;
+  T, u: cardinal;
 begin
-t:=timegettime;
-u:=gettickcount;
-listbox1.items.add(inttostr(t)+' '+inttostr(u));
+  T := timegettime;
+  u := gettickcount;
+  ListBox1.items.add(inttostr(T) + ' ' + inttostr(u));
 end;
 
 procedure TForm45.Button4Click(Sender: TObject);
 var
-strarray:array of string;
-p:integer;
+  strarray: array of string;
+  p: integer;
 begin
-setlength(strarray,10);
-strarray[0]:='1234=test';
-p:= ansipos('=',strArray[0]);
-p:=pos('t','maustest');
+  setlength(strarray, 10);
+  strarray[0] := '1234=test';
+  p := ansipos('=', strarray[0]);
+  p := pos('t', 'maustest');
+end;
+
+procedure TForm45.Button5Click(Sender: TObject);
+var
+  u: DAuser;
+  i: integer;
+  v: DAuser;
+  w:dauser;
+begin
+  setlength(u, 10);
+  setlength(v, 5);
+  for i := 0 to 9 do
+  begin
+    u[i].name := 'n' + inttostr(i);
+    u[i].plz := 7000 + i
+  end;
+
+  for i := 0 to 4 do
+  begin
+    v[i] := u[i];
+  end;
+
+  w:=u;
+
+  for i := 0 to 9 do
+  begin
+    u[i].name := 'neu' + inttostr(i);
+    u[i].plz := 70000 + i
+  end;
+
+  w[0]:=v[0];
 end;
 
 function TForm45.vergleichInteger(was, mit: integer; op: string): boolean;
@@ -310,7 +349,6 @@ begin
   end;
   result := res;
 end;
-
 
 function TForm45.vergleichIntegerArray3(var was: array of integer; var mit: integer): boolean;
 var

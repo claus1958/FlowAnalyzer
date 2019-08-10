@@ -129,7 +129,7 @@ type
   DACwAction = array of cwAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
   cwActionPlus = packed Record
-    userIndex: integer; //für die schnellere Suche !
+    userIndex: integer; // für die schnellere Suche !
   End;
 
   DACwActionPlus = array of cwActionPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -144,24 +144,38 @@ type
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
-
   cwSummary = packed Record
-    par1:string;
-    par2:string;
-    par3:string;
+    par0: string; // Gruppierung 1-3
+    par1: string;
+    par2: string;
     TradesCount: integer;
     TradesVolumeTotal: integer;
-    TradesUsers: integer; // wieviele User handelten Symbol
+    TradesUsers: integer; // wieviele User handelten Symbol. Nur bei handlebarer Anzahl berechenbar !
     TradesProfitTotal: double;
   End;
 
   DACwSummary = array of cwSummary;
+  DA3CwSummary = array of array of DACwSummary;
+
+  cwGroupElement = packed record
+    typ: integer;
+    sTyp: string; // unused symbolGroup user datumJahre datumMonate datumSpezial
+    header: string; // was steht später im Grid als Spaltenüberschrift
+  end;
+
+  cwGroupElemente = packed record
+    element: array [0 .. 2] of cwGroupElement;
+  end;
 
   cwSymbolGroup = packed Record
     groupId: integer;
     name: string; // GE30
     sourceNames: string; // GE30-Apr;GE30-Jul...
     sourceIds: string; // 122;133;155;...
+    TradesCount: integer;
+    TradesVolumeTotal: integer;
+    TradesUsers: integer; // wieviele User handelten Symbol
+    TradesProfitTotal: double;
   End;
 
   DACwSymbolGroup = array of cwSymbolGroup;
@@ -282,13 +296,13 @@ procedure QuicksortVDI(low, high: integer; var dbla: intArray; var inta: intArra
 procedure QuicksortVUI64(low, high: integer; var dbla: int64Array; var inta: intArray);
 procedure QuicksortVDI64(low, high: integer; var dbla: int64Array; var inta: intArray);
 
-procedure FastSortStList(Stlist: TStringList; styp: string);
-procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; styp: string);
+procedure FastSortStList(Stlist: TStringList; sTyp: string);
+procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; sTyp: string);
 // sortiert nach value eines double-arrays und zieht integer-array dabei mit
-procedure FastSort2ArrayString(stra: StringArray; inta: intArray; styp: string);
-procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; styp: string);
-procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; styp: string);
-procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; styp: string);
+procedure FastSort2ArrayString(stra: StringArray; inta: intArray; sTyp: string);
+procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; sTyp: string);
+procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; sTyp: string);
+procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; sTyp: string);
 
 function CTime2DateTime(T: time_c): TDateTime;
 function DateTime2CTime(T: TDateTime): time_c;
@@ -328,6 +342,10 @@ procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAIntege
   justone: Boolean = false);
 procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
@@ -352,9 +370,10 @@ var
   cwSymbolsPlus: DACwSymbolPlus;
   cwSymbolsCt: integer;
 
-  cwSummaries: DACwSummary;
-  cwSummariesCt: integer;
-
+  cw3Summaries: DA3CwSummary;
+  cw3SummariesCt: integer;
+  cwSummaries: DACwSummary;//für das ausgedünnte Array ohne 3D Struktur
+  cwSummariesCt:integer;
 
   cwSymbolsGroups: DACwSymbolGroup;
   cwSymbolsGroupsCt: integer;
@@ -380,6 +399,7 @@ var
   cwFilteredActionsPlus: DACwActionPlus; // die herausgesuchten Actions
   cwFilteredActionCt: integer;
   cwRatings: DACwRating;
+  cwGrouping: cwGroupElemente;
   lboxDebug: TListBox;
   lboxInfo: TListBox;
   cwFilterParameter: array of TFilterParameter;
@@ -1324,6 +1344,127 @@ begin
   end;
 end;
 
+procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+  d1,d2,d3,d23:integer;
+  i1,i2,i3,rest:integer;//die summaries[i1][i2][i3] aus k
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := cwgrouping.element[0].styp;
+      SG.cells[SGFieldCol[1], 0] := cwgrouping.element[1].styp;
+      SG.cells[SGFieldCol[2], 0] := cwgrouping.element[2].styp;
+      SG.cells[SGFieldCol[3], 0] := 'tradesCount';
+      SG.cells[SGFieldCol[4], 0] := 'tradesVolumeTotal';
+      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
+      SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+
+    d1:=length(summaries);
+    d2:=length(summaries[0]);
+    d3:=length(summaries[0][0]);
+    d23:=d2*d3;
+//    i1=int(ix/(d2*d3))
+//    i2=int(rest/d3)
+//    i3=rest
+
+
+
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+
+      i1:=trunc(sort[k]/d23);
+      rest:=sort[k]-i1*d23;
+      i2:=trunc(rest/d3);
+      i3:=rest-i2*d3;
+
+
+      SG.cells[SGFieldCol[0], row] := summaries[i1][i2][i3].par0;
+      SG.cells[SGFieldCol[1], row] := summaries[i1][i2][i3].par1;
+      SG.cells[SGFieldCol[2], row] := summaries[i1][i2][i3].par2;
+
+      SG.cells[SGFieldCol[3], row] := inttostr(summaries[i1][i2][i3].TradesCount);
+      SG.cells[SGFieldCol[4], row] := inttostr(summaries[i1][i2][i3].TradesVolumeTotal);
+      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesProfitTotal);
+      SG.cells[SGFieldCol[6], row] := inttostr(summaries[i1][i2][i3].TradesUsers);
+
+
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
+procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+  d1,d2,d3,d23:integer;
+  i1,i2,i3,rest:integer;//die summaries[i1][i2][i3] aus k
+begin
+  try
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := cwgrouping.element[0].styp;
+      SG.cells[SGFieldCol[1], 0] := cwgrouping.element[1].styp;
+      SG.cells[SGFieldCol[2], 0] := cwgrouping.element[2].styp;
+      SG.cells[SGFieldCol[3], 0] := 'tradesCount';
+      SG.cells[SGFieldCol[4], 0] := 'tradesVolumeTotal';
+      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
+      SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+
+
+
+      SG.cells[SGFieldCol[0], row] := summaries[sort[k]].par0;
+      SG.cells[SGFieldCol[1], row] := summaries[sort[k]].par1;
+      SG.cells[SGFieldCol[2], row] := summaries[sort[k]].par2;
+
+      SG.cells[SGFieldCol[3], row] := inttostr(summaries[sort[k]].TradesCount);
+      SG.cells[SGFieldCol[4], row] := inttostr(summaries[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesProfitTotal);
+      SG.cells[SGFieldCol[6], row] := inttostr(summaries[sort[k]].TradesUsers);
+
+
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+end;
+
+
 procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var users: DAcwUser; usersPlus: DACwUserPlus; datafrom: integer; datato: integer; justone: Boolean = false);
 var
@@ -1433,9 +1574,9 @@ begin
       SG.cells[SGFieldCol[10], 0] := 'tickValue';
       SG.cells[SGFieldCol[11], 0] := 'tickSize';
       SG.cells[SGFieldCol[12], 0] := 'type_';
-      SG.cells[SGFieldCol[13], 0] := 'Trades';
-      SG.cells[SGFieldCol[14], 0] := 'Volume';
-      SG.cells[SGFieldCol[15], 0] := 'Profit';
+      SG.cells[SGFieldCol[13], 0] := 'trades';
+      SG.cells[SGFieldCol[14], 0] := 'volume';
+      SG.cells[SGFieldCol[15], 0] := 'profit';
       SG.cells[SGFieldCol[16], 0] := 'symGroup';
       SG.cells[SGFieldCol[17], 0] := 'symGroupId';
 
@@ -1493,10 +1634,10 @@ begin
       SG.cells[SGFieldCol[0], 0] := 'groupId';
       // SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'name';
-//      SG.cells[SGFieldCol[2], 0] := 'tradesCount';
-//      SG.cells[SGFieldCol[3], 0] := 'tradesVolumeTotal';
-//      SG.cells[SGFieldCol[4], 0] := 'tradesUsers';
-//      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
+      SG.cells[SGFieldCol[2], 0] := 'tradesCount';
+      SG.cells[SGFieldCol[3], 0] := 'tradesVolumeTotal';
+      SG.cells[SGFieldCol[4], 0] := 'tradesUsers';
+      SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'sourceNames';
       SG.cells[SGFieldCol[7], 0] := 'sourceIds';
       SG.Rows[0].endUpdate;
@@ -1510,10 +1651,10 @@ begin
 
       SG.cells[SGFieldCol[0], row] := inttostr(symbolsGroups[sort[k]].groupId);
       SG.cells[SGFieldCol[1], row] := symbolsGroups[sort[k]].name;
-//      SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
-//      SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);
-//      SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
-//      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
+      SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
+      SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
+      SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := symbolsGroups[sort[k]].sourceNames;
       SG.cells[SGFieldCol[7], row] := symbolsGroups[sort[k]].sourceIds;
 
@@ -1922,9 +2063,9 @@ begin
     SG.cells[SGFieldCol[10], 0] := 'tickValue';
     SG.cells[SGFieldCol[11], 0] := 'tickSize';
     SG.cells[SGFieldCol[12], 0] := 'type_';
-    SG.cells[SGFieldCol[13], 0] := 'Trades';
-    SG.cells[SGFieldCol[14], 0] := 'Volume';
-    SG.cells[SGFieldCol[15], 0] := 'Profit';
+    SG.cells[SGFieldCol[13], 0] := 'trades';
+    SG.cells[SGFieldCol[14], 0] := 'volume';
+    SG.cells[SGFieldCol[15], 0] := 'profit';
     SG.cells[SGFieldCol[16], 0] := 'symGroup';
 
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
@@ -2018,10 +2159,10 @@ begin
     SG.cells[SGFieldCol[0], 0] := 'groupId';
     // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'name';
-//    SG.cells[SGFieldCol[2], 0] := 'TradesCount';
-//    SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
-//    SG.cells[SGFieldCol[4], 0] := 'T.Users';
-//    SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
+    SG.cells[SGFieldCol[2], 0] := 'TradesCount';
+    SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
+    SG.cells[SGFieldCol[4], 0] := 'T.Users';
+    SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
     SG.cells[SGFieldCol[6], 0] := 'sourceNames';
     SG.cells[SGFieldCol[7], 0] := 'sourceIds';
     row := 0;
@@ -2033,10 +2174,10 @@ begin
       begin
         SG.cells[SGFieldCol[0], row] := inttostr(symbolsGroups[k].groupId);
         SG.cells[SGFieldCol[1], row] := symbolsGroups[k].name;
-//        SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
-//        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesVolumeTotal);
-//        SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
-//        SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
+        SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
+        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesVolumeTotal);
+        SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
+        SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
         SG.cells[SGFieldCol[6], row] := symbolsGroups[k].sourceNames;
         SG.cells[SGFieldCol[7], row] := symbolsGroups[k].sourceIds;
 
@@ -2753,7 +2894,7 @@ end;
 
 { -----------   The Stringlist sorting routine with casts   ------------- }
 
-procedure FastSortStList(Stlist: TStringList; styp: string);
+procedure FastSortStList(Stlist: TStringList; sTyp: string);
 var
   SortArray: StringArray;
   i, j: integer;
@@ -2765,13 +2906,13 @@ begin
     SortArray[i] := Trim(Stlist.Strings[i]);
 
   // Now sort
-  if (styp = 'AU') then
+  if (sTyp = 'AU') then
     QuicksortAU(Low(SortArray), High(SortArray), SortArray);
-  if (styp = 'AD') then
+  if (sTyp = 'AD') then
     QuicksortAD(Low(SortArray), High(SortArray), SortArray);
-  if (styp = 'VU') then
+  if (sTyp = 'VU') then
     QuicksortVU(Low(SortArray), High(SortArray), SortArray);
-  if (styp = 'VD') then
+  if (sTyp = 'VD') then
     QuicksortVD(Low(SortArray), High(SortArray), SortArray);
 
   // Recast
@@ -2787,12 +2928,12 @@ begin
 end;
 
 // procedure FastSort2ArrayInteger(dbla: intArray; inta: intArray; styp: string);
-procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; styp: string);
+procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; sTyp: string);
 
 begin
   // Cast Stringlist to an array
 
-  if (styp = 'VUA') then
+  if (sTyp = 'VUA') then
     QuicksortVUAIntegerString(Low(inta), High(inta), inta, stra);
   // abwärts nicht benötigt
   // if (styp = 'VDA') then
@@ -2800,50 +2941,50 @@ begin
 
 end;
 
-procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; styp: string);
+procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; sTyp: string);
 
 begin
   // Cast Stringlist to an array
 
-  if (styp = 'VUA') then
+  if (sTyp = 'VUA') then
     QuicksortVUA(Low(dbla), High(dbla), dbla, inta);
-  if (styp = 'VDA') then
+  if (sTyp = 'VDA') then
     QuicksortVDA(Low(dbla), High(dbla), dbla, inta);
 
 end;
 
-procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; styp: string);
+procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; sTyp: string);
 
 begin
   // Cast Stringlist to an array
 
-  if (styp = 'VUI') then
+  if (sTyp = 'VUI') then
     QuicksortVUI(Low(dbla), High(dbla), dbla, inta);
-  if (styp = 'VDI') then
+  if (sTyp = 'VDI') then
     QuicksortVDI(Low(dbla), High(dbla), dbla, inta);
 
 end;
 
-procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; styp: string);
+procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; sTyp: string);
 
 begin
   // Cast Stringlist to an array
 
-  if (styp = 'VUI') then
+  if (sTyp = 'VUI') then
     QuicksortVUI64(Low(dbla), High(dbla), dbla, inta);
-  if (styp = 'VDI') then
+  if (sTyp = 'VDI') then
     QuicksortVDI64(Low(dbla), High(dbla), dbla, inta);
 
 end;
 
-procedure FastSort2ArrayString(stra: StringArray; inta: intArray; styp: string);
+procedure FastSort2ArrayString(stra: StringArray; inta: intArray; sTyp: string);
 
 begin
   // Cast Stringlist to an array
 
-  if (styp = 'VUAS') then
+  if (sTyp = 'VUAS') then
     QuicksortVUAS(Low(stra), High(stra), stra, inta);
-  if (styp = 'VDAS') then
+  if (sTyp = 'VDAS') then
     QuicksortVDAS(Low(stra), High(stra), stra, inta);
 
 end;
@@ -3240,7 +3381,7 @@ var
   pi: integer;
 begin
 
-    // inttostr ist halb so schnell wie strtoint
+  // inttostr ist halb so schnell wie strtoint
   first := Low(index); // Sets the first item of the range
   Last := High(index); // Sets the last item of the range
   Found := false; // Initializes the Found flag (Not found yet)
@@ -3271,7 +3412,6 @@ begin
       first := Pivot + 1;
   end;
 end;
-
 
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 var
@@ -3392,9 +3532,9 @@ var
   p: integer;
 begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
-  // mit Binsearch2 sinds: 850  Super:-)
+  // mit BinsearchString2 sinds: 850  Super:-)
   i := BinSearchString2(cwUsersSortIndex, cwUsersSortIndex2, userId);
-//  i := BinSearchString3(cwUsersSortIndex2, userId);
+  // i := BinSearchString3(cwUsersSortIndex2, userId);
   if (i > -1) then
   begin
     p := pos('=', cwUsersSortIndex[i]);
@@ -3405,59 +3545,63 @@ begin
 end;
 
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
-//var
-//  i, j, symbolId, groupId: integer;
-//  TradesCount: integer;
-//  TradesVolumeTotal: integer;
-//  TradesProfitTotal: double;
-//  sum: double;
+var
+  i, j, symbolId, groupId: integer;
+  TradesCount: integer;
+  TradesVolumeTotal: integer;
+  TradesProfitTotal: double;
+  sum: double;
 begin
-//  TradesCount := 0;
-//  TradesVolumeTotal := 0;
-//  TradesProfitTotal := 0;
-//  for i := 0 to length(groups) - 1 do
-//  begin
-//    //die folgenden sind hier aus den actions berechenbar
-//    groups[i].TradesCount := 0;
-//    groups[i].TradesVolumeTotal := 0;
-//    groups[i].TradesProfitTotal := 0;
-//    //die folgenden hier nicht direkt berechenbar
-//    groups[i].TradesUsers := 0;
-//    groups[i].sourceNames := '';
-//    groups[i].sourceIds := '';
-//    groups[i].groupId := i;
-//
-//  end;
-//
-//  for i := 0 to cwSymbolsCt - 1 do
-//  begin
-//    j := cwSymbolsPlus[i].groupId;
-//    groups[j].sourceNames := groups[j].sourceNames + cwSymbols[i].name + ';';
-//    groups[j].sourceIds := groups[j].sourceIds + inttostr(i) + ';';
-//  end;
-//
-//  for i := 0 to length(actions) - 1 do
-//  begin
-//    // Balance rauslassen ? Ist aber auch interessant
-//    symbolId := actions[i].symbolId;
-//    groupId := cwSymbolsPlus[symbolId].groupId;
-//    // direkt nach Symbolen(ohne Gruppe) wäre hier symbolId zu verwenden und cwSymbolsCt wäre die Größe der 'group'
-//    Inc(groups[groupId].TradesCount);
-//    Inc(TradesCount);
-//    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
-//    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
-//    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
-//    TradesProfitTotal := TradesProfitTotal + actions[i].swap + actions[i].profit;
-//  end;
-//  lb.items.Clear;
-//  lb.items.add('Actions:' + #9 + inttostr(length(actions)));
-//  lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
-//  lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));
-//  lb.items.add('BalanceTotal:' + #9 + FormatFloat(',#0.00', groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
-//  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId]
-//    .TradesCount));
-//  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
-//    .TradesProfitTotal));
+  // erstmal alles initialisieren
+  TradesCount := 0;
+  TradesVolumeTotal := 0;
+  TradesProfitTotal := 0;
+  for i := 0 to length(groups) - 1 do
+  begin
+    // die folgenden sind hier aus den actions berechenbar
+    groups[i].TradesCount := 0;
+    groups[i].TradesVolumeTotal := 0;
+    groups[i].TradesProfitTotal := 0;
+    // die folgenden Werte sind hier nicht direkt berechenbar
+    groups[i].TradesUsers := 0;
+    groups[i].sourceNames := '';
+    groups[i].sourceIds := '';
+    groups[i].groupId := i;
+
+  end;
+
+  // aus den cwSymbols den cwSymbolGroups die sourceNames und sourceIds zuordnen
+  for i := 0 to cwSymbolsCt - 1 do
+  begin
+    j := cwSymbolsPlus[i].groupId;
+    groups[j].sourceNames := groups[j].sourceNames + cwSymbols[i].name + ';';
+    groups[j].sourceIds := groups[j].sourceIds + inttostr(i) + ';';
+  end;
+
+  // das Einordnen der Actions in die groups über die groupid die aus der symbolId ermittelt wird
+  for i := 0 to length(actions) - 1 do
+  begin
+    // Balance rauslassen ? Ist aber auch interessant
+    symbolId := actions[i].symbolId;
+    groupId := cwSymbolsPlus[symbolId].groupId;
+    // direkt nach Symbolen(ohne Gruppe) wäre hier symbolId zu verwenden und cwSymbolsCt wäre die Größe der 'group'
+    Inc(groups[groupId].TradesCount);
+    Inc(TradesCount);
+    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
+    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
+    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
+    TradesProfitTotal := TradesProfitTotal + actions[i].swap + actions[i].profit;
+  end;
+
+  lb.items.Clear;
+  lb.items.add('Actions:' + #9 + inttostr(length(actions)));
+  lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
+  lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));
+  lb.items.add('BalanceTotal:' + #9 + FormatFloat(',#0.00', groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
+  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId]
+    .TradesCount));
+  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
+    .TradesProfitTotal));
 
 end;
 
