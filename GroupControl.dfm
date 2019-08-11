@@ -13,11 +13,13 @@ object GroupControl: TGroupControl
     Text = 'unused'
     Items.Strings = (
       'unused'
-      'SymbolGroup'
-      'User'
-      'YearsOpen'
-      'YearsClose'
-      'DateSpecial')
+      'symbolGroup'
+      'user'
+      'userSelection'
+      'yearsOpen'
+      'yearsClose'
+      'dateSpecial'
+      'brokerAccount')
   end
   object chkActive: TCheckBox
     Left = 9

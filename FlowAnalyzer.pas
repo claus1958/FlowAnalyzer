@@ -9,7 +9,7 @@ uses
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
   Vcl.Themes, UDynGrid, AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
   AdvChartPaneEditor,
-  AdvChartSerieEditor, GroupControl,DateUtils;
+  AdvChartSerieEditor, GroupControl, DateUtils;
 
 type
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -251,8 +251,8 @@ type
     procedure machActionsUserIndex;
     procedure Button3Click(Sender: TObject);
     function groupingTyp(styp: string): Integer;
-    function trimYear(year:integer):integer;
-    procedure testFilteredUsers();
+    function trimYear(year: Integer): Integer;
+    procedure machUserSelection();
   private
     { Private-Deklarationen }
   public
@@ -905,7 +905,7 @@ begin
     begin
       LoadInfo('Load All Actions...');
       GetBinData('http://h2827643.stratoserver.net:8080/bin/actions', 'actions', lbCSVError, false);
-      btnSaveCacheFileCwClick(nil);
+      //btnSaveCacheFileCwClick(nil);         ACHTUNG TEST
       LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
     end;
     LoadInfo('Loading finished');
@@ -983,9 +983,9 @@ begin
   // symbole sortieren in einem extra Feld
   cwUsersCt := length(cwUsers);
   SetLength(isort, cwUsersCt);
-  //findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
-  SetLength(cwUsersSortindex, cwUsersCt);    // cwUsersSortIndex(111)='8212345=111'
-  SetLength(cwUsersSortindex2, cwUsersCt);   // cwUsersSortIndex2(111)=8212345
+  // findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
+  SetLength(cwUsersSortindex, cwUsersCt); // cwUsersSortIndex(111)='8212345=111'
+  SetLength(cwUsersSortindex2, cwUsersCt); // cwUsersSortIndex2(111)=8212345
   for i := 0 to cwUsersCt - 1 do
   begin
     isort[i] := cwUsers[i].userId;
@@ -1277,35 +1277,56 @@ begin
   doFilter();
   // -> cwFilteredActions cwFilteredActionsCt
   // nun geht es weiter mit dem Gruppieren
-  testFilteredUsers();
+  machUserSelection();
   doGroup();
 end;
 
-procedure TForm2.testFilteredUsers();
+procedure TForm2.machUserSelection();
 var
-  i,ix,ct:integer;
-  v:array of cwuser;
-  u:array of integer;
-  gt:cardinal;
+  i, ix, ct, p: Integer;
+  v: array of cwuser;
+  u: array of Integer;
+  isort: intarray ;
+  gt: Cardinal;
 begin
-  gt:=gettickcount;
-  setlength(u,cwusersct);
-  for i:=0 to cwfilteredactionct-1 do
+  gt := GetTickCount;
+  SetLength(u, cwUsersCt);
+  for i := 0 to cwFilteredActionCt - 1 do
+  begin
+    ix := finduserindex(cwFilteredActions[i].userId);
+    u[ix] := u[ix] + 1;
+  end;
+  ct := 0;
+  SetLength(cwusersselection, cwUsersCt);
+  SetLength(cwusersselectionPlus, cwUsersCt);
+  for i := 0 to cwUsersCt - 1 do
+    if (u[i] > 0) then
     begin
-      ix:=finduserindex(cwfilteredactions[i].userid);
-      u[ix]:=u[ix]+1;
+      ct := ct + 1;
+      cwusersselection[ct - 1] := cwUsers[i];
+      cwusersselectionPlus[ct - 1] := cwUsersPlus[i];
     end;
-    ct:=0;
-    setlength(v,cwusersct);
-  for i:= 0 to cwusersct-1 do
-    if(u[i]>0) then
-    begin
-     ct:=ct+1;
-     v[ct-1]:=cwusers[i];
-    end;
-  setlength(v,ct+1);
+  cwusersselectionct:=ct+1;
+  SetLength(cwusersselection, cwusersselectionct);
+  SetLength(cwusersselectionPlus, cwusersselectionct);
 
-  lbCsvError.Items.Add('Z:F.UserGrtoup:'+inttostr(gettickcount-gt));
+
+  setlength(isort,cwusersselectionct);
+  SetLength(cwUsersSelectionSortindex, cwUsersSelectionCt); // cwUsersSelectionSortIndex(111)='8212345=111'
+  SetLength(cwUsersSelectionSortindex2, cwUsersSelectionCt); // cwUsersSelectionSortIndex2(111)=8212345
+  for i := 0 to cwUsersSelectionCt - 1 do
+  begin
+    isort[i] := cwUsersSelection[i].userId;
+    cwUsersSelectionSortindex[i] := inttostr(cwusersselection[i].userId) + '=' + inttostr(i);
+  end;
+  fastsort2arrayIntegerString(isort, cwUsersSelectionSortindex, 'VUA');
+  for i := 0 to cwUsersSelectionCt - 1 do
+  begin
+    p := pos('=', cwUsersSelectionSortindex[i]) - 1;
+    cwUsersSelectionSortindex2[i] := strtoint(leftstr(cwUsersSelectionSortindex[i], p));
+  end;
+
+  lbCSVError.Items.Add('Z:F.UserGrtoup:' + inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
@@ -1418,8 +1439,8 @@ begin
     // unused
     // SymbolGroup
     // User
-    // Years
-    // Months
+    // YearsOpen
+    // YearsClose
     // DateSpecial
 
     if (cwgrouping.element[i].styp = 'unused') then // unused
@@ -1427,29 +1448,46 @@ begin
       le[i] := 1;
       inc(fall[0]);
     end;
-    if (cwgrouping.element[i].styp) = 'SymbolGroup' then
+    if (cwgrouping.element[i].styp) = 'symbolGroup' then
     begin
       le[i] := cwSymbolsGroupsCt;
       inc(fall[1]);
     end;
-    if (cwgrouping.element[i].styp) = 'User' then
+    if (cwgrouping.element[i].styp) = 'user' then
     begin
       le[i] := length(cwUsers);
       inc(fall[2]);
     end;
-    if (cwgrouping.element[i].styp) = 'YearsOpen' then
+    if (cwgrouping.element[i].styp) = 'userSelection' then
     begin
-      le[i] := 12;
+      le[i] := length(cwusersselection);
       inc(fall[3]);
     end;
-    if (cwgrouping.element[i].styp) = 'YearsClose' then
+
+    if (cwgrouping.element[i].styp) = 'yearsOpen' then
     begin
       le[i] := 12;
       inc(fall[4]);
     end;
+    if (cwgrouping.element[i].styp) = 'yearsClose' then
+    begin
+      le[i] := 12;
+      inc(fall[5]);
+    end;
+    if (cwgrouping.element[i].styp) = 'dateSpecial' then
+    begin
+      le[i] := 10;
+      inc(fall[6]);
+    end;
+    if (cwgrouping.element[i].styp) = 'brokerAccount' then
+    begin
+      le[i] := 8;
+      inc(fall[7]);
+    end;
+
+
+
   end;
-
-
 
   max := le[0] * le[1] * le[2];
   SetLength(cw3summaries, le[0], le[1], le[2]);
@@ -1469,7 +1507,7 @@ begin
         cw3summaries[i][j][k].TradesProfitTotal := 0;
         cw3summaries[i][j][k].TradesUsers := 0;
       end;
-
+  try
   for i := 0 to cwFilteredActionCt - 1 do
   begin
     for j := 0 to 2 do
@@ -1492,16 +1530,33 @@ begin
             p[j] := finduserindex(cwFilteredActions[i].userId);
             par[j] := inttostr(cwFilteredActions[i].userId); // oder Username
           end;
-        3: // YearsOpen
+        3: // UserSelection
           begin
-            p[j] :=trimyear(yearof( unixtodatetime(cwFilteredActions[i].openTime)));
-            par[j] := inttostr(yearof( unixtodatetime(cwFilteredActions[i].openTime)));
+            p[j] := finduserSelectionIndex(cwFilteredActions[i].userId);
+            par[j] := inttostr(cwFilteredActions[i].userId); // oder Username
           end;
-        4: // YearsClose
+        4: // YearsOpen
           begin
-            p[j] :=trimyear(yearof( unixtodatetime(cwFilteredActions[i].closeTime)));
-            par[j] := inttostr(yearof( unixtodatetime(cwFilteredActions[i].closeTime)));
-          end
+            p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].openTime)));
+            par[j] := inttostr(yearof(unixtodatetime(cwFilteredActions[i].openTime)));
+          end;
+        5: // YearsClose
+          begin
+            p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+            par[j] := inttostr(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+          end;
+        6: // dateSpecial
+          begin
+            //FEHLT NOCH
+            p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+            par[j] := inttostr(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+          end;
+        7: // brokerAccount
+          begin
+            //FEHLT NOCH
+            p[j] :=cwFilteredActions[i].accountId;
+            par[j] :=inttostr( cwFilteredActions[i].accountId);//BESSER machen mit Namen
+          end;
       else
         begin
           p[j] := 0;
@@ -1510,6 +1565,8 @@ begin
         ;
       end;
     end;
+
+
 
     // jetzt sind alle "Kästchen" im 3D-Array gefüllt
     cw3summaries[p[0], p[1], p[2]].par0 := par[0];
@@ -1524,6 +1581,11 @@ begin
     TradesCount := TradesCount + 1;
     TradesVolumeTotal := TradesVolumeTotal + cwFilteredActions[i].volume;
     TradesProfitTotal := TradesProfitTotal + cwFilteredActions[i].swap + cwFilteredActions[i].profit;
+
+  end;
+  except
+    on E: Exception do
+      s := E.ToString;
 
   end;
 
@@ -1547,31 +1609,31 @@ begin
   // lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
   // end;
   ctmax := 10000;
-  SetLength(cwsummaries, ctmax+1);
+  SetLength(cwsummaries, ctmax + 1);
   ct := -1;
   try
-  for i := 0 to max1 - 1 do
-    for j := 0 to max2 - 1 do
-      for k := 0 to max3 - 1 do
-      begin
-        if cw3summaries[i][j][k].par0 <> '' then
+    for i := 0 to max1 - 1 do
+      for j := 0 to max2 - 1 do
+        for k := 0 to max3 - 1 do
         begin
-          inc(ct);
-          cwsummaries[ct] := cw3summaries[i][j][k];
-          if (ct = ctmax) then
+          if cw3summaries[i][j][k].par0 <> '' then
           begin
-            ctmax := ctmax + 10000;
-            SetLength(cwsummaries, ctmax+1);
+            inc(ct);
+            cwsummaries[ct] := cw3summaries[i][j][k];
+            if (ct = ctmax) then
+            begin
+              ctmax := ctmax + 10000;
+              SetLength(cwsummaries, ctmax + 1);
+            end;
+
           end;
 
         end;
-
-      end;
-      //hier ist der Moment wo der SPeicherplatzbedarf am grössten ist
-      //mit User SymbolGroups und YearsOpen sind es um die 950 MB
+    // hier ist der Moment wo der SPeicherplatzbedarf am grössten ist
+    // mit User SymbolGroups und YearsOpen sind es um die 950 MB
   except
-      on E: Exception do
-        s := E.ToString;
+    on E: Exception do
+      s := E.ToString;
 
   end;
   SetLength(cwsummaries, ct + 1);
@@ -1579,29 +1641,39 @@ begin
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
   DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 8);
+  DynGrid9.lblTime.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt);
 end;
 
-function TForm2.trimYear(year:integer):integer;
+function TForm2.trimYear(year: Integer): Integer;
 begin
-  //2012 bis 2023 sind die 12 Jahre auf die getrimmt wird
-  if year<2012 then year:=2012;//2012-12;
-  if year>2023 then year:=2023;//2023-12;
-  result:=year-2012;
+  // 2012 bis 2023 sind die 12 Jahre auf die getrimmt wird
+  if year < 2012 then
+    year := 2012; // 2012-12;
+  if year > 2023 then
+    year := 2023; // 2023-12;
+  result := year - 2012;
 
 end;
 
 function TForm2.groupingTyp(styp: string): Integer;
 begin
+  result:=0;
   if (styp = 'unused') then
     result := 0;
-  if styp = ('SymbolGroup') then
+  if styp = ('symbolGroup') then
     result := 1;
-  if styp = ('User') then
+  if styp = ('user') then
     result := 2;
-  if styp = ('YearsOpen') then
+  if styp = ('userSelection') then
     result := 3;
-  if styp = ('YearsClose') then
+  if styp = ('yearsOpen') then
     result := 4;
+  if styp = ('yearsClose') then
+    result := 5;
+  if styp = ('dateSpecial')then
+    result := 6;
+  if styp = ('brokerAccount') then
+    result := 7;
 
 end;
 
@@ -2156,9 +2228,11 @@ begin
     fe.values := 'GOLD';
     Filter[1].setValues(fe);
   end;
-
   FilterTopic := (Sender as TButton).Caption;
+
   doFilter();
+  machuserselection;
+  dogroup();
 end;
 
 procedure TForm2.CategoryPanel1Collapse(Sender: TObject);

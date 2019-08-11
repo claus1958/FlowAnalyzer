@@ -26,7 +26,7 @@ object Form2: TForm2
     Top = 0
     Width = 1604
     Height = 907
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -910,20 +910,93 @@ object Form2: TForm2
                 ExplicitLeft = 2
                 ExplicitTop = 8
                 inherited cbTopic: TComboBox
+                  Left = 32
+                  Top = 3
+                  Width = 129
                   Height = 22
+                  TabOrder = 0
+                  Text = 'BrokerId'
+                  Items.Strings = (
+                    'BrokerId'
+                    'AccountId'
+                    'SymbolId'
+                    'Symbol'
+                    'UserId'
+                    'UserName'
+                    'ActionType'
+                    'OpenDateTime'
+                    'CloseDateTime'
+                    'OpenPrice'
+                    'Profit'
+                    'Volume')
                   ExplicitHeight = 22
                 end
                 inherited cbOperator: TComboBox
+                  Left = 163
+                  Top = 3
+                  Width = 58
                   Height = 22
+                  ItemIndex = 0
+                  TabOrder = 1
+                  Text = '='
+                  Items.Strings = (
+                    '='
+                    '<>'
+                    '<'
+                    '>'
+                    '<='
+                    '>='
+                    'contains'
+                    'contains not')
                   ExplicitHeight = 22
                 end
                 inherited edValue: TEdit
+                  Left = 223
+                  Top = 3
+                  Width = 258
                   Height = 22
+                  TabOrder = 2
                   ExplicitHeight = 22
                 end
                 inherited dtPicker1: TDateTimePicker
+                  Left = 376
+                  Top = 3
+                  Width = 105
                   Height = 22
+                  Date = 43549.000000000000000000
+                  Time = 0.616624108799442200
+                  TabOrder = 3
+                  Visible = False
                   ExplicitHeight = 22
+                end
+                inherited chkActive: TCheckBox
+                  Left = 9
+                  Top = 4
+                  Width = 17
+                  Height = 17
+                  TabOrder = 4
+                end
+                inherited chkLB1: TComboBox
+                  Left = 223
+                  Top = 3
+                  Width = 258
+                  Height = 22
+                  Style = csOwnerDrawFixed
+                  DropDownCount = 24
+                  TabOrder = 6
+                  Items.Strings = ()
+                end
+                inherited btnMore: TButton
+                  Left = 483
+                  Top = 3
+                  Width = 22
+                  Height = 23
+                  Hint = 'Select from list...'
+                  Caption = '>'
+                  ParentShowHint = False
+                  ShowHint = True
+                  TabOrder = 5
+                  Visible = False
                 end
               end
             end
@@ -985,6 +1058,7 @@ object Form2: TForm2
                 ExplicitTop = 28
                 inherited cbTopic: TComboBox
                   Height = 22
+                  Text = 'symbolGroup'
                   ExplicitHeight = 22
                 end
               end
@@ -998,6 +1072,7 @@ object Form2: TForm2
                 ExplicitTop = 55
                 inherited cbTopic: TComboBox
                   Height = 22
+                  Text = 'yearsOpen'
                   ExplicitHeight = 22
                 end
               end

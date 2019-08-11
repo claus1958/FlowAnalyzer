@@ -116,22 +116,32 @@ begin
   if length(ixSorted) <= sp then
     exit;
 
-  if selSorted[ixSorted[sp]] = 1 then
+  with Sender as Tstringgrid do
+  begin
 
-    with Sender as Tstringgrid do
+    if selSorted[ixSorted[sp]] = 1 then
+      Canvas.Brush.Color := clGray       //selektiert
+    else
+      Canvas.Brush.Color := clBlack;     //unselektiert
 
+        s := cells[ACol, ARow];
+    if (ARow > 1) then
     begin
-      s := cells[ACol, ARow];
-      Canvas.Brush.Color := clGray;
-      r := Rect;
-      r.left := r.left - 4; // -4 wird ganz gefüllt
-      Canvas.FillRect(r);
-      // den Text am alten Rect ausrichten sonstzu weit links
-      Canvas.Pen.Color := clBlue;
-      r.left := r.left + 6;
-      r.Top := r.Top + 4;
-      DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
+      if (s = cells[ACol, ARow - 1]) then
+        s := '"';
+
     end;
+
+    r := Rect;
+    r.left := r.left - 4; // -4 wird ganz gefüllt
+    Canvas.FillRect(r);
+    // den Text am alten Rect ausrichten sonstzu weit links
+    Canvas.Pen.Color := clBlue;
+    r.left := r.left + 6;
+    r.Top := r.Top + 4;
+    DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
+  end;
+
 end;
 
 procedure TDynGrid.Panel2Resize(Sender: TObject);
@@ -1280,23 +1290,24 @@ begin
       setlength(dSort, dls);
     l := -1;
     begin
-      for i := 0 to dls do
+      for i := 0 to dls - 1 do
       begin
         inc(l);
         ixSorted[l] := l;
+        // hier könnte man die Nebenspalten mit in die Sortierung aufnehmen , so daß bei gleichem Inhalt auch nach der nächsten Spale sortiert wird
         if scol = 1 then
         begin
-          sSort[l] := summaries[i].par0;
+          sSort[l] := summaries[i].par0 + summaries[i].par1 + summaries[i].par2;
           continue;
         end;
         if scol = 2 then
         begin
-          sSort[l] := summaries[i].par1;
+          sSort[l] := summaries[i].par1 + summaries[i].par0 + summaries[i].par2;
           continue;
         end;
         if scol = 3 then
         begin
-          sSort[l] := summaries[i].par2;
+          sSort[l] := summaries[i].par2 + summaries[i].par0 + summaries[i].par1;
           continue;
         end;
 

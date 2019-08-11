@@ -217,7 +217,7 @@ begin
     u[i].plz := 70000 + i
   end;
 
-  w[0]:=v[0];
+  w[0]:=v[0];   //-> da w=u wird mit w[0] auch u[0] geändert !!
 end;
 
 function TForm45.vergleichInteger(was, mit: integer; op: string): boolean;

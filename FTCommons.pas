@@ -356,6 +356,11 @@ function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAIntege
   var actions: DACwAction; k: integer; col: integer; such: string): integer;
 function findUserName(userId: integer): string;
 function findUserIndex(userId: integer): integer;
+function findUserSelectionName(userId: integer): string;
+function findUserSelectionIndex(userId: integer): integer;
+
+
+
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
 
 function RandomRange(const AFrom, ATo: integer): integer;
@@ -382,11 +387,21 @@ var
   cwFilteredSymbolsGroupsCt: integer;
 
   cwSymbolsSortIndex: intArray; // sortierter Zugang zu cwsymbols
-  cwUsersSortIndex: StringArray; // sortierter Zugang zu cwsymbols
-  cwUsersSortIndex2: intArray; // sortierter Zugang zu cwsymbols
+
   cwUsers: DAcwUser;
   cwUsersPlus: DACwUserPlus;
   cwUsersCt: integer;
+  cwUsersSortIndex: StringArray;
+  cwUsersSortIndex2: intArray;
+
+  cwUsersSelection: DAcwUser;
+  cwUsersSelectionPlus: DAcwUserPlus;
+  cwUsersSelectionCt: integer;
+  cwUsersSelectionSortIndex: StringArray;
+  cwUsersSelectionSortIndex2: intArray;
+
+
+
   cwTicks: DACwTick;
   cwTicksCt: integer;
   cwComments: DAcwComment;
@@ -3543,6 +3558,43 @@ begin
   else
     result := -1;
 end;
+
+function findUserSelectionName(userId: integer): string;
+var
+  i: integer;
+  p: integer;
+begin
+  // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
+  // mit Binsearch2 sinds: 850  Super:-)
+  i := BinSearchString2(cwUsersSelectionSortIndex, cwUsersSelectionSortIndex2, userId);
+  if (i > -1) then
+  begin
+    p := pos('=', cwUsersSelectionSortIndex[i]);
+    result := cwUsersSelection[strtoint(midstr(cwUsersSelectionSortIndex[i], p + 1, 255))].name;
+  end
+  else
+    result := '?';
+end;
+
+
+function findUserSelectionIndex(userId: integer): integer;
+var
+  i: integer;
+  p: integer;
+begin
+  // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
+  // mit BinsearchString2 sinds: 850  Super:-)
+  i := BinSearchString2(cwUsersSelectionSortIndex, cwUsersSelectionSortIndex2, userId);
+  if (i > -1) then
+  begin
+    p := pos('=', cwUsersSelectionSortIndex[i]);
+    result := strtoint(midstr(cwUsersSelectionSortIndex[i], p + 1, 255));
+  end
+  else
+    result := -1;
+end;
+
+
 
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
 var
