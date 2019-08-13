@@ -8,8 +8,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.ComCtrls, FTCommons, Vcl.StdCtrls, Vcl.Grids,
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
   Vcl.Themes, UDynGrid, AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
-  AdvChartPaneEditor,
-  AdvChartSerieEditor, GroupControl, DateUtils, Vcl.AppEvnts;
+  AdvChartPaneEditor, AdvChartSerieEditor, GroupControl, DateUtils, Vcl.AppEvnts,uTwoLabel;
 
 type
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -176,6 +175,7 @@ type
     btnSymbolGroups: TButton;
     Panel23: TPanel;
     lbCSVError: TListBox;
+    pnlStart: TPanel;
     procedure getSymbolsUsersComments(useCache: boolean);
 
     procedure btnGetCsvClick(Sender: TObject);
@@ -186,14 +186,14 @@ type
     procedure btnCwCommentsToGridClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnGetBinDataClick(Sender: TObject);
-    procedure GetBinData(url, typ: string; lb: TListBox; append: boolean);
+    function GetBinData(url, typ: string; lb: TListBox; append: boolean): integer;
     procedure btnLoadCacheFileCwClick(Sender: TObject);
     procedure doCacheGridCwInfo;
     procedure btnShowCacheCwClick(Sender: TObject);
     procedure btnDblCheckCwClick(Sender: TObject);
-    procedure SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
-    procedure SortStringGridCW(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
+    procedure SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+    procedure SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
+    procedure SortStringGridCW(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
     procedure btnListDoublesCwClick(Sender: TObject);
     procedure btnSelectClearCwClick(Sender: TObject);
     procedure btnDoubleRemoveCwClick(Sender: TObject);
@@ -201,8 +201,8 @@ type
     procedure btnClbBrokersDeSelectAllClick(Sender: TObject);
     procedure btnLoadDataClick(Sender: TObject);
     procedure LoadInfo(s: string);
-    procedure gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: Integer; sCell, sCol, sRow: string;
-      Button: TMouseButton; Shift: TShiftState;source:string);
+    procedure gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: integer; sCell, sCol, sRow: string;
+      Button: TMouseButton; Shift: TShiftState; source: string);
     procedure btnGetSingleUserActionsClick(Sender: TObject);
     procedure TabSheet2Resize(Sender: TObject);
     procedure btnDoFilterClick(Sender: TObject);
@@ -215,8 +215,8 @@ type
     procedure StartHTTPWorker;
     procedure HTTPOnTerminate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    function doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): Integer;
-    procedure dosleep(t: Integer);
+    function doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
+    procedure dosleep(t: integer);
     procedure Button4Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure CheckBox1Click(Sender: TObject);
@@ -229,36 +229,36 @@ type
     // procedure gridHandler(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure btnUpdateDataClick(Sender: TObject);
-    procedure PageControl1DrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect; Active: boolean);
+    procedure PageControl1DrawTab(Control: TCustomTabControl; TabIndex: integer; const Rect: TRect; Active: boolean);
     procedure PageControl1Change(Sender: TObject);
     procedure PageControl1Changing(Sender: TObject; var AllowChange: boolean);
     procedure btnDoUsersAndSymbolsPlusClick(Sender: TObject);
-    procedure CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure zeigUserInfo(id: Integer; lb: TListBox);
+    procedure CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+    procedure CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+    procedure zeigUserInfo(id: integer; lb: TListBox);
     procedure btnSymbolGroupsClick(Sender: TObject);
     procedure btnOnePageClick(Sender: TObject);
     procedure doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-      var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+      var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
     procedure doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-      var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+      var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 
     procedure CategoryPanel9CollapseExpand(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure btnPieChartClick(Sender: TObject);
-    procedure machPieChart(data: DAPieValue; datact: Integer; para: TPieParameters; cv: TAdvGDIPChartView;
-      pane: Integer; serie: Integer);
+    procedure machPieChart(data: DAPieValue; datact: integer; para: TPieParameters; cv: TAdvGDIPChartView;
+      pane: integer; serie: integer);
 
-    procedure SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
-    procedure SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-    procedure SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: Integer);
+    procedure SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
+    procedure SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+    procedure SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: integer);
     procedure machActionsUserIndex;
-    function groupingTyp(styp: string): Integer;
-    function trimYear(year: Integer): Integer;
+    function groupingTyp(styp: string): integer;
+    function trimYear(year: integer): integer;
     procedure machUserSelection();
-    procedure DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+    procedure DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 
-    procedure dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: Integer;
+    procedure dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer;
       sCell, sCol, sRow: string);
     procedure btnLadeDialogClick(Sender: TObject);
     // procedure TrackBar1Change(Sender: TObject);   für semitransparentes Form verwendet
@@ -268,7 +268,7 @@ type
     procedure Button10Click(Sender: TObject);
     procedure btnSaveCacheFileCwClick(Sender: TObject);
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
-
+    procedure doFinalizeData;
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -279,13 +279,15 @@ type
 var
   Form2: TForm2;
   Filter: array [1 .. 10] of TFilterElemente;
-  FilterCt: Integer;
+  FilterCt: integer;
   Grouping: array [1 .. 3] of TGroupControl;
-  GroupingCt: Integer;
+  GroupingCt: integer;
+  twoLblStartCt:integer;
+  twoLblStart: array [1..10] of TTwoLabel;
   FilterTopic: string;
   SGFieldCol: DAInteger;
   SGColField: DAInteger;
-  maxActionsPerGrid: Integer;
+  maxActionsPerGrid: integer;
   HTTPWorker1: THTTPWorker;
   HTTPWorker1Aktiv: boolean; // wenn create->true wenn terminate -> false
   HTTPWorkCriticalSection: TRTLCriticalSection;
@@ -295,7 +297,7 @@ implementation
 
 {$R *.dfm}
 
-uses doHTTP, Dialog2, Dialog1;
+uses doHTTP, Dialog1, Dialog2;
 
 procedure TForm2.btnGetBinDataClick(Sender: TObject);
 var
@@ -314,22 +316,24 @@ begin
   GetBinData(edGetUrlBin.text, typ, lbCSVError, chkGetBinAppend.Checked);
 end;
 
-procedure TForm2.GetBinData(url, typ: string; lb: TListBox; append: boolean);
+function TForm2.GetBinData(url, typ: string; lb: TListBox; append: boolean): integer;
 // kann actions symbols und ticks binär abrufen
 // die users symbols gibt es noch nicht !
 var
   ret: String;
   gt: Cardinal;
-  i: Integer;
-  j: Integer;
+  i, l: integer;
+  j: integer;
   bytes: Bytearray;
   s: AnsiString;
   s1: AnsiString;
   ss: String;
   ms: TMemoryStream;
-  sz: Integer;
-  oldlen: Integer;
-  res: Integer;
+  sz: integer;
+  oldlen: integer;
+  res: integer;
+  alt: integer;
+  aneu: DACwAction;
 begin
   gt := GetTickCount;
   // bytes := doHTTPGetByteArray(url, lb);
@@ -342,28 +346,62 @@ begin
     // Bytes->cwActions
     i := SizeOf(cwAction);
     sz := trunc(length(bytes) / i);
-
-    // append-Modus
-    if append = true then
+    // Problem: es gibt bei den CloseTime Abrufen leider ca 11 actions deren Datum in der Zukunft liegt
+    // und die deshalb in Wahrheit gar nicht neu sind !
+    if ((sz > 0) and (sz < 20)) then
     begin
-      // die neuen Actions an die alten anhängen
-      oldlen := length(cwActions);
-      SetLength(cwActions, length(cwActions) + sz);
-      SetLength(cwActionsPlus, length(cwActionsPlus) + sz);
-      move(bytes[0], cwActions[oldlen], length(bytes));
+      gt := GetTickCount;
+      setlength(aneu, sz);
+      move(bytes[0], aneu[0], length(bytes));
+      alt := 0;
+      for i := 0 to sz - 1 do
+      begin
+        for l := 0 to length(cwactions) - 1 do
+        begin
+          if (aneu[i].actionId = cwactions[l].actionId) then
+            if (aneu[i].closeTime = cwactions[l].closeTime) then
+            begin
+              inc(alt);
+              break;
+            end;
+        end;
+      end;
+      lbCSVError.Items.Add('Check:' + inttostr(GetTickCount - gt));
+      if (alt = sz) then
+        sz := 0
+      else
+        sz := sz;
+
+    end;
+    if (sz > 0) then
+    begin
+      // append-Modus
+      if append = true then
+      begin
+        // die neuen Actions an die alten anhängen
+        oldlen := length(cwactions);
+        setlength(cwactions, length(cwactions) + sz);
+        setlength(cwActionsPlus, length(cwActionsPlus) + sz);
+        move(bytes[0], cwactions[oldlen], length(bytes));
+      end
+      else
+      begin
+        setlength(cwactions, sz);
+        setlength(cwActionsPlus, sz);
+        move(bytes[0], cwactions[0], length(bytes));
+      end;
+      lbDebug2.Items.Add('New/Changed actions:' + inttostr(sz));
+      lbDebug2.Items.Add('Zeit move->actions:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+      lbDebug2.Items.Add('Anzahl Actions:' + inttostr(sz));
+      lblCwActionsLength.Caption := 'CwActions:' + inttostr(length(cwactions));
+      btnCwactionsToGridClick(nil);
+      result := sz;
     end
     else
     begin
-      SetLength(cwActions, sz);
-      SetLength(cwActionsPlus, sz);
-      move(bytes[0], cwActions[0], length(bytes));
-    end;
-    lbDebug2.Items.Add('New/Changed actions:' + inttostr(sz));
-    lbDebug2.Items.Add('Zeit move->actions:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-    lbDebug2.Items.Add('Anzahl Actions:' + inttostr(sz));
-    lblCwActionsLength.Caption := 'CwActions:' + inttostr(length(cwActions));
-    btnCwactionsToGridClick(nil);
-
+      lbCSVError.Items.Add('No new actions');
+      result := 0;
+    end;;
     // for j := 0 to sz - 1 do
     // begin
     // lbDebug2.Items.Add(inttostr(j) + ' ' + inttostr(cwActions[j].actionId) + ' ' + inttostr(cwActions[j].userId) + ' '
@@ -377,72 +415,72 @@ begin
   end;
 
   // die folgenden Routinen sind nicht anwendbar da durch dieVerwendung von Strings kein bin-Lesen mehr möglich ist
-//  if typ = 'symbols' then
-//  begin
-//    // Bytes->cwSymbols
-//
-//    // //wenn Sicherung als Datei zum Debugging
-//    // ms := TMemoryStream.Create;
-//    // ms.WriteBuffer(bytes[0], length(bytes));
-//    // ms.SaveToFile(ExtractFilePath(paramstr(0)) + 'symbols.bin');
-//    // ms.Free;
-//
-//    i := SizeOf(cwSymbol);
-//    sz := trunc(length(bytes) / i);
-//    SetLength(cwSymbols, sz);
-//    SetLength(cwSymbolsPlus, sz);
-//    SetLength(cwsymbolsSortindex, 0); // zurücksetzen
-//    move(bytes[0], cwSymbols[0], length(bytes));
-//    lbDebug2.Items.Add('Zeit move->symbol:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-//    lbDebug2.Items.Add('Anzahl Symbols:' + inttostr(sz));
-//    for j := 0 to sz - 1 do
-//    begin
-//      lbDebug2.Items.Add(inttostr(j) + ' ' + cwSymbols[j].name + ' ' + inttostr(cwSymbols[j].symbolId) + ' ' +
-//        inttostr(cwSymbols[j].brokerId));
-//      if j > 100 then
-//        break;
-//    end;
-//    lbDebug2.Items.Add('...');
-//
-//  end;
-//  if typ = 'ticks' then
-//  begin
-//    // wenn Sicherung als Datei zum Debugging
-//    ms := TMemoryStream.Create;
-//    ms.WriteBuffer(bytes[0], length(bytes));
-//    ms.SaveToFile(ExtractFilePath(paramstr(0)) + 'ticks.bin');
-//    ms.Free;
-//  end;
-//
-//  if typ = 'users' then
-//  begin
-//    // wenn Sicherung als Datei zum Debugging
-//    ms := TMemoryStream.Create;
-//    ms.WriteBuffer(bytes[0], length(bytes));
-//    ms.SaveToFile(ExtractFilePath(paramstr(0)) + 'users.bin');
-//    ms.Free;
-//
-//    i := SizeOf(cwuser);
-//    sz := trunc(length(bytes) / i);
-//    SetLength(cwUsers, sz);
-//    SetLength(cwUsersPlus, sz);
-//    SetLength(cwUsersSortindex, 0); // zurücksetzen
-//    SetLength(cwUsersSortindex2, 0); // zurücksetzen
-//    move(bytes[0], cwUsers[0], length(bytes));
-//    lbDebug2.Items.Add('Zeit move->user:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-//    lbDebug2.Items.Add('Anzahl users:' + inttostr(sz));
-//    for j := 0 to sz - 1 do
-//    begin
-//      lbDebug2.Items.Add(inttostr(j) + ' ' + cwUsers[j].name + ' ' + inttostr(cwUsers[j].userId) + ' ' +
-//        inttostr(cwUsers[j].accountId));
-//      if j > 100 then
-//        break;
-//    end;
-//    lbDebug2.Items.Add('...');
-//
-//  end;
+  // if typ = 'symbols' then
+  // begin
+  // // Bytes->cwSymbols
+  //
+  // // //wenn Sicherung als Datei zum Debugging
+  // // ms := TMemoryStream.Create;
+  // // ms.WriteBuffer(bytes[0], length(bytes));
+  // // ms.SaveToFile(ExtractFilePath(paramstr(0)) + 'symbols.bin');
+  // // ms.Free;
+  //
+  // i := SizeOf(cwSymbol);
+  // sz := trunc(length(bytes) / i);
+  // SetLength(cwSymbols, sz);
+  // SetLength(cwSymbolsPlus, sz);
+  // SetLength(cwsymbolsSortindex, 0); // zurücksetzen
+  // move(bytes[0], cwSymbols[0], length(bytes));
+  // lbDebug2.Items.Add('Zeit move->symbol:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  // lbDebug2.Items.Add('Anzahl Symbols:' + inttostr(sz));
+  // for j := 0 to sz - 1 do
+  // begin
+  // lbDebug2.Items.Add(inttostr(j) + ' ' + cwSymbols[j].name + ' ' + inttostr(cwSymbols[j].symbolId) + ' ' +
+  // inttostr(cwSymbols[j].brokerId));
+  // if j > 100 then
+  // break;
+  // end;
+  // lbDebug2.Items.Add('...');
+  //
+  // end;
+  // if typ = 'ticks' then
+  // begin
+  // // wenn Sicherung als Datei zum Debugging
+  // ms := TMemoryStream.Create;
+  // ms.WriteBuffer(bytes[0], length(bytes));
+  // ms.SaveToFile(ExtractFilePath(paramstr(0)) + 'ticks.bin');
+  // ms.Free;
+  // end;
+  //
+  // if typ = 'users' then
+  // begin
+  // // wenn Sicherung als Datei zum Debugging
+  // ms := TMemoryStream.Create;
+  // ms.WriteBuffer(bytes[0], length(bytes));
+  // ms.SaveToFile(ExtractFilePath(paramstr(0)) + 'users.bin');
+  // ms.Free;
+  //
+  // i := SizeOf(cwuser);
+  // sz := trunc(length(bytes) / i);
+  // SetLength(cwUsers, sz);
+  // SetLength(cwUsersPlus, sz);
+  // SetLength(cwUsersSortindex, 0); // zurücksetzen
+  // SetLength(cwUsersSortindex2, 0); // zurücksetzen
+  // move(bytes[0], cwUsers[0], length(bytes));
+  // lbDebug2.Items.Add('Zeit move->user:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  // lbDebug2.Items.Add('Anzahl users:' + inttostr(sz));
+  // for j := 0 to sz - 1 do
+  // begin
+  // lbDebug2.Items.Add(inttostr(j) + ' ' + cwUsers[j].name + ' ' + inttostr(cwUsers[j].userId) + ' ' +
+  // inttostr(cwUsers[j].accountId));
+  // if j > 100 then
+  // break;
+  // end;
+  // lbDebug2.Items.Add('...');
+  //
+  // end;
 
-  SetLength(bytes, 0)
+  setlength(bytes, 0)
 end;
 
 procedure TForm2.btnGetCsvClick(Sender: TObject);
@@ -469,11 +507,11 @@ procedure TForm2.GetCsv(url, typ: string; lb: TListBox; append: boolean; tryCach
 var
   gt: Cardinal;
   fileName: string;
-  fileMode: Integer;
+  fileMode: integer;
   bytes: Bytearray;
   s: AnsiString;
   ms: TMemoryStream;
-  bpms: Integer;
+  bpms: integer;
   Stream: TFileStream;
   ok: boolean;
 begin
@@ -491,18 +529,19 @@ begin
       if (typ = 'users') then
       begin
         cwusersct := length(cwUsers);
-        SetLength(cwUsersPlus, cwusersct);
+        setlength(cwUsersPlus, cwusersct);
       end;
       if (typ = 'symbols') then
         cwsymbolsct := length(cwSymbols);
-      SetLength(cwSymbolsPlus, cwsymbolsct);
+      setlength(cwSymbolsPlus, cwsymbolsct);
+
       begin
 
       end;
       if (typ = 'comments') then
       begin
         cwcommentsct := length(cwComments);
-        SetLength(cwcommentsplus, cwcommentsct);
+        setlength(cwcommentsplus, cwcommentsct);
       end;
 
       LoadInfo('from Cache');
@@ -523,7 +562,7 @@ begin
     s := UTF8Decode(s); // -> der String ist jetzt ok
 
     // den UTF8-decodierten AnsiString wieder als Bytearray
-    SetLength(bytes, length(s));
+    setlength(bytes, length(s));
     move(Pointer(s)^, Pointer(bytes)^, length(s));
     lb.Items.Add('Z:UTF8 :' + inttostr(GetTickCount - gt));
 
@@ -566,7 +605,7 @@ begin
 
       ParseDelimited('symbols', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwsymbolsct := length(cwSymbols);
-      SetLength(cwSymbolsPlus, cwsymbolsct);
+      setlength(cwSymbolsPlus, cwsymbolsct);
 
     end;
 
@@ -584,7 +623,7 @@ begin
       end;
       ParseDelimited('users', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwusersct := length(cwUsers);
-      SetLength(cwUsersPlus, cwusersct);
+      setlength(cwUsersPlus, cwusersct);
     end;
 
     if typ = 'comments' then
@@ -601,7 +640,7 @@ begin
       end;
       ParseDelimited('comments', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwcommentsct := length(cwComments);
-      SetLength(cwcommentsplus, cwcommentsct);
+      setlength(cwcommentsplus, cwcommentsct);
     end;
 
     if typ = 'ticks' then
@@ -616,30 +655,30 @@ begin
 
 end;
 
-procedure TForm2.gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: Integer; sCell, sCol, sRow: string;
-  Button: TMouseButton; Shift: TShiftState;source:string);
+procedure TForm2.gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: integer; sCell, sCol, sRow: string;
+  Button: TMouseButton; Shift: TShiftState; source: string);
 // die alte Routine für die normalen Grids
 var
   colHeader: string;
   pName: string;
-  i:integer;
+  i: integer;
 begin
   // showmessage('Grid:' + grid.name + ' cell:' + sCell + ' col:' + sCol + ' row:' + sRow);
   colHeader := grid.Cells[col, 0];
   pName := grid.Parent.Parent.name;
   // die dynGrid heissen alle SG
 
-  //bei cwusers jeder Click in eine Zeile -> user actions anzeigen
-  if source='cwusers' then
-    if colHeader<>'userId' then
-      for i:=0 to grid.Colcount-1 do
+  // bei cwusers jeder Click in eine Zeile -> user actions anzeigen
+  if source = 'cwusers' then
+    if colHeader <> 'userId' then
+      for i := 0 to grid.Colcount - 1 do
+      begin
+        if grid.Cells[i, 0] = 'userId' then
         begin
-          if grid.Cells[i,0]='userId' then
-          begin
-             edSingleUserActionsId.text := grid.Cells[i, row];
-             btnGetSingleUserActionsClick(nil);
-          end;
+          edSingleUserActionsId.text := grid.Cells[i, row];
+          btnGetSingleUserActionsClick(nil);
         end;
+      end;
 
   if colHeader = 'userId' then
   begin
@@ -663,7 +702,7 @@ begin
 
 end;
 
-procedure TForm2.dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: Integer;
+procedure TForm2.dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer;
   sCell, sCol, sRow: string);
 // die alte Routine für die normalen Grids
 var
@@ -697,37 +736,37 @@ end;
 
 procedure TForm2.btnGetSingleUserActionsClick(Sender: TObject);
 var
-  id: Integer;
-  i: Integer;
-  fz: Integer;
-  fzmax: Integer;
-  max: Integer;
+  id: integer;
+  i: integer;
+  fz: integer;
+  fzmax: integer;
+  max: integer;
 begin
   id := strtoint(edSingleUserActionsId.text);
   fzmax := 10000;
   fz := -1;
-  SetLength(cwSingleUserActions, fzmax);
-  SetLength(cwSingleUserActionsPlus, fzmax);
-  cwactionsct := length(cwActions);
+  setlength(cwSingleUserActions, fzmax);
+  setlength(cwSingleUserActionsPlus, fzmax);
+  cwactionsct := length(cwactions);
   for i := 0 to cwactionsct - 1 do
   begin
-    if cwActions[i].userId = id then
+    if cwactions[i].userId = id then
     begin
       fz := fz + 1;
       if fz >= (fzmax - 1) then
       begin
         fzmax := fzmax + 10000;
-        SetLength(cwSingleUserActions, fzmax);
-        SetLength(cwSingleUserActionsPlus, fzmax);
+        setlength(cwSingleUserActions, fzmax);
+        setlength(cwSingleUserActionsPlus, fzmax);
       end;
-      cwSingleUserActions[fz] := cwActions[i];
+      cwSingleUserActions[fz] := cwactions[i];
     end;
   end;
 
   // application.messagebox('test1','test3');
 
-  SetLength(cwSingleUserActions, fz + 1);
-  SetLength(cwSingleUserActionsPlus, fz + 1);
+  setlength(cwSingleUserActions, fz + 1);
+  setlength(cwSingleUserActionsPlus, fz + 1);
   cwsingleuseractionsCt := fz + 1;
 
   zeigUserInfo(id, lbUserInfo);
@@ -749,13 +788,13 @@ end;
 
 procedure TForm2.getSymbolsUsersComments(useCache: boolean);
 var
-gt:cardinal;
+  gt: Cardinal;
 begin
   // Die drei Dateien vom Server abrufen: symbols user und comments
-  gt:=gettickcount;
+  gt := GetTickCount;
   edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/symbols';
   LoadInfo('Load Symbols...');
-  GetCsv(edGetUrlCSV.text, 'symbols', lbCSVError, false,useCache);
+  GetCsv(edGetUrlCSV.text, 'symbols', lbCSVError, false, useCache);
 
   edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/users';
   LoadInfo('Load Users...');
@@ -763,8 +802,8 @@ begin
 
   edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/comments';
   LoadInfo('Load Comments...');
-  GetCsv(edGetUrlCSV.text, 'comments', lbCSVError, false,useCache);
-  lbcsverror.Items.Add('Load SymbolsUsersComments:'+inttostr(gettickcount-gt));
+  GetCsv(edGetUrlCSV.text, 'comments', lbCSVError, false, useCache);
+  lbCSVError.Items.Add('Load SymbolsUsersComments:' + inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
@@ -772,8 +811,8 @@ var
   nam: string;
 begin
 
-  doSymbolGroups('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, lbSymbolsGroupsInfo);
-  doSymbolGroupValues('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt,
+  doSymbolGroups('cwsymbolsgroups', cwactions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, lbSymbolsGroupsInfo);
+  doSymbolGroupValues('cwsymbolsgroups', cwactions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt,
     lbSymbolsGroupsInfo);
   DynGrid8.initGrid('cwsymbolsgroups', 'groupId', 1, cwSymbolsGroupsCt, 18);
   // nochmal die Symbol-Liste neu darstellen weil jetzt die Symbolgruppen drin sind
@@ -789,17 +828,17 @@ begin
 end;
 
 procedure TForm2.doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-  var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+  var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 // aus den actions (alle oder eine Teilmenge) werden Symbolgruppen gebildet mit ähnlichen Namen
 // die Symbolgruppe aller Actions ändert sich im Verlauf nicht
 // die Symbolgruppe der Teilmenge von Actions ändert sich
 var
-  i, j, k: Integer;
+  i, j, k: integer;
   s, smerk, smerk5, s5, s6: string;
   t, t2: TStringList;
   nam: string;
-  found: Integer;
-  typ: Integer;
+  found: integer;
+  typ: integer;
   gt: Cardinal;
 label weiter;
 
@@ -865,7 +904,7 @@ begin
 
   // lbGroupedSymbols.Items.Add('Groups:' + inttostr(lbGroupedSymbols.Items.Count));
   groupsCt := t2.Count;
-  SetLength(groups, groupsCt);
+  setlength(groups, groupsCt);
   for i := 0 to groupsCt - 1 do
   begin
     groups[i].groupId := i;
@@ -915,12 +954,12 @@ begin
 end;
 
 procedure TForm2.doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-  var groups: DACwSymbolGroup; var groupsCt: Integer; lb: TListBox);
+  var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 var
   gt: Cardinal;
   ba: Bytearray;
   aba: array of Bytearray;
-  i, j, ll, ct: Integer;
+  i, j, ll, ct: integer;
 begin
   gt := GetTickCount;
   computeSymbolGroupValues(actions, groups, lb);
@@ -929,11 +968,11 @@ begin
   gt := GetTickCount;
   // User zählen über ein 2-dimensionales Riesenarray
   // aba = Array of ByteArray
-  SetLength(aba, groupsCt);
+  setlength(aba, groupsCt);
   ll := length(cwUsers);
   for i := 0 to groupsCt - 1 do
   begin
-    SetLength(aba[i], ll);
+    setlength(aba[i], ll);
   end;
   // ganze Matrix nullsetzen
   for i := 0 to groupsCt - 1 do
@@ -947,7 +986,7 @@ begin
     // alle Actions mit Gruppe/UserID in Matrix um 1 erhöhen
     // alte Variante
     // inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]);
-    inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, actionsPlus[i].userIndex]);
+    inc(aba[cwSymbolsPlus[cwactions[i].symbolId].groupId, actionsPlus[i].userIndex]);
   end;
   lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
 
@@ -970,10 +1009,10 @@ begin
 
 end;
 
-procedure TForm2.DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm2.DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 var
   grid: FTCommons.TStringGridSorted;
-  col, row, mdcol, mdrow: Integer;
+  col, row, mdcol, mdrow: integer;
 begin
   DynGrid10.SGMouseDown(Sender, Button, Shift, X, Y);
   grid := Sender as FTCommons.TStringGridSorted;
@@ -991,23 +1030,23 @@ end;
 procedure TForm2.btnListDoublesCwClick(Sender: TObject);
 // liste alle doppelten OrderIds auf - macht aber sonst nichts!
 var
-  i: Integer;
-  merk: array of Integer;
-  max: Integer;
+  i: integer;
+  merk: array of integer;
+  max: integer;
 begin
   max := 5000000;
   // Check doubles
-  SetLength(merk, max);
+  setlength(merk, max);
   for i := 0 to max - 1 do
   begin
     merk[i] := 0;
   end;
 
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
-    if cwActions[i].actionId < max then
+    if cwactions[i].actionId < max then
 
-      merk[cwActions[i].actionId] := merk[cwActions[i].actionId] + 1;
+      merk[cwactions[i].actionId] := merk[cwactions[i].actionId] + 1;
   end;
 
   for i := 0 to max - 1 do
@@ -1022,13 +1061,11 @@ end;
 procedure TForm2.btnLoadDataClick(Sender: TObject);
 var
   all: boolean;
-  i: Integer;
+  i: integer;
   appendCSVUsers: boolean;
   appendBinActions: boolean;
   whichAccounts: string;
-  sort: Stringarray; // string
-  isort: intarray;
-  p: Integer;
+  p: integer;
   gt: Cardinal;
 begin
   gt := GetTickCount;
@@ -1046,22 +1083,22 @@ begin
     end;
   end;
   if all = true then
-  //wenn alle Broker angehakelt sind - was eigentlich sowieso immer der Fall sein dürfte
+  // wenn alle Broker angehakelt sind - was eigentlich sowieso immer der Fall sein dürfte
   begin
     if cbLoadActionsFromCache.Checked = true then
     begin
       // holt Symbols Users und Comments vom Cache oder wenn noch nicht vorhanden vom Server
-      getSymbolsUsersComments( true);
+      getSymbolsUsersComments(true);
       btnLoadCacheFileCwClick(nil);
-      LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
+      LoadInfo(inttostr(length(cwactions)) + ' Actions loaded from Cache');
     end
     else
     begin
-      getSymbolsUsersComments( false); // holt vom Server
+      getSymbolsUsersComments(false); // holt vom Server
       LoadInfo('Load All Actions...');
       GetBinData('http://h2827643.stratoserver.net:8080/bin/actions', 'actions', lbCSVError, false);
       btnSaveCacheFileCwClick(nil); // ACHTUNG TEST
-      LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Server');
+      LoadInfo(inttostr(length(cwactions)) + ' Actions loaded from Server');
     end;
     LoadInfo('Loading finished');
     whichAccounts := 'All accounts/';
@@ -1103,7 +1140,7 @@ begin
           lbCSVError, appendBinActions);
         appendBinActions := true; // ab dem 2.mal anhängen !
 
-        LoadInfo(inttostr(length(cwActions)) + ' Actions');
+        LoadInfo(inttostr(length(cwactions)) + ' Actions');
 
         LoadInfo('Loading finished');
 
@@ -1114,7 +1151,7 @@ begin
   end;
   whichAccounts := leftstr(whichAccounts, length(whichAccounts) - 1);
   lblAllDataInfo.Caption := whichAccounts + #13#10 + ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
-    inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10;
+    inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwactions)) + #13#10 + #13#10;
   // ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
   TabSheet1.TabVisible := true; // Filter
@@ -1123,62 +1160,7 @@ begin
 
   // TabSheet7.TabVisible := true; // SymbolsGroups
 
-
-  // btnCwSymbolsToGridClick(nil);
-  // btnCwusersToGridClick(nil);
-  // btnCwCommentsToGridClick(nil);
-  // btnCwactionsToGridClick(nil);
-
-
-  //Nun alle zusätzlichen Berechnungen durchführen, die nach dem Laden der Actions usw notwendig sind
-
-  // symbole sortieren in einem extra Feld
-  gt:=gettickcount;
-  cwsymbolsct := length(cwSymbols);
-  SetLength(sort, cwsymbolsct);
-  SetLength(cwsymbolsSortindex, cwsymbolsct);
-  for i := 0 to cwsymbolsct - 1 do
-  begin
-    sort[i] := cwSymbols[i].name;
-    cwsymbolsSortindex[i] := i;
-  end;
-  fastsort2arrayString(sort, cwsymbolsSortindex, 'VUAS');
-
-  // users sortieren in einem extra Feld
-  cwusersct := length(cwUsers);
-  SetLength(isort, cwusersct);
-  // findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
-  SetLength(cwUsersSortindex, cwusersct); // cwUsersSortIndex(111)='8212345=111'
-  SetLength(cwUsersSortindex2, cwusersct); // cwUsersSortIndex2(111)=8212345
-  for i := 0 to cwusersct - 1 do
-  begin
-    isort[i] := cwUsers[i].userId;
-    cwUsersSortindex[i] := inttostr(cwUsers[i].userId) + '=' + inttostr(i);
-  end;
-  fastsort2arrayIntegerString(isort, cwUsersSortindex, 'VUA');
-  for i := 0 to cwusersct - 1 do
-  begin
-    p := pos('=', cwUsersSortindex[i]) - 1;
-    cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
-  end;
-
-  machActionsUserIndex(); // einmalig die Userindices aus den Useraccountnummern berechnen
-
-  btnDoUsersAndSymbolsPlusClick(nil);
-  // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus  und cwsymbolsplus
-
-  // den ersten User 'anklicken' und dessen actions im Grid darstellen
-  edSingleUserActionsId.text := inttostr(cwActions[0].userId);
-  btnGetSingleUserActionsClick(nil);
-
-  btnSymbolGroupsClick(nil); // Symbolgruppen erzeugen und anschliessend Werte berechnen
-
-  lbCSVError.items.add('Sym/Users prepare:'+inttostr(gettickcount-gt));
-  // die 4 Grids in Alle befüllen
-  btnCwSymbolsToGridClick(nil);
-  btnCwusersToGridClick(nil);
-  btnCwCommentsToGridClick(nil);
-  btnCwactionsToGridClick(nil);
+  doFinalizeData;
 
   Panel10.enabled := true;
 
@@ -1203,24 +1185,87 @@ end;
 
 procedure TForm2.machActionsUserIndex;
 var
-  i, j: Integer;
-  index: Integer;
+  i, j: integer;
+  index: integer;
   gt: Cardinal;
+
 begin
   //
   gt := GetTickCount;
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
-    index := finduserindex(cwActions[i].userId);
+    index := finduserindex(cwactions[i].userId);
     cwActionsPlus[i].userIndex := index;
   end;
   lbCSVError.Items.Add('Z:MachActionsUserIndex:' + inttostr(GetTickCount - gt));
 end;
 
-procedure TForm2.machPieChart(data: DAPieValue; datact: Integer; para: TPieParameters; cv: TAdvGDIPChartView;
-  pane: Integer; serie: Integer);
+procedure TForm2.doFinalizeData;
 var
-  i: Integer;
+  i, p: integer;
+  gt: Cardinal;
+  sort: Stringarray; // string
+  isort: intarray;
+begin
+  // Nun alle zusätzlichen Berechnungen durchführen, die nach dem Laden der Actions usw notwendig sind
+  // Es sind manche Berechnungen nach einem Update nicht unbedingt notwendig. zB wenn sich User oder Symbole
+  // gar nicht geändert haben.
+  // symbole sortieren in einem extra Feld
+  gt := GetTickCount;
+  cwsymbolsct := length(cwSymbols);
+  setlength(sort, cwsymbolsct);
+  setlength(cwsymbolsSortindex, cwsymbolsct);
+  for i := 0 to cwsymbolsct - 1 do
+  begin
+    sort[i] := cwSymbols[i].name;
+    cwsymbolsSortindex[i] := i;
+  end;
+  fastsort2arrayString(sort, cwsymbolsSortindex, 'VUAS');
+
+  // users sortieren in einem extra Feld
+  cwusersct := length(cwUsers);
+  setlength(isort, cwusersct);
+  // findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
+  setlength(cwUsersSortindex, cwusersct); // cwUsersSortIndex(111)='8212345=111'
+  setlength(cwUsersSortindex2, cwusersct); // cwUsersSortIndex2(111)=8212345
+  for i := 0 to cwusersct - 1 do
+  begin
+    isort[i] := cwUsers[i].userId;
+    cwUsersSortindex[i] := inttostr(cwUsers[i].userId) + '=' + inttostr(i);
+  end;
+  fastsort2arrayIntegerString(isort, cwUsersSortindex, 'VUA');
+  for i := 0 to cwusersct - 1 do
+  begin
+    p := pos('=', cwUsersSortindex[i]) - 1;
+    cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
+  end;
+
+  machActionsUserIndex(); // einmalig die Userindices aus den Useraccountnummern berechnen
+
+  btnDoUsersAndSymbolsPlusClick(nil);
+  // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus  und cwsymbolsplus
+
+  // den ersten User 'anklicken' und dessen actions im Grid darstellen
+  edSingleUserActionsId.text := inttostr(cwactions[0].userId);
+  btnGetSingleUserActionsClick(nil);
+
+  btnSymbolGroupsClick(nil); // Symbolgruppen erzeugen und anschliessend Werte berechnen
+
+  lbCSVError.Items.Add('Sym/Users prepare:' + inttostr(GetTickCount - gt));
+  gt := GetTickCount;
+  // die 4 Grids in Alle befüllen
+  btnCwSymbolsToGridClick(nil);
+  btnCwusersToGridClick(nil);
+  btnCwCommentsToGridClick(nil);
+  btnCwactionsToGridClick(nil);
+  lbCSVError.Items.Add('4 Grid:' + inttostr(GetTickCount - gt));
+
+end;
+
+procedure TForm2.machPieChart(data: DAPieValue; datact: integer; para: TPieParameters; cv: TAdvGDIPChartView;
+  pane: integer; serie: integer);
+var
+  i: integer;
 begin
   cv.BeginUpdate;
   cv.panes[pane].series[serie].ClearPoints;
@@ -1232,7 +1277,7 @@ end;
 
 procedure TForm2.PageControl1Change(Sender: TObject);
 var
-  a: Integer;
+  a: integer;
 begin
   a := PageControl1.TabIndex;
   // wirksam um die falschen Skinnings zu beseitigen
@@ -1254,15 +1299,15 @@ end;
 
 procedure TForm2.PageControl1Changing(Sender: TObject; var AllowChange: boolean);
 var
-  a: Integer;
+  a: integer;
 begin
   a := 1;
   //
 end;
 
-procedure TForm2.PageControl1DrawTab(Control: TCustomTabControl; TabIndex: Integer; const Rect: TRect; Active: boolean);
+procedure TForm2.PageControl1DrawTab(Control: TCustomTabControl; TabIndex: integer; const Rect: TRect; Active: boolean);
 var
-  a: Integer;
+  a: integer;
 begin
   //
   a := 1;
@@ -1275,15 +1320,15 @@ begin
 
   doCacheGridCwInfo;
   lblAllDataInfo.Caption := 'From Cache  Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
-    inttostr(length(cwSymbols)) + #13#10 + 'Actions:' + inttostr(length(cwActions));
+    inttostr(length(cwSymbols)) + #13#10 + 'Actions:' + inttostr(length(cwactions));
 
 end;
 
 procedure TForm2.btnSelectClearCwClick(Sender: TObject);
 begin
   cwFilteredActionCt := 0;
-  SetLength(cwFilteredActions, 0);
-  SetLength(cwFilteredActionsPlus, 0);
+  setlength(cwFilteredActions, 0);
+  setlength(cwFilteredActionsPlus, 0);
   if 1 = 1 then
   begin
     ClearStringGridSorted(SGCacheCwSearch);
@@ -1299,12 +1344,12 @@ end;
 
 procedure TForm2.btnShowCacheCwClick(Sender: TObject);
 var
-  max: Integer;
-  stp: Integer;
+  max: integer;
+  stp: integer;
 begin
   max := strtoint(edCacheCwShowMax.text);
-  if length(cwActions) < max then
-    max := length(cwActions)
+  if length(cwactions) < max then
+    max := length(cwactions)
   else;
   // showmessage('Die Darstellung wird auf ' + edCacheShowMax.Text + ' Einträge beschränkt!');
 
@@ -1313,18 +1358,18 @@ begin
   // autosizegrid(SGCwCache);
   //
   // doCacheGridCwInfo;
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 25);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwactions), 25);
 end;
 
 procedure TForm2.btnPieChartClick(Sender: TObject);
 var
   data: DAPieValue;
-  datact: Integer;
+  datact: integer;
   para: TPieParameters;
-  i, j: Integer;
-  serie: Integer;
-  pane: Integer;
-  styp: Integer;
+  i, j: integer;
+  serie: integer;
+  pane: integer;
+  styp: integer;
 begin
   // die Top-X und den Rest als Piechart darstellen
   // TPieValue DAPieValue
@@ -1340,7 +1385,7 @@ begin
   pane := 0;
   serie := 0;
   datact := cwFilteredSymbolsGroupsct;
-  SetLength(data, datact);
+  setlength(data, datact);
   for i := 0 to datact - 1 do
   begin
     if styp = 1 then
@@ -1374,28 +1419,28 @@ end;
 procedure TForm2.Button2Click(Sender: TObject);
 var
   gt: Cardinal;
-  i, j, l: Integer;
+  i, j, l: integer;
   ia: intarray;
   ia2: intarray;
   da: doublearray;
   sa: Stringarray;
 begin
   gt := GetTickCount;
-  l := length(cwActions);
+  l := length(cwactions);
   lbCSVError.Items.Add('Sort Elementzahl:' + inttostr(l));
 
-  SetLength(ia, l);
-  SetLength(ia2, l);
-  SetLength(da, l);
-  SetLength(sa, l);
+  setlength(ia, l);
+  setlength(ia2, l);
+  setlength(da, l);
+  setlength(sa, l);
 
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
     ia[i] := i;
-    da[i] := cwActions[i].typeId;
+    da[i] := cwactions[i].typeId;
     // cwActions[i].profit;  mit profit sortiert er schneller als mit vielen ähnlichen (Int) Werten !
-    sa[i] := cwComments[cwActions[i].commentid].text;
-    ia2[i] := cwActions[i].typeId;
+    sa[i] := cwComments[cwactions[i].commentid].text;
+    ia2[i] := cwactions[i].typeId;
   end;
 
   lbCSVError.Items.Add('SortPrepare:' + inttostr(GetTickCount - gt));
@@ -1440,22 +1485,22 @@ end;
 
 procedure TForm2.machUserSelection();
 var
-  i, ix, ct, p: Integer;
+  i, ix, ct, p: integer;
   v: array of cwuser;
-  u: array of Integer;
+  u: array of integer;
   isort: intarray;
   gt: Cardinal;
 begin
   gt := GetTickCount;
-  SetLength(u, cwusersct);
+  setlength(u, cwusersct);
   for i := 0 to cwFilteredActionCt - 1 do
   begin
     ix := finduserindex(cwFilteredActions[i].userId);
     u[ix] := u[ix] + 1;
   end;
   ct := 0;
-  SetLength(cwusersselection, cwusersct);
-  SetLength(cwusersselectionPlus, cwusersct);
+  setlength(cwusersselection, cwusersct);
+  setlength(cwusersselectionPlus, cwusersct);
   for i := 0 to cwusersct - 1 do
     if (u[i] > 0) then
     begin
@@ -1464,12 +1509,12 @@ begin
       cwusersselectionPlus[ct - 1] := cwUsersPlus[i];
     end;
   cwusersselectionct := ct + 1;
-  SetLength(cwusersselection, cwusersselectionct);
-  SetLength(cwusersselectionPlus, cwusersselectionct);
+  setlength(cwusersselection, cwusersselectionct);
+  setlength(cwusersselectionPlus, cwusersselectionct);
 
-  SetLength(isort, cwusersselectionct);
-  SetLength(cwUsersSelectionSortindex, cwusersselectionct); // cwUsersSelectionSortIndex(111)='8212345=111'
-  SetLength(cwUsersSelectionSortindex2, cwusersselectionct); // cwUsersSelectionSortIndex2(111)=8212345
+  setlength(isort, cwusersselectionct);
+  setlength(cwUsersSelectionSortindex, cwusersselectionct); // cwUsersSelectionSortIndex(111)='8212345=111'
+  setlength(cwUsersSelectionSortindex2, cwusersselectionct); // cwUsersSelectionSortIndex2(111)=8212345
   for i := 0 to cwusersselectionct - 1 do
   begin
     isort[i] := cwusersselection[i].userId;
@@ -1487,7 +1532,7 @@ end;
 
 procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
 var
-  i, index, j, total: Integer;
+  i, index, j, total: integer;
   sum: double;
   gt: Cardinal;
 
@@ -1506,14 +1551,14 @@ begin
     cwUsersPlus[i].totalbalance := 0;
   end;
 
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
-    inc(cwSymbolsPlus[cwActions[i].symbolId].TradesCount);
-    cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal +
-      cwActions[i].volume;
+    inc(cwSymbolsPlus[cwactions[i].symbolId].TradesCount);
+    cwSymbolsPlus[cwactions[i].symbolId].TradesVolumeTotal := cwSymbolsPlus[cwactions[i].symbolId].TradesVolumeTotal +
+      cwactions[i].volume;
 
-    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal +
-      cwActions[i].profit + cwActions[i].swap;
+    cwSymbolsPlus[cwactions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwactions[i].symbolId].TradesProfitTotal +
+      cwactions[i].profit + cwactions[i].swap;
 
     // NEU: die schnelle Variante
     // index := finduserindex(cwActions[i].userId);
@@ -1523,13 +1568,13 @@ begin
     begin
       // cwusersplus[index].totalSymbols:=0;
       inc(cwUsersPlus[index].totaltrades);
-      if cwActions[i].typeId = 7 then
+      if cwactions[i].typeId = 7 then
       begin
-        cwUsersPlus[index].totalbalance := cwUsersPlus[index].totalbalance + cwActions[i].profit;
+        cwUsersPlus[index].totalbalance := cwUsersPlus[index].totalbalance + cwactions[i].profit;
       end
       else
       begin
-        cwUsersPlus[index].totalprofit := cwUsersPlus[index].totalprofit + cwActions[i].profit + cwActions[i].swap;
+        cwUsersPlus[index].totalprofit := cwUsersPlus[index].totalprofit + cwactions[i].profit + cwactions[i].swap;
         // evtl auch noch swap aber nicht Balance
       end;
     end;
@@ -1540,32 +1585,32 @@ end;
 
 procedure TForm2.doGroup();
 var
-  i, j, k, l: Integer;
+  i, j, k, l: integer;
   gt: Cardinal;
   s: string;
-  ct: Integer;
-  ctmax: Integer;
-  le: array [0 .. 2] of Integer;
+  ct: integer;
+  ctmax: integer;
+  le: array [0 .. 2] of integer;
   // cw3Summaries: DA3CwSummary;
   // cw3SummariesCt: integer;
-  max1, max2, max3, max: Integer;
-  fall: array [0 .. 9] of Integer; // wie oft kommt welche Gruppe vor
-  p: array [0 .. 2] of Integer;
+  max1, max2, max3, max: integer;
+  fall: array [0 .. 9] of integer; // wie oft kommt welche Gruppe vor
+  p: array [0 .. 2] of integer;
   par: array [0 .. 2] of string;
-  TradesCount: Integer;
+  TradesCount: integer;
   TradesVolumeTotal: double;
   TradesProfitTotal: double;
-  gct:integer;
+  gct: integer;
 begin
-  gct:=0;
+  gct := 0;
   for i := 1 to GroupingCt do
   begin
     if (Grouping[i].chkActive.Checked = true) then
     begin
       cwgrouping.element[i - 1].styp := Grouping[i].cbTopic.text;
       cwgrouping.element[i - 1].typ := groupingTyp(Grouping[i].cbTopic.text);
-      if(Grouping[i].cbTopic.text<>'unused') then
-      inc(gct);
+      if (Grouping[i].cbTopic.text <> 'unused') then
+        inc(gct);
     end
     else
     begin
@@ -1574,11 +1619,11 @@ begin
     end;
 
   end;
-  if (gct=0) then
-  //wenn gar nix gruppiert werden soll auch kein Grid anzeigen
+  if (gct = 0) then
+  // wenn gar nix gruppiert werden soll auch kein Grid anzeigen
   begin
     DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 0, 0, 0);
-       exit;
+    exit;
   end;
   for i := 0 to 2 do
   begin
@@ -1604,7 +1649,7 @@ begin
       le[i] := length(cwUsers);
       inc(fall[2]);
     end;
-    if (cwgrouping.element[i].styp) = 'userSelection' then
+    if (cwgrouping.element[i].styp) = 'userId' then
     begin
       le[i] := length(cwusersselection);
       inc(fall[3]);
@@ -1634,7 +1679,7 @@ begin
   end;
 
   max := le[0] * le[1] * le[2];
-  SetLength(cw3summaries, le[0], le[1], le[2]);
+  setlength(cw3summaries, le[0], le[1], le[2]);
   max1 := length(cw3summaries);
   max2 := length(cw3summaries[0]);
   max3 := length(cw3summaries[0][0]);
@@ -1674,7 +1719,7 @@ begin
               p[j] := finduserindex(cwFilteredActions[i].userId);
               par[j] := inttostr(cwFilteredActions[i].userId); // oder Username
             end;
-          3: // UserSelection
+          3: // UserId =UserSelection
             begin
               p[j] := finduserSelectionIndex(cwFilteredActions[i].userId);
               par[j] := inttostr(cwFilteredActions[i].userId); // oder Username
@@ -1751,7 +1796,7 @@ begin
   // lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
   // end;
   ctmax := 10000;
-  SetLength(cwsummaries, ctmax + 1);
+  setlength(cwsummaries, ctmax + 1);
   ct := -1;
   try
     for i := 0 to max1 - 1 do
@@ -1765,7 +1810,7 @@ begin
             if (ct = ctmax) then
             begin
               ctmax := ctmax + 10000;
-              SetLength(cwsummaries, ctmax + 1);
+              setlength(cwsummaries, ctmax + 1);
             end;
 
           end;
@@ -1778,15 +1823,15 @@ begin
       s := E.ToString;
 
   end;
-  SetLength(cwsummaries, ct + 1);
-  SetLength(cw3summaries, 0, 0, 0);
+  setlength(cwsummaries, ct + 1);
+  setlength(cw3summaries, 0, 0, 0);
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
   DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 8);
   DynGrid9.lblTime.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt);
 end;
 
-function TForm2.trimYear(year: Integer): Integer;
+function TForm2.trimYear(year: integer): integer;
 begin
   // 2012 bis 2023 sind die 12 Jahre auf die getrimmt wird
   if year < 2012 then
@@ -1797,7 +1842,7 @@ begin
 
 end;
 
-function TForm2.groupingTyp(styp: string): Integer;
+function TForm2.groupingTyp(styp: string): integer;
 begin
   result := 0;
   if (styp = 'unused') then
@@ -1806,7 +1851,7 @@ begin
     result := 1;
   if styp = ('user') then
     result := 2;
-  if styp = ('userSelection') then
+  if styp = ('userId') then
     result := 3;
   if styp = ('yearsOpen') then
     result := 4;
@@ -1821,13 +1866,13 @@ end;
 
 procedure TForm2.doFilter();
 var
-  i, j: Integer;
+  i, j: integer;
   r: boolean;
-  fz: Integer;
-  max, fzmax: Integer;
+  fz: integer;
+  max, fzmax: integer;
   gt: Cardinal;
   chk: array of boolean;
-  faktivCt: Integer;
+  faktivCt: integer;
 
 label weiter, weiter1;
 begin
@@ -1840,17 +1885,17 @@ begin
   end;
   if faktivCt = 0 then
   begin
-    SetLength(cwFilteredActions, length(cwActions));
-    SetLength(cwFilteredActionsPlus, length(cwActions));
-    for i := 0 to length(cwActions) - 1 do
-      cwFilteredActions[i] := cwActions[i];
-    cwFilteredActionCt := length(cwActions);
+    setlength(cwFilteredActions, length(cwactions));
+    setlength(cwFilteredActionsPlus, length(cwactions));
+    for i := 0 to length(cwactions) - 1 do
+      cwFilteredActions[i] := cwactions[i];
+    cwFilteredActionCt := length(cwactions);
 
     goto weiter1;
   end;
 
-  SetLength(cwfilterParameter, FilterCt + 1);
-  SetLength(chk, FilterCt + 1);
+  setlength(cwfilterParameter, FilterCt + 1);
+  setlength(chk, FilterCt + 1);
   for i := 1 to FilterCt do
   begin
     Filter[i].getValues(cwfilterParameter[i]);
@@ -1872,13 +1917,13 @@ begin
       chk[i] := false;
   end;
 
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
     for j := 1 to FilterCt do
     begin
       if chk[j] = true then
       begin
-        r := Filter[j].checkCwaction(cwActions[i]);
+        r := Filter[j].checkCwaction(cwactions[i]);
         if (r = false) then
           goto weiter
       end;
@@ -1889,10 +1934,10 @@ begin
       if (fz > fzmax - 1) then
       begin
         fzmax := fzmax + 1000;
-        SetLength(cwFilteredActions, fzmax);
-        SetLength(cwFilteredActionsPlus, fzmax);
+        setlength(cwFilteredActions, fzmax);
+        setlength(cwFilteredActionsPlus, fzmax);
       end;
-      cwFilteredActions[fz] := cwActions[i];
+      cwFilteredActions[fz] := cwactions[i];
 
     end;
     // dem Ergebnis hinzufügen
@@ -1904,8 +1949,8 @@ begin
     inttostr(Filter[2].counter) + ' ct3:' + inttostr(Filter[3].counter));
 
   cwFilteredActionCt := fz + 1;
-  SetLength(cwFilteredActions, fz + 1);
-  SetLength(cwFilteredActionsPlus, fz + 1);
+  setlength(cwFilteredActions, fz + 1);
+  setlength(cwFilteredActionsPlus, fz + 1);
 
 weiter1:
   max := maxActionsPerGrid;
@@ -1927,7 +1972,7 @@ weiter1:
   doCacheGridCwInfo;
   Screen.Cursor := Cursor;
   lblFilteredDataInfo.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
-    ' of ' + inttostr(length(cwActions));
+    ' of ' + inttostr(length(cwactions));
   if max < cwFilteredActionCt then
   begin
     lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption;
@@ -1939,11 +1984,11 @@ end;
 procedure TForm2.Button5Click(Sender: TObject);
 // Balance direkt filtern (zum Geschwindigkeitsvergleich die der Filtersuche)
 var
-  i: Integer;
+  i: integer;
   gt, tg: Cardinal;
-  fz, max, fzmax: Integer;
+  fz, max, fzmax: integer;
 
-  function vergleichInteger(was, mit: Integer; op: Integer): boolean;
+  function vergleichInteger(was, mit: integer; op: integer): boolean;
   // var oben bringt nix
   begin
     result := false;
@@ -1991,11 +2036,11 @@ begin
   tg := timegettime;
   fz := -1;
   fzmax := -1;
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
 
-    if (cwActions[i].accountId = 4) then
-      if (cwActions[i].typeId = 7) then
+    if (cwactions[i].accountId = 4) then
+      if (cwactions[i].typeId = 7) then
       begin
 
         // if vergleichInteger(cwActions[i].typeId, 7, 1) = true then
@@ -2006,10 +2051,10 @@ begin
           if (fz > fzmax) then
           begin
             fzmax := fzmax + 50000;
-            SetLength(cwFilteredActions, fzmax);
-            SetLength(cwFilteredActionsPlus, fzmax);
+            setlength(cwFilteredActions, fzmax);
+            setlength(cwFilteredActionsPlus, fzmax);
           end;
-          cwFilteredActions[fz] := cwActions[i];
+          cwFilteredActions[fz] := cwactions[i];
         end;
 
         // end;
@@ -2017,8 +2062,8 @@ begin
   end;
   showmessage('z:' + inttostr(timegettime - gt) + ' ' + inttostr(timegettime - tg));
   cwFilteredActionCt := fz + 1;
-  SetLength(cwFilteredActions, fz + 1); // vergessen
-  SetLength(cwFilteredActionsPlus, fz + 1); // vergessen
+  setlength(cwFilteredActions, fz + 1); // vergessen
+  setlength(cwFilteredActionsPlus, fz + 1); // vergessen
 
   max := maxActionsPerGrid;
   if cwFilteredActionCt < max then
@@ -2039,7 +2084,7 @@ begin
   doCacheGridCwInfo;
   Screen.Cursor := Cursor;
   lblFilteredDataInfo.Caption := 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' +
-    inttostr(length(cwActions));
+    inttostr(length(cwactions));
   if max < cwFilteredActionCt then
   begin
     lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption + ' Grid:' + inttostr(max);
@@ -2054,20 +2099,21 @@ end;
 
 procedure TForm2.Button7Click(Sender: TObject);
 begin
-  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 25);
+  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwactions), 25);
 end;
 
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
 var
-  i, lold, lnew: Integer;
-  merkOpenTime, merkCloseTime: Integer;
-  gt,gtall, tt, tnow: Cardinal;
-  p, cnew, cold: Integer;
+  i, lold, lnew: integer;
+  merkOpenTime, merkCloseTime: integer;
+  gt, gtall, tt, tnow: Cardinal;
+  p, cnew, cold: integer;
   ia: intarray;
   ia2: int64array;
   na: intarray;
   na2: int64array;
-  n: Integer;
+  n: integer;
+  a1, a2: integer;
 begin
   // update data
   gtall := GetTickCount;
@@ -2076,16 +2122,16 @@ begin
   merkCloseTime := 0;
   tnow := datetimetounix(now);
   // feststellen, wie weit die 'alten' actions zeitlich reichen
-  for i := 0 to length(cwActions) - 1 do
+  for i := 0 to length(cwactions) - 1 do
   begin
-    if cwActions[i].typeId <> 7 then
+    if cwactions[i].typeId <> 7 then
     begin
-      if cwActions[i].openTime > merkOpenTime then
-        if cwActions[i].openTime < tnow then
-          merkOpenTime := cwActions[i].openTime;
-      if cwActions[i].closeTime > merkCloseTime then
-        if cwActions[i].closeTime < tnow then
-          merkCloseTime := cwActions[i].closeTime;
+      if cwactions[i].openTime > merkOpenTime then
+        if cwactions[i].openTime < tnow then
+          merkOpenTime := cwactions[i].openTime;
+      if cwactions[i].closeTime > merkCloseTime then
+        if cwactions[i].closeTime < tnow then
+          merkCloseTime := cwactions[i].closeTime;
 
     end
     else
@@ -2096,64 +2142,74 @@ begin
       tt := merkCloseTime;
     tt := tt - 0; // 5 Minuten zurück ???
   end;
-  lold := length(cwActions);
-  lbcsverror.Items.Add('[Vorbereitung]'+inttostr(gettickcount-gt));
+  lold := length(cwactions);
+  lbCSVError.Items.Add('[Vorbereitung]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   // showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
-  GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromOpen=' + inttostr(tt), 'actions', lbCSVError, true);
-  // showmessage(' Actions:' + inttostr(length(cwActions)));
-  GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromClose=' + inttostr(tt), 'actions',
+  a1 := GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromOpen=' + inttostr(tt), 'actions',
     lbCSVError, true);
-  lbcsverror.Items.Add('[Daten laden]'+inttostr(gettickcount-gt));
+  // showmessage(' Actions:' + inttostr(length(cwActions)));
+  a2 := GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromClose=' + inttostr(tt), 'actions',
+    lbCSVError, true);
+  // a1 > 0 bedeutet es sind neue Openings vorhanden
+  // a2 > 0 muss nix bedeuten da es momentan 11 mit CloseTime in der Zukunft gibt
+  lbCSVError.Items.Add('[Daten laden]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
 
   // showmessage(' Actions:' + inttostr(length(cwActions)));
 
   // btnSaveCacheFileCwClick(nil);
-  lnew := length(cwActions);
+  lnew := length(cwactions);
+
   cnew := lnew - lold;
-  SetLength(na2, cnew);
-  SetLength(na, cnew);
+
+  if (cnew = 0) then
+  begin
+    lbCSVError.Items.Add('[Abbruch - keine Änderungen]' + inttostr(GetTickCount - gt));
+    exit;
+  end;
+  setlength(na2, cnew);
+  setlength(na, cnew);
   p := -1;
   for i := lold to lnew - 1 do
   begin
     inc(p);
-    na2[p] := cwActions[i].actionId;
+    na2[p] := cwactions[i].actionId;
     na[p] := i;
   end;
 
   fastsort2arrayInt64Int(na2, na, 'VUI'); // VDI
-  lbcsverror.Items.Add('[sort1]'+inttostr(gettickcount-gt));
+  lbCSVError.Items.Add('[sort1]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
 
   // doppelte daraus entfernen
   for i := 1 to cnew - 1 do
   begin
     if na2[i] = na2[i - 1] then
-      cwActions[na[i - 1]].actionId := 0;
+      cwactions[na[i - 1]].actionId := 0;
   end;
 
   // jetzt sieht cwactions so aus: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa nnn0nn0nn0nn0n0n0nnn     a=die alten Action n=die neuen 0 dir doppelten
 
   // jetzt noch die binäre Suche in den alten Actions ermöglich
-  SetLength(ia2, lold);
-  SetLength(ia, lold);
+  setlength(ia2, lold);
+  setlength(ia, lold);
   for i := 0 to lold - 1 do
   begin
-    ia2[i] := cwActions[i].actionId;
+    ia2[i] := cwactions[i].actionId;
     ia[i] := i;
   end;
   fastsort2arrayInt64Int(ia2, ia, 'VUI'); // VDI
-  lbcsverror.Items.Add('[sort2]'+inttostr(gettickcount-gt));
+  lbCSVError.Items.Add('[sort2]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
 
   // das ist das sortierte alte cwactions array vor den Neuanfügungen
   //
   for i := lold to lnew - 1 do
   begin
-    if cwActions[i].actionId <> 0 then
+    if cwactions[i].actionId <> 0 then
     begin
-      n := binsearchint64(ia2, cwActions[i].actionId);
+      n := binsearchint64(ia2, cwactions[i].actionId);
       if (n = -1) then
       begin
         // nicht gefunden
@@ -2161,33 +2217,35 @@ begin
       else
       begin
         // die geänderte Action wurde in den alten Actions gefunden - nun austauschen
-        cwActions[ia[n]] := cwActions[i];
+        cwactions[ia[n]] := cwactions[i];
         // und den neuen Eintrag löschen
-        cwActions[i].actionId := 0;
+        cwactions[i].actionId := 0;
       end;
     end;
   end;
-  lbcsverror.Items.Add('[einfügen1]'+inttostr(gettickcount-gt));
+  lbCSVError.Items.Add('[einfügen1]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
 
   p := lold - 1; // zeiger auf den letzten alten index
   for i := lold to lnew - 1 do
   begin
     // das sind jetzt die neuen Actions !
-    if cwActions[i].actionId <> 0 then
+    if cwactions[i].actionId <> 0 then
     begin
       inc(p);
-      cwActions[p] := cwActions[i];
+      cwactions[p] := cwactions[i];
     end;
   end;
-  SetLength(cwActions, p + 1);
-  SetLength(cwActionsPlus, p + 1);
-  lbcsverror.Items.Add('[einfügen2]'+inttostr(gettickcount-gt));
+  setlength(cwactions, p + 1);
+  setlength(cwActionsPlus, p + 1);
+  lbCSVError.Items.Add('[einfügen2]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   // fertig
+  doFinalizeData;
+  lbCSVError.Items.Add('[finalize]' + inttostr(GetTickCount - gt));
 
   lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) +
-    #13#10 + ' Actions:' + inttostr(length(cwActions));
+    #13#10 + ' Actions:' + inttostr(length(cwactions));
   lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
 
 end;
@@ -2203,9 +2261,9 @@ const
   values: array [0 .. 19] of String = ('Mercedes', 'Audi', 'Land rover', 'BMW', 'Ferrari', 'Bugatti', 'Porsche',
     'Range rover', 'Lamborghini', 'Rolls Royce', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a');
 var
-  i, j: Integer;
+  i, j: integer;
   c: TCOLOR;
-  X, Y: Integer;
+  X, Y: integer;
 begin
 
   // AdvGDIPChartView1.Panes[0].Series.add;//von Hand eine Series hinzufügen (zwei bereits im Editor)
@@ -2348,7 +2406,7 @@ end;
 procedure TForm2.btnSampleClick(Sender: TObject);
 
 var
-  i: Integer;
+  i: integer;
   fe: TFilterParameter;
 begin
   fe.Active := false;
@@ -2416,9 +2474,9 @@ begin
   remeasureCategoryPanels(CategoryPanelGroup1);
 end;
 
-procedure TForm2.CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm2.CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 var
-  i: Integer;
+  i: integer;
   pa: TCategoryPanel;
 begin
   //
@@ -2444,7 +2502,7 @@ begin
   remeasureCategoryPanels(CategoryPanelGroup3);
 end;
 
-procedure TForm2.CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm2.CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 begin
   //
   showmessage('');
@@ -2464,7 +2522,7 @@ end;
 
 procedure TForm2.remeasureCategoryPanels(c1: TCategoryPanelGroup);
 var
-  coll, SplitHeight, i: Integer;
+  coll, SplitHeight, i: integer;
 begin
   coll := 0;
   for i := 0 to c1.ControlCount - 1 do
@@ -2483,7 +2541,7 @@ end;
 
 procedure TForm2.FormCreate(Sender: TObject);
 var
-  i: Integer;
+  i: integer;
   folder, fileName: string;
   style: string;
 begin
@@ -2525,7 +2583,6 @@ begin
   accountShort[6] := 'AT D';
   accountShort[7] := 'AT E';
 
-
   FilterCt := 10;
   for i := 1 to FilterCt do
   begin
@@ -2534,6 +2591,16 @@ begin
     Filter[i].SetBounds(0, (i - 1 + 2) * Filter[i].Height, Filter[i].Width, Filter[i].Height);
     Filter[i].Parent := pnlFilter;
   end;
+
+  twoLblStartCt:=10;
+  for i := 1 to twoLblStartCt do
+  begin
+    twoLblStart[i] := TTwoLabel.Create(self);
+    twoLblStart[i].name := 'twoLblStart_' + inttostr(i); // muss sein
+    twoLblStart[i].SetBounds(0, (i - 1 + 2) * twoLblStart[i].Height, twoLblStart[i].Width, twoLblStart[i].Height);
+    twoLblStart[i].Parent := pnlStart;
+  end;
+
 
   GroupingCt := 3;
   for i := 1 to GroupingCt do
@@ -2549,8 +2616,8 @@ begin
   lboxDebug := lbCSVError;
   lboxInfo := lbCSVError;
 
-  SetLength(SGFieldCol, 30);
-  SetLength(SGColField, 30);
+  setlength(SGFieldCol, 30);
+  setlength(SGColField, 30);
   for i := 0 to 29 do
   begin
     SGFieldCol[i] := i;
@@ -2559,7 +2626,6 @@ begin
   end;
 
   clbBrokers.Items.clear;
-
 
   clbBrokers.Items.Add('1: LCG A');
   clbBrokers.Items.Add('2: LCG B');
@@ -2592,7 +2658,7 @@ end;
 
 procedure TForm2.btnClbBrokersDeSelectAllClick(Sender: TObject);
 var
-  i: Integer;
+  i: integer;
 begin
   for i := 0 to clbBrokers.Items.Count - 1 do
   begin
@@ -2602,7 +2668,7 @@ end;
 
 procedure TForm2.btnClbBrokersSelectAllClick(Sender: TObject);
 var
-  i: Integer;
+  i: integer;
 begin
   for i := 0 to clbBrokers.Items.Count - 1 do
   begin
@@ -2614,7 +2680,7 @@ procedure TForm2.btnCwactionsToGridClick(Sender: TObject);
 begin
   // doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
   // autosizegrid(SGCwCache);
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 25);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwactions), 25);
 end;
 
 procedure TForm2.btnCwCommentsToGridClick(Sender: TObject);
@@ -2646,21 +2712,21 @@ procedure TForm2.btnDblCheckCwClick(Sender: TObject);
 var
   sl: TStringList;
   slweg: TStringList;
-  i, n: Integer;
-  doubleCount: Integer;
+  i, n: integer;
+  doubleCount: integer;
   gt: Cardinal;
   da: doublearray; // array of integer;
   ia: intarray; // array of double;
-  ct: Integer;
+  ct: integer;
 begin
   doubleCount := 0;
-  ct := length(cwActions);
-  SetLength(ia, ct);
-  SetLength(da, ct);
+  ct := length(cwactions);
+  setlength(ia, ct);
+  setlength(da, ct);
   for i := 0 to ct - 1 do
   begin
     ia[i] := i;
-    da[i] := cwActions[i].actionId;
+    da[i] := cwactions[i].actionId;
   end;
 
   gt := timegettime();
@@ -2668,7 +2734,7 @@ begin
   slweg := TStringList.Create;
   for i := 0 to ct - 1 do
   begin
-    sl.Add(inttostr(cwActions[i].actionId) + '=' + inttostr(i))
+    sl.Add(inttostr(cwactions[i].actionId) + '=' + inttostr(i))
   end;
   showmessage('mach stringlist Z:' + inttostr(timegettime - gt));
   // der customsort braucht 25334 msec !!
@@ -2691,7 +2757,7 @@ begin
   begin
     if (sl.Names[i] = sl.Names[i + 1]) then
     begin
-      if (cwActions[strtoint(sl.ValueFromIndex[i])].typeId <> 7) then
+      if (cwactions[strtoint(sl.ValueFromIndex[i])].typeId <> 7) then
       // nicht die BALANCE Einträge entfernen  !! cmd=6 ist typeId=7 !!
       begin
         doubleCount := doubleCount + 1;
@@ -2705,22 +2771,22 @@ begin
   for i := 0 to doubleCount - 1 do
   begin
     n := strtoint(slweg[i]);
-    cwActions[n].actionId := -1;
+    cwactions[n].actionId := -1;
   end;
   // und nun alle neu aufstapeln
   n := -1;
   for i := 0 to ct - 1 do
   begin
-    if (cwActions[i].actionId <> -1) then
+    if (cwactions[i].actionId <> -1) then
     begin
       n := n + 1;
-      cwActions[n] := cwActions[i];
+      cwactions[n] := cwactions[i];
     end;
   end;
   // neuer Zähler ist um doubleCount kleiner
   ct := n + 1;
-  SetLength(cwActions, ct);
-  SetLength(cwActionsPlus, ct);
+  setlength(cwactions, ct);
+  setlength(cwActionsPlus, ct);
   showmessage('jetzt im Cache:' + inttostr(ct) + ' Zeit:' + inttostr(timegettime - gt));
 
   sl.clear;
@@ -2731,7 +2797,7 @@ end;
 procedure TForm2.btnDoubleRemoveCwClick(Sender: TObject);
 var
   sl: TStringList;
-  i, dptr: Integer;
+  i, dptr: integer;
   killed: string;
   dummy: DACwAction;
 begin
@@ -2748,7 +2814,7 @@ begin
   end;
   // sl.Sort;
   FastSortStList(sl, 'AU');
-  SetLength(dummy, cwFilteredActionCt);
+  setlength(dummy, cwFilteredActionCt);
   dptr := -1;
   // sl.names[]  sl.valuefromindex[]
   for i := 0 to cwFilteredActionCt - 2 do
@@ -2779,8 +2845,8 @@ begin
   // kopieren
   cwFilteredActions := Copy(dummy, 0, cwFilteredActionCt);
   cwFilteredActionCt := dptr + 1;
-  SetLength(cwFilteredActions, cwFilteredActionCt);
-  SetLength(cwFilteredActionsPlus, cwFilteredActionCt);
+  setlength(cwFilteredActions, cwFilteredActionCt);
+  setlength(cwFilteredActionsPlus, cwFilteredActionCt);
 
   doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt, 1);
   // lblCacheCwSearchResult.Caption := inttostr(cwFilteredActionCt);
@@ -2824,7 +2890,7 @@ end;
 // end;
 // end;
 
-procedure TForm2.SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: Integer);
+procedure TForm2.SGCwSymbolsColumnMoved(Sender: TObject; FromIndex, ToIndex: integer);
 var
   s: string;
   // das Verschieben wird intern im Grid behandelt und schlägt sich nicht in den Variablen nieder
@@ -2832,11 +2898,11 @@ begin
   s := '';
 end;
 
-procedure TForm2.SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: Integer; Rect: TRect; State: TGridDrawState);
+procedure TForm2.SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
 var
   s: string;
   r: TRect;
-  merkColor: Integer;
+  merkColor: integer;
 begin
   with Sender as TStringGrid do
 
@@ -2860,10 +2926,10 @@ begin
   end;
 end;
 
-procedure TForm2.SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm2.SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 var
   grid: FTCommons.TStringGridSorted;
-  col, row: Integer;
+  col, row: integer;
 
 begin
   // nur in der obersten Fix row
@@ -2878,12 +2944,12 @@ begin
 
 end;
 
-procedure TForm2.SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm2.SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 // gemeinsamer Handler für alle normalen TStringGridSorted
 var
-  i: Integer;
+  i: integer;
   grid: FTCommons.TStringGridSorted;
-  col, row: Integer;
+  col, row: integer;
   fixedCol, fixedRow: boolean;
   gt: Cardinal;
   Cursor: TCursor;
@@ -2898,7 +2964,8 @@ begin
     grid.Cells[col, row];
 
     // hier kann dann individuell gehandelt werden !
-    gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row], Button, Shift,'');
+    gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row], Button,
+      Shift, '');
     ClipBoard.AsText := grid.Cells[col, row];
     if row = 0 then
     begin
@@ -2925,7 +2992,7 @@ begin
         // speziell bei den Datumsfelder auf eine andere Spalte umlenken
         if header = 'openTime' then
         begin
-          for i := 0 to grid.ColCount - 1 do
+          for i := 0 to grid.Colcount - 1 do
           begin
             if grid.Cells[i, 0] = 'openTimeUnix' then
             begin
@@ -2936,7 +3003,7 @@ begin
         end;
         if header = 'closeTime' then
         begin
-          for i := 0 to grid.ColCount - 1 do
+          for i := 0 to grid.Colcount - 1 do
           begin
             if grid.Cells[i, 0] = 'closeTimeUnix' then
             begin
@@ -2971,13 +3038,13 @@ begin
     end;
   end;
 
-  procedure TForm2.SortStringGridCW(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
+  procedure TForm2.SortStringGridCW(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
 
   const
     // Define the Separator
     TheSeparator = '@';
   var
-    CountItem, i, k: Integer;
+    CountItem, i, k: integer;
     MyList: TStringList;
     da: doublearray;
     ia: intarray;
@@ -2988,8 +3055,8 @@ begin
     // Create the List
     MyList := TStringList.Create;
     MyList.sorted := false;
-    SetLength(ia, CountItem - 1);
-    SetLength(da, CountItem - 1);
+    setlength(ia, CountItem - 1);
+    setlength(da, CountItem - 1);
 
     try
       begin
@@ -3038,13 +3105,13 @@ begin
 
   end;
 
-  procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: Integer; sortTyp: Integer);
+  procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
 
   const
     // Define the Separator
     TheSeparator = #1;
   var
-    CountItem, i, j, k, ThePosition: Integer;
+    CountItem, i, j, k, ThePosition: integer;
     MyList: TStringList;
     gt: Cardinal;
   begin
@@ -3129,9 +3196,9 @@ begin
   // SetLayeredWindowAttributes(Handle, ColorToRGB(FColorKey), TrackBar1.Position, LWA_ALPHA);
   // end;
 
-  procedure TForm2.zeigUserInfo(id: Integer; lb: TListBox);
+  procedure TForm2.zeigUserInfo(id: integer; lb: TListBox);
   var
-    k: Integer;
+    k: integer;
   begin
     k := finduserindex(id);
     lb.Items.clear;
@@ -3224,12 +3291,12 @@ begin
     lbCSVError.Items.clear;
   end;
 
-  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): Integer;
+  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
   var
-    flag: Integer;
+    flag: integer;
     gt, ngt: Cardinal;
 
-    li: Integer;
+    li: integer;
     liText: array [1 .. 15] of string;
 
   begin
@@ -3307,7 +3374,7 @@ begin
     result := HTTPWorker1.HError; // hier noch was anders machen !
   end;
 
-  procedure TForm2.dosleep(t: Integer);
+  procedure TForm2.dosleep(t: integer);
   var
     gt: Cardinal;
   begin

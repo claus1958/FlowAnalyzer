@@ -23,11 +23,9 @@ object GroupControl: TGroupControl
     Items.Strings = (
       'unused'
       'symbolGroup'
-      'user'
-      'userSelection'
+      'userId'
       'yearsOpen'
       'yearsClose'
-      'dateSpecial'
       'brokerAccount')
   end
   object chkActive: TCheckBox

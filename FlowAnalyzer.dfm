@@ -69,8 +69,14 @@ object Form2: TForm2
         Top = 32
         Width = 1433
         Height = 789
-        Caption = 'Das ist der Startbildschirm'
         TabOrder = 1
+        object pnlStart: TPanel
+          Left = 472
+          Top = 68
+          Width = 537
+          Height = 637
+          TabOrder = 0
+        end
       end
     end
     object TabSheet6: TTabSheet
@@ -1005,10 +1011,12 @@ object Form2: TForm2
               Align = alTop
               ExplicitWidth = 1068
               inherited lblTime: TLabel
-                Width = 38
-                Height = 14
-                ExplicitWidth = 38
-                ExplicitHeight = 14
+                Width = 53
+                Height = 19
+                Font.Height = -16
+                ParentFont = False
+                ExplicitWidth = 53
+                ExplicitHeight = 19
               end
             end
             inherited Panel2: TPanel

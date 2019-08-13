@@ -124,6 +124,10 @@
             <Form>Form5</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="uTwoLabel.pas">
+            <Form>twoLabel</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
         <DCCReference Include="Dialog2.pas">
             <Form>Dialog2</Form>
             <FormType>dfm</FormType>
