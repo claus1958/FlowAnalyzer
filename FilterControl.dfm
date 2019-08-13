@@ -50,20 +50,20 @@ object FilterElemente: TFilterElemente
       'contains not')
   end
   object edValue: TEdit
-    Left = 223
+    Left = 227
     Top = 3
-    Width = 258
+    Width = 254
     Height = 21
     TabOrder = 2
     OnChange = edValueChange
   end
   object dtPicker1: TDateTimePicker
-    Left = 376
+    Left = 388
     Top = 3
-    Width = 105
-    Height = 21
+    Width = 93
+    Height = 22
     Date = 43549.000000000000000000
-    Kind = dtkTime
+    Time = 0.412345231481595000
     TabOrder = 3
     Visible = False
     OnChange = dtPicker1Change

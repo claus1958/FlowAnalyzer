@@ -14,7 +14,9 @@ uses
   FTTypes in 'FTTypes.pas',
   FTCollector in 'FTCollector.pas',
   UDynGrid in 'UDynGrid.pas' {DynGrid: TFrame},
-  GroupControl in 'GroupControl.pas' {GroupControl: TFrame};
+  GroupControl in 'GroupControl.pas' {GroupControl: TFrame},
+  Dialog1 in 'Dialog1.pas' {Form5},
+  Dialog2 in 'Dialog2.pas' {Dialog2};
 
 {$R *.res}
 
@@ -24,5 +26,6 @@ begin
   Application.Initialize;
   TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TForm2, Form2);
+  Application.CreateForm(TDialog2,FDialog2);
   Application.Run;
 end.

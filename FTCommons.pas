@@ -11,6 +11,11 @@ uses
 const
   BoolStr: Array [Boolean] of AnsiString = ('False', 'True');
   NoSelection: TGridRect = (Left: - 1; Top: - 1; Right: - 1; Bottom: - 1);
+  // Use crKey as the transparency color.
+  LWA_COLORKEY = 1;
+  // Use bAlpha to determine the opacity of the layered window..
+  LWA_ALPHA = 2;
+  WS_EX_LAYERED = $80000;
 
 type
 
@@ -270,7 +275,7 @@ procedure FillCharArray(var a: TStr12; const s: String);
 procedure SwapRowField(rf: array of integer; fr: array of integer; von, nach: integer);
 procedure generateMinutes(var ticks: array of TKurs; var mBars: DAKursOCHL; minutes: integer);
 procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
-  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TMemoryStream;
+  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream;
   append: Boolean);
 procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
 
@@ -278,7 +283,7 @@ function getCwComment(id: integer): string;
 function getCwSymbol(id: integer): string;
 function OrderTypes(cmd: integer): string;
 procedure saveCacheFileCw(fname: string; typ: string; lb: TListBox);
-procedure loadCacheFileCw(fname: string; typ: string; lb: TListBox);
+function loadCacheFileCw(fname: string; typ: string; lb: TListBox):integer;
 // A=Alpha V=Value U=Up D=Down
 procedure QuicksortAU(low, high: integer; var Ordliste: StringArray); // StringArray ist Array of String
 procedure QuicksortAD(low, high: integer; var Ordliste: StringArray);
@@ -359,11 +364,10 @@ function findUserIndex(userId: integer): integer;
 function findUserSelectionName(userId: integer): string;
 function findUserSelectionIndex(userId: integer): integer;
 
-
-
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
 
 function RandomRange(const AFrom, ATo: integer): integer;
+function RGB2TColor(const R, G, b: byte): integer;
 
 var
 
@@ -377,8 +381,8 @@ var
 
   cw3Summaries: DA3CwSummary;
   cw3SummariesCt: integer;
-  cwSummaries: DACwSummary;//für das ausgedünnte Array ohne 3D Struktur
-  cwSummariesCt:integer;
+  cwSummaries: DACwSummary; // für das ausgedünnte Array ohne 3D Struktur
+  cwSummariesCt: integer;
 
   cwSymbolsGroups: DACwSymbolGroup;
   cwSymbolsGroupsCt: integer;
@@ -395,12 +399,10 @@ var
   cwUsersSortIndex2: intArray;
 
   cwUsersSelection: DAcwUser;
-  cwUsersSelectionPlus: DAcwUserPlus;
+  cwUsersSelectionPlus: DACwUserPlus;
   cwUsersSelectionCt: integer;
   cwUsersSelectionSortIndex: StringArray;
   cwUsersSelectionSortIndex2: intArray;
-
-
 
   cwTicks: DACwTick;
   cwTicksCt: integer;
@@ -419,6 +421,7 @@ var
   lboxInfo: TListBox;
   cwFilterParameter: array of TFilterParameter;
   brokerShort: array [1 .. 2] of string;
+  accountShort:array [1..7] of string;
 
 implementation
 
@@ -900,8 +903,9 @@ end;
 // ParseDelimited('symbols', lbDebug2, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms);
 
 procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
-  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TMemoryStream;
+  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream;
   append: Boolean);
+  //von TMemoryStream auf TStream abgeändert ,damit auch TFileStream gelesen werden kann !
 var
   ns: string;
   s: string;
@@ -986,7 +990,7 @@ begin
       valuez := csvReader.ColumnCount;
       if valuez = 0 then
       begin
-        sl.items.add('leere Zeile ignoriert');
+        // sl.items.add('leere Zeile ignoriert');
       end
       else
       begin
@@ -1289,7 +1293,7 @@ begin
       SG.Rows[row].BeginUpdate;
       SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
       SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
-      SG.cells[SGFieldCol[2], row] := inttostr(actions[sort[k]].accountId);
+      SG.cells[SGFieldCol[2], row] := accountShort[actions[sort[k]].accountId];
       SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
       SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
       SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
@@ -1365,16 +1369,16 @@ var
   k: integer;
   row: integer;
   fehler: string;
-  d1,d2,d3,d23:integer;
-  i1,i2,i3,rest:integer;//die summaries[i1][i2][i3] aus k
+  d1, d2, d3, d23: integer;
+  i1, i2, i3, rest: integer; // die summaries[i1][i2][i3] aus k
 begin
   try
     if (justone = false) then
     begin
       SG.Rows[0].BeginUpdate;
-      SG.cells[SGFieldCol[0], 0] := cwgrouping.element[0].styp;
-      SG.cells[SGFieldCol[1], 0] := cwgrouping.element[1].styp;
-      SG.cells[SGFieldCol[2], 0] := cwgrouping.element[2].styp;
+      SG.cells[SGFieldCol[0], 0] := cwGrouping.element[0].sTyp;
+      SG.cells[SGFieldCol[1], 0] := cwGrouping.element[1].sTyp;
+      SG.cells[SGFieldCol[2], 0] := cwGrouping.element[2].sTyp;
       SG.cells[SGFieldCol[3], 0] := 'tradesCount';
       SG.cells[SGFieldCol[4], 0] := 'tradesVolumeTotal';
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
@@ -1383,15 +1387,13 @@ begin
     end;
     row := 0;
 
-    d1:=length(summaries);
-    d2:=length(summaries[0]);
-    d3:=length(summaries[0][0]);
-    d23:=d2*d3;
-//    i1=int(ix/(d2*d3))
-//    i2=int(rest/d3)
-//    i3=rest
-
-
+    d1 := length(summaries);
+    d2 := length(summaries[0]);
+    d3 := length(summaries[0][0]);
+    d23 := d2 * d3;
+    // i1=int(ix/(d2*d3))
+    // i2=int(rest/d3)
+    // i3=rest
 
     for k := datafrom to datato do
 
@@ -1399,11 +1401,10 @@ begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
 
-      i1:=trunc(sort[k]/d23);
-      rest:=sort[k]-i1*d23;
-      i2:=trunc(rest/d3);
-      i3:=rest-i2*d3;
-
+      i1 := trunc(sort[k] / d23);
+      rest := sort[k] - i1 * d23;
+      i2 := trunc(rest / d3);
+      i3 := rest - i2 * d3;
 
       SG.cells[SGFieldCol[0], row] := summaries[i1][i2][i3].par0;
       SG.cells[SGFieldCol[1], row] := summaries[i1][i2][i3].par1;
@@ -1413,7 +1414,6 @@ begin
       SG.cells[SGFieldCol[4], row] := inttostr(summaries[i1][i2][i3].TradesVolumeTotal);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[i1][i2][i3].TradesUsers);
-
 
       SG.Rows[row].endUpdate;
     end;
@@ -1429,23 +1429,28 @@ end;
 procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 var
-  k: integer;
+  i, k: integer;
   row: integer;
   fehler: string;
-  d1,d2,d3,d23:integer;
-  i1,i2,i3,rest:integer;//die summaries[i1][i2][i3] aus k
+  d1, d2, d3, d23: integer;
+  i1, i2, i3, rest: integer; // die summaries[i1][i2][i3] aus k
 begin
   try
     if (justone = false) then
     begin
       SG.Rows[0].BeginUpdate;
-      SG.cells[SGFieldCol[0], 0] := cwgrouping.element[0].styp;
-      SG.cells[SGFieldCol[1], 0] := cwgrouping.element[1].styp;
-      SG.cells[SGFieldCol[2], 0] := cwgrouping.element[2].styp;
+      SG.cells[SGFieldCol[0], 0] := cwGrouping.element[0].sTyp;
+      SG.cells[SGFieldCol[1], 0] := cwGrouping.element[1].sTyp;
+      SG.cells[SGFieldCol[2], 0] := cwGrouping.element[2].sTyp;
       SG.cells[SGFieldCol[3], 0] := 'tradesCount';
       SG.cells[SGFieldCol[4], 0] := 'tradesVolumeTotal';
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
+      for i := 0 to 2 do
+        if (cwGrouping.element[i].sTyp = 'unused') then
+        begin
+          SG.ColWidths[SGFieldCol[i]] := -1;
+        end;
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1456,8 +1461,6 @@ begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
 
-
-
       SG.cells[SGFieldCol[0], row] := summaries[sort[k]].par0;
       SG.cells[SGFieldCol[1], row] := summaries[sort[k]].par1;
       SG.cells[SGFieldCol[2], row] := summaries[sort[k]].par2;
@@ -1466,7 +1469,6 @@ begin
       SG.cells[SGFieldCol[4], row] := inttostr(summaries[sort[k]].TradesVolumeTotal);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[sort[k]].TradesUsers);
-
 
       SG.Rows[row].endUpdate;
     end;
@@ -1478,7 +1480,6 @@ begin
 
   end;
 end;
-
 
 procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var users: DAcwUser; usersPlus: DACwUserPlus; datafrom: integer; datato: integer; justone: Boolean = false);
@@ -1494,18 +1495,18 @@ begin
       SG.cells[SGFieldCol[0], 0] := 'userId';
       SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'accountId';
-      SG.cells[SGFieldCol[2], 0] := 'group';
-      SG.cells[SGFieldCol[3], 0] := 'enable';
-      SG.cells[SGFieldCol[4], 0] := 'registrationTime';
-      SG.cells[SGFieldCol[5], 0] := 'lastLoginTime';
-      SG.cells[SGFieldCol[6], 0] := 'leverage';
-      SG.cells[SGFieldCol[7], 0] := 'balance';
-      SG.cells[SGFieldCol[8], 0] := 'balancePreviousMonth';
-      SG.cells[SGFieldCol[9], 0] := 'balancePreviousDay';
-      SG.cells[SGFieldCol[10], 0] := 'credit';
-      SG.cells[SGFieldCol[11], 0] := 'interestrate';
-      SG.cells[SGFieldCol[12], 0] := 'taxes';
-      SG.cells[SGFieldCol[13], 0] := 'name';
+      SG.cells[SGFieldCol[2], 0] := 'name';
+      SG.cells[SGFieldCol[3], 0] := 'group';
+      SG.cells[SGFieldCol[4], 0] := 'enable';
+      SG.cells[SGFieldCol[5], 0] := 'registrationTime';
+      SG.cells[SGFieldCol[6], 0] := 'lastLoginTime';
+      SG.cells[SGFieldCol[7], 0] := 'leverage';
+      SG.cells[SGFieldCol[8], 0] := 'balance';
+      SG.cells[SGFieldCol[9], 0] := 'balancePreviousMonth';
+      SG.cells[SGFieldCol[10], 0] := 'balancePreviousDay';
+      SG.cells[SGFieldCol[11], 0] := 'credit';
+      SG.cells[SGFieldCol[12], 0] := 'interestrate';
+      SG.cells[SGFieldCol[13], 0] := 'taxes';
       SG.cells[SGFieldCol[14], 0] := 'country';
       SG.cells[SGFieldCol[15], 0] := 'city';
       SG.cells[SGFieldCol[16], 0] := 'state';
@@ -1527,19 +1528,19 @@ begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
       SG.cells[SGFieldCol[0], row] := inttostr(users[sort[k]].userId);
-      SG.cells[SGFieldCol[1], row] := inttostr(users[sort[k]].accountId);
-      SG.cells[SGFieldCol[2], row] := users[sort[k]].group;
-      SG.cells[SGFieldCol[3], row] := inttostr(users[sort[k]].enable);
-      SG.cells[SGFieldCol[4], row] := inttostr(users[sort[k]].registrationTime);
-      SG.cells[SGFieldCol[5], row] := inttostr(users[sort[k]].lastLoginTime);
-      SG.cells[SGFieldCol[6], row] := inttostr(users[sort[k]].leverage);
-      SG.cells[SGFieldCol[7], row] := floattostr(users[sort[k]].balance);
-      SG.cells[SGFieldCol[8], row] := floattostr(users[sort[k]].balancePreviousMonth);
-      SG.cells[SGFieldCol[9], row] := floattostr(users[sort[k]].balancePreviousDay);
-      SG.cells[SGFieldCol[10], row] := floattostr(users[sort[k]].credit);
-      SG.cells[SGFieldCol[11], row] := floattostr(users[sort[k]].interestrate);
-      SG.cells[SGFieldCol[12], row] := floattostr(users[sort[k]].taxes);
-      SG.cells[SGFieldCol[13], row] := users[sort[k]].name;
+      SG.cells[SGFieldCol[1], row] := accountShort[users[sort[k]].accountId];
+      SG.cells[SGFieldCol[2], row] := users[sort[k]].name;
+      SG.cells[SGFieldCol[3], row] := users[sort[k]].group;
+      SG.cells[SGFieldCol[4], row] := inttostr(users[sort[k]].enable);
+      SG.cells[SGFieldCol[5], row] :=DateTimeToStr(UnixToDateTime(users[sort[k]].registrationTime));//      inttostr(users[sort[k]].registrationTime);
+      SG.cells[SGFieldCol[6], row] := DateTimeToStr(UnixToDateTime(users[sort[k]].lastloginTime));//inttostr(users[sort[k]].lastLoginTime);
+      SG.cells[SGFieldCol[7], row] := inttostr(users[sort[k]].leverage);
+      SG.cells[SGFieldCol[8], row] := floattostr(users[sort[k]].balance);
+      SG.cells[SGFieldCol[9], row] := floattostr(users[sort[k]].balancePreviousMonth);
+      SG.cells[SGFieldCol[10], row] := floattostr(users[sort[k]].balancePreviousDay);
+      SG.cells[SGFieldCol[11], row] := floattostr(users[sort[k]].credit);
+      SG.cells[SGFieldCol[12], row] := floattostr(users[sort[k]].interestrate);
+      SG.cells[SGFieldCol[13], row] := floattostr(users[sort[k]].taxes);
       SG.cells[SGFieldCol[14], row] := users[sort[k]].country;
       SG.cells[SGFieldCol[15], row] := users[sort[k]].city;
       SG.cells[SGFieldCol[16], row] := users[sort[k]].state;
@@ -1748,7 +1749,7 @@ begin
 
         SG.cells[SGFieldCol[0], row] := inttostr(actions[k].actionId);
         SG.cells[SGFieldCol[1], row] := inttostr(actions[k].userId);
-        SG.cells[SGFieldCol[2], row] := inttostr(actions[k].accountId);
+        SG.cells[SGFieldCol[2], row] := accountshort[actions[k].accountId];
         SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[k].symbolId);
         SG.cells[SGFieldCol[4], row] := inttostr(actions[k].symbolId);
         SG.cells[SGFieldCol[5], row] := getCwComment(actions[k].commentId);
@@ -1937,7 +1938,7 @@ begin
       if (row < (total + 1)) then
       begin
         SG.cells[SGFieldCol[0], row] := inttostr(users[k].userId);
-        SG.cells[SGFieldCol[1], row] := inttostr(users[k].accountId);
+        SG.cells[SGFieldCol[1], row] := accountshort[users[k].accountId];
         SG.cells[SGFieldCol[2], row] := users[k].group;
         SG.cells[SGFieldCol[3], row] := inttostr(users[k].enable);
         SG.cells[SGFieldCol[4], row] := inttostr(users[k].registrationTime);
@@ -2214,7 +2215,7 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-procedure loadCacheFileCw(fname: string; typ: string; lb: TListBox);
+function loadCacheFileCw(fname: string; typ: string; lb: TListBox):integer;
 var
   folder: string;
   fileName: string;
@@ -2252,7 +2253,7 @@ begin
             SetLength(cwUsersSortIndex, 0); // zurücksetzen
             SetLength(cwUsersSortIndex2, 0); // zurücksetzen
             fstream.ReadBuffer(cwUsers[0], ct * SizeOf(cwu)); // nicht die ganze stream.size !
-            showmessage(inttostr(fstream.Size) + ' ' + inttostr(ct * SizeOf(cwu)));
+           // showmessage(inttostr(fstream.Size) + ' ' + inttostr(ct * SizeOf(cwu)));
           end;
         2:
           begin
@@ -2273,11 +2274,12 @@ begin
           end;
 
       End;
-
+      result:=1;
     end
     else
     begin
-      showmessage('Die Datei existiert nicht');
+      //showmessage('Die Datei existiert nicht');
+      result:=0;
     end;
   finally
     if fileexists(fileName) then
@@ -3112,11 +3114,11 @@ end;
 
 procedure ClearStringGridSorted(const Grid: FTCommons.TStringGridSorted);
 var
-  c, r: integer;
+  c, R: integer;
 begin
   for c := 0 to Pred(Grid.ColCount) do
-    for r := 0 to Pred(Grid.RowCount) do
-      Grid.cells[c, r] := '';
+    for R := 0 to Pred(Grid.RowCount) do
+      Grid.cells[c, R] := '';
   // lbDebug3.Items.Add('ClearSG:' + inttostr(GetTickCount - gt));
 end;
 
@@ -3124,18 +3126,24 @@ procedure AutoSizeGrid(Grid: FTCommons.TStringGridSorted);
 const
   ColWidthMin = 10;
 var
-  c, r, w, ColWidthMax: integer;
-begin
+  c, R, w, ColWidthMax: integer;
+  header:string;
+  begin
   for c := 0 to Grid.ColCount - 1 do
   begin
+    header:=grid.Cells[c,0];
     ColWidthMax := ColWidthMin;
-    for r := 0 to (Grid.RowCount - 1) do
+    for R := 0 to (Grid.RowCount - 1) do
     begin
-      w := Grid.Canvas.TextWidth(Grid.cells[c, r]);
+      w := Grid.Canvas.TextWidth(Grid.cells[c, R]);
       if w > ColWidthMax then
         ColWidthMax := w;
     end;
     Grid.ColWidths[c] := ColWidthMax + 12;
+    if (header='unused') then
+      Grid.ColWidths[c] := -  1;
+
+
   end;
 end;
 
@@ -3576,7 +3584,6 @@ begin
     result := '?';
 end;
 
-
 function findUserSelectionIndex(userId: integer): integer;
 var
   i: integer;
@@ -3593,8 +3600,6 @@ begin
   else
     result := -1;
 end;
-
-
 
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
 var
@@ -3663,6 +3668,72 @@ begin
     result := Random(AFrom - ATo) + ATo
   else
     result := Random(ATo - AFrom) + AFrom;
+end;
+
+function RGB2TColor(const R, G, b: byte): integer;
+begin
+  // convert hexa-decimal values to RGB
+  result := R + G shl 8 + b shl 16;
+end;
+
+function SetLayeredWindowAttributes(
+  // Handle to the layered window.
+  Wnd: hwnd;
+  // Pointer to a COLORREF value that specifies the transparency
+  // color key to be used when composing the layered window
+  crKey: ColorRef;
+  // Alpha value used to describe the opacity of the layered window
+  Alpha: byte;
+  // Specifies an action to take
+  // LWA_COLORKEY or LWA_ALPHA
+  // This parameter can be one or more of the following values:
+  dwFlags: dword): Boolean;
+
+  stdcall; external 'user32.dll';
+
+
+// procedure TForm57.TrackBar1Change(Sender: TObject);
+// // Trackbar.Position must run at range 1-255...
+// begin
+// SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
+// SetLayeredWindowAttributes(Handle, ColorToRGB(FColorKey), TrackBar1.Position, LWA_ALPHA);
+// end;
+
+{ ****************************************************************** }
+
+{ To load the SetLayeredWindowAttributes() function dynamically, use this function: }
+
+function MakeWindowTransparent(Wnd: hwnd; nAlpha: integer = 10): Boolean;
+type
+  TSetLayeredWindowAttributes = function(hwnd: hwnd; crKey: ColorRef; bAlpha: byte; dwFlags: Longint): Longint; stdcall;
+const
+  // Use crKey as the transparency color.
+  LWA_COLORKEY = 1;
+  // Use bAlpha to determine the opacity of the layered window..
+  LWA_ALPHA = 2;
+  WS_EX_LAYERED = $80000;
+var
+  hUser32: HMODULE;
+  SetLayeredWindowAttributes: TSetLayeredWindowAttributes;
+  i: integer;
+begin
+  result := false;
+  // Here we import the function from USER32.DLL
+  hUser32 := GetModuleHandle('USER32.DLL');
+  if hUser32 <> 0 then
+  begin
+    @SetLayeredWindowAttributes := GetProcAddress(hUser32, 'SetLayeredWindowAttributes');
+    // If the import did not succeed, make sure your app can handle it!
+    if @SetLayeredWindowAttributes <> nil then
+    begin
+      // Check the current state of the dialog, and then add the WS_EX_LAYERED attribute
+      SetWindowLong(Wnd, GWL_EXSTYLE, GetWindowLong(Wnd, GWL_EXSTYLE) or WS_EX_LAYERED);
+      // The SetLayeredWindowAttributes function sets the opacity and
+      // transparency color key of a layered window
+      SetLayeredWindowAttributes(Wnd, 0, trunc((255 / 100) * (100 - nAlpha)), LWA_ALPHA);
+      result := true;
+    end;
+  end;
 end;
 
 end.

@@ -7,7 +7,7 @@ uses
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, Vcl.FileCtrl,
   System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
   psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, AdvChartSelectors,
-  Vcl.CheckLst, Unit4, mmsystem;
+  Vcl.CheckLst, Unit4, mmsystem, Unit5b, Unit7, Vcl.WinXPickers, Vcl.WinXCalendars;
 
 // RSChartPanel, RSCharts, RSBarCharts,
 type
@@ -25,11 +25,24 @@ type
     Frame41: TFrame4;
     Button1: TButton;
     ListBox1: TListBox;
-    Frame42: TFrame4;
     Button2: TButton;
     Button3: TButton;
     Button4: TButton;
     Button5: TButton;
+    CheckBox1: TCheckBox;
+    Edit1: TEdit;
+    Panel1: TPanel;
+    Button6: TButton;
+    Panel2: TPanel;
+    Frame51: TFrame5;
+    Frame52: TFrame5;
+    Frame71: TFrame7;
+    DateTimePicker1: TDateTimePicker;
+    DatePicker1: TDatePicker;
+    DatePicker2: TDatePicker;
+    CalendarPicker1: TCalendarPicker;
+    TimePicker1: TTimePicker;
+    DateTimePicker2: TDateTimePicker;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     function vergleichInteger(was, mit: integer; op: string): boolean;
@@ -41,6 +54,9 @@ type
     procedure Button3Click(Sender: TObject);
     procedure Button4Click(Sender: TObject);
     procedure Button5Click(Sender: TObject);
+    procedure CheckBox1Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Panel2Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -218,6 +234,26 @@ begin
   end;
 
   w[0]:=v[0];   //-> da w=u wird mit w[0] auch u[0] geändert !!
+end;
+
+procedure TForm45.Button6Click(Sender: TObject);
+begin
+button6.parent:=panel1;
+button6.Left:=0;
+button6.top:=0;
+
+end;
+
+procedure TForm45.CheckBox1Click(Sender: TObject);
+begin
+form45.AlphaBlendValue:=strtoint(edit1.text);
+form45.AlphaBlend:=true;
+end;
+
+procedure TForm45.Panel2Click(Sender: TObject);
+begin
+panel2.parentbackground:=false;
+panel2.Color:=clBlue;
 end;
 
 function TForm45.vergleichInteger(was, mit: integer; op: string): boolean;

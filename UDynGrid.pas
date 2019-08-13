@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Grids, StringGridSorted, Vcl.ExtCtrls, MMSystem,
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Clipbrd, Vcl.Grids, StringGridSorted,
+  Vcl.ExtCtrls, MMSystem,
   FTCommons, FTTypes, System.strutils;
 
 type
@@ -60,6 +61,7 @@ type
     mucol, murow: integer;
     autosized: boolean;
     scrollBar1RepeatCount: integer;
+    topic:string;
   end;
 
 implementation
@@ -102,7 +104,9 @@ var
   i, j: integer;
   sp: integer;
   rc: integer;
+  grau: integer;
 begin
+  grau := 39;
   rc := (Sender as Tstringgrid).rowcount;
   if ARow >= (Sender as Tstringgrid).rowcount then
   begin
@@ -120,11 +124,11 @@ begin
   begin
 
     if selSorted[ixSorted[sp]] = 1 then
-      Canvas.Brush.Color := clGray       //selektiert
+      Canvas.Brush.Color := clGray // selektiert
     else
-      Canvas.Brush.Color := clBlack;     //unselektiert
+      Canvas.Brush.Color := RGB2TColor(grau, grau, grau);
 
-        s := cells[ACol, ARow];
+    s := cells[ACol, ARow];
     if (ARow > 1) then
     begin
       if (s = cells[ACol, ARow - 1]) then
@@ -137,8 +141,16 @@ begin
     Canvas.FillRect(r);
     // den Text am alten Rect ausrichten sonstzu weit links
     Canvas.Pen.Color := clBlue;
+    if s='"' then
+    begin
+    r.left := trunc((r.left + r.Right)/2)-3;
+    r.Top := r.Top + 4;
+    end
+    else
+        begin
     r.left := r.left + 6;
     r.Top := r.Top + 4;
+        end;
     DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
   end;
 
@@ -250,9 +262,24 @@ begin
   // Problem: wenn alte Inhalte vorhanden sind werden sie bei Verkleinerung von Rowcount nicht entfernt !
   SG.rowcount := mrows;
   SG.Colcount := cols;
+
+  if (mrows+cols)=0 then
+  begin
+    sg.Visible:=false;
+    exit;
+  end
+  else
+    sg.Visible:=true;
+
+
+
   for j := 0 to SG.rowcount - 1 do
     for k := 0 to SG.Colcount - 1 do
       SG.cells[k, j] := '*';
+
+  if(sg.rowcount=0) then
+    exit;
+
 
   setlength(SGFieldCol, cols);
   setlength(SGColField, cols);
@@ -1447,9 +1474,9 @@ begin
       // Dragmodus der Col einleiten - Mauscursor umschalten
       Screen.Cursor := crDrag;
 
-    // ClipBoard.AsText := grid.Cells[col, row];
+    ClipBoard.AsText := grid.cells[col, row];
     // hier kann dann individuell gehandelt werden !
-    // gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
+    form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row],button,shift,source);
 
   end;
   if Button = mbright then
@@ -1496,6 +1523,8 @@ begin
           // Right-click in a "row header"
         else
           // Right-click in a non-fixed cell
+           form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row],button,shift,source);
+
         finally
           Screen.Cursor := Cursor;
         end;

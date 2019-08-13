@@ -15,12 +15,13 @@ object Form45: TForm45
   TextHeight = 13
   inline Frame41: TFrame4
     Left = 464
-    Top = 24
-    Width = 474
+    Top = 44
+    Width = 421
     Height = 89
     TabOrder = 0
     ExplicitLeft = 464
-    ExplicitTop = 24
+    ExplicitTop = 44
+    ExplicitWidth = 421
     ExplicitHeight = 89
   end
   object Button1: TButton
@@ -40,23 +41,13 @@ object Form45: TForm45
     ItemHeight = 13
     TabOrder = 2
   end
-  inline Frame42: TFrame4
-    Left = 467
-    Top = 160
-    Width = 474
-    Height = 89
-    TabOrder = 3
-    ExplicitLeft = 467
-    ExplicitTop = 160
-    ExplicitHeight = 89
-  end
   object Button2: TButton
     Left = 95
     Top = 47
     Width = 105
     Height = 17
     Caption = 'Button2'
-    TabOrder = 4
+    TabOrder = 3
     OnClick = Button2Click
   end
   object Button3: TButton
@@ -65,7 +56,7 @@ object Form45: TForm45
     Width = 81
     Height = 18
     Caption = 'Button3'
-    TabOrder = 5
+    TabOrder = 4
     OnClick = Button3Click
   end
   object Button4: TButton
@@ -74,7 +65,7 @@ object Form45: TForm45
     Width = 129
     Height = 17
     Caption = 'Button4'
-    TabOrder = 6
+    TabOrder = 5
     OnClick = Button4Click
   end
   object Button5: TButton
@@ -83,7 +74,197 @@ object Form45: TForm45
     Width = 77
     Height = 21
     Caption = 'Button5'
-    TabOrder = 7
+    TabOrder = 6
     OnClick = Button5Click
+  end
+  object CheckBox1: TCheckBox
+    Left = 140
+    Top = 304
+    Width = 129
+    Height = 13
+    Caption = 'CheckBox1'
+    TabOrder = 7
+    OnClick = CheckBox1Click
+  end
+  object Edit1: TEdit
+    Left = 288
+    Top = 300
+    Width = 117
+    Height = 21
+    TabOrder = 8
+    Text = '123'
+  end
+  object Panel1: TPanel
+    Left = 484
+    Top = 268
+    Width = 305
+    Height = 141
+    ParentCustomHint = False
+    BiDiMode = bdLeftToRight
+    Caption = 'Panel1'
+    Color = clRed
+    Ctl3D = True
+    DoubleBuffered = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentBiDiMode = False
+    ParentBackground = False
+    ParentCtl3D = False
+    ParentDoubleBuffered = False
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = False
+    TabOrder = 9
+    StyleElements = [seFont, seBorder]
+  end
+  object Button6: TButton
+    Left = 812
+    Top = 296
+    Width = 113
+    Height = 65
+    Caption = 'Button6'
+    TabOrder = 10
+    OnClick = Button6Click
+  end
+  object Panel2: TPanel
+    Left = 40
+    Top = 331
+    Width = 389
+    Height = 78
+    Caption = 'Panel2'
+    Color = clRed
+    DoubleBuffered = False
+    ParentBackground = False
+    ParentDoubleBuffered = False
+    TabOrder = 11
+    OnClick = Panel2Click
+  end
+  inline Frame51: TFrame5
+    Left = 476
+    Top = 144
+    Width = 409
+    Height = 53
+    TabOrder = 12
+    ExplicitLeft = 476
+    ExplicitTop = 144
+    ExplicitWidth = 409
+    ExplicitHeight = 53
+  end
+  inline Frame52: TFrame5
+    Left = 476
+    Top = 203
+    Width = 409
+    Height = 53
+    Color = clRed
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 13
+    ExplicitLeft = 476
+    ExplicitTop = 203
+    ExplicitWidth = 409
+    ExplicitHeight = 53
+  end
+  inline Frame71: TFrame7
+    Left = 352
+    Top = 88
+    Width = 93
+    Height = 137
+    Color = clBlue
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 14
+    ExplicitLeft = 352
+    ExplicitTop = 88
+    ExplicitWidth = 93
+    ExplicitHeight = 137
+  end
+  object DateTimePicker1: TDateTimePicker
+    Left = 464
+    Top = 17
+    Width = 81
+    Height = 21
+    Date = 43689.000000000000000000
+    Time = 0.897918043978279500
+    TabOrder = 15
+  end
+  object DatePicker1: TDatePicker
+    Left = 916
+    Top = 20
+    Width = 125
+    Height = 21
+    Date = 43689.000000000000000000
+    DateFormat = 'dd/MM/yyyy'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    TabOrder = 16
+  end
+  object DatePicker2: TDatePicker
+    Left = 920
+    Top = 44
+    Width = 113
+    Height = 25
+    Date = 43689.000000000000000000
+    DateFormat = 'dd/MM/yyyy'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    TabOrder = 17
+  end
+  object CalendarPicker1: TCalendarPicker
+    Left = 928
+    Top = 180
+    Width = 105
+    Height = 25
+    CalendarHeaderInfo.DaysOfWeekFont.Charset = DEFAULT_CHARSET
+    CalendarHeaderInfo.DaysOfWeekFont.Color = clWindowText
+    CalendarHeaderInfo.DaysOfWeekFont.Height = -13
+    CalendarHeaderInfo.DaysOfWeekFont.Name = 'Segoe UI'
+    CalendarHeaderInfo.DaysOfWeekFont.Style = []
+    CalendarHeaderInfo.Font.Charset = DEFAULT_CHARSET
+    CalendarHeaderInfo.Font.Color = clWindowText
+    CalendarHeaderInfo.Font.Height = -20
+    CalendarHeaderInfo.Font.Name = 'Segoe UI'
+    CalendarHeaderInfo.Font.Style = []
+    Color = clWindow
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGray
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 18
+    TextHint = 'Datum ausw'#228'hlen'
+  end
+  object TimePicker1: TTimePicker
+    Left = 920
+    Top = 112
+    Width = 125
+    Height = 21
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    TabOrder = 19
+    Time = 43689.904645370370000000
+    TimeFormat = 'hh:mm'
+  end
+  object DateTimePicker2: TDateTimePicker
+    Left = 547
+    Top = 17
+    Width = 66
+    Height = 21
+    Date = 43689.000000000000000000
+    Time = 0.897918043978279500
+    Kind = dtkTime
+    TabOrder = 20
   end
 end

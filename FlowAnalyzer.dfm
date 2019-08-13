@@ -26,7 +26,7 @@ object Form2: TForm2
     Top = 0
     Width = 1604
     Height = 907
-    ActivePage = TabSheet2
+    ActivePage = TabSheet10
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -49,185 +49,28 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
-      object Panel10: TPanel
-        AlignWithMargins = True
-        Left = 568
-        Top = 40
-        Width = 633
-        Height = 729
+      object btnLadeDialog: TButton
+        Left = 604
+        Top = 671
+        Width = 205
+        Height = 26
+        Caption = 'Lade Dialog anzeigen'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         TabOrder = 0
-        object Label1: TLabel
-          Left = 32
-          Top = 48
-          Width = 159
-          Height = 14
-          Caption = 'Load actual Data from Server'
-        end
-        object lblWarten: TLabel
-          Left = 327
-          Top = 463
-          Width = 6
-          Height = 19
-          Caption = '-'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -16
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ParentFont = False
-        end
-        object clbBrokers: TCheckListBox
-          Left = 32
-          Top = 80
-          Width = 209
-          Height = 377
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -21
-          Font.Name = 'Tahoma'
-          Font.Style = []
-          ItemHeight = 25
-          ParentFont = False
-          TabOrder = 0
-        end
-        object lbLoadInfo: TListBox
-          Left = 312
-          Top = 80
-          Width = 225
-          Height = 377
-          ItemHeight = 14
-          TabOrder = 1
-        end
-        object btnClbBrokersSelectAll: TButton
-          Left = 33
-          Top = 464
-          Width = 105
-          Height = 17
-          Caption = 'select all'
-          TabOrder = 2
-          OnClick = btnClbBrokersSelectAllClick
-        end
-        object btnClbBrokersDeSelectAll: TButton
-          Left = 140
-          Top = 464
-          Width = 101
-          Height = 17
-          Caption = 'deselect all'
-          TabOrder = 3
-          OnClick = btnClbBrokersDeSelectAllClick
-        end
-        object btnLoadData: TButton
-          Left = 33
-          Top = 487
-          Width = 209
-          Height = 25
-          Caption = 'Load Data'
-          TabOrder = 4
-          OnClick = btnLoadDataClick
-        end
-        object cbLoadActionsFromCache: TCheckBox
-          Left = 33
-          Top = 546
-          Width = 209
-          Height = 17
-          Caption = 'Get Actions from Cache'
-          TabOrder = 5
-        end
-        object Button1: TButton
-          Left = 384
-          Top = 664
-          Width = 109
-          Height = 22
-          Caption = 'Load Cachefile'
-          TabOrder = 6
-          Visible = False
-          OnClick = btnLoadCacheFileCwClick
-        end
-        object Button4: TButton
-          Left = 36
-          Top = 680
-          Width = 117
-          Height = 21
-          Caption = 'Restart HTTP Thread'
-          TabOrder = 7
-          OnClick = Button4Click
-        end
-        object Button6: TButton
-          Left = 152
-          Top = 680
-          Width = 53
-          Height = 21
-          Caption = 'Status..'
-          TabOrder = 8
-          OnClick = Button6Click
-        end
-        object CheckBox1: TCheckBox
-          Left = 40
-          Top = 704
-          Width = 113
-          Height = 13
-          Caption = 'Sortmethode2'
-          TabOrder = 9
-          OnClick = CheckBox1Click
-        end
-        object Panel11: TPanel
-          Left = 312
-          Top = 488
-          Width = 225
-          Height = 161
-          TabOrder = 10
-          object Memo1: TMemo
-            Left = 1
-            Top = 1
-            Width = 223
-            Height = 159
-            Align = alClient
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -15
-            Font.Name = 'Tahoma'
-            Font.Style = []
-            ParentFont = False
-            TabOrder = 0
-          end
-        end
-        object Button8: TButton
-          Left = 33
-          Top = 516
-          Width = 209
-          Height = 25
-          Caption = 'Update Data'
-          TabOrder = 11
-          OnClick = Button8Click
-        end
-        object btnDoUsersAndSymbolsPlus: TButton
-          Left = 36
-          Top = 572
-          Width = 205
-          Height = 25
-          Caption = 'Additional computations'
-          TabOrder = 12
-          Visible = False
-          OnClick = btnDoUsersAndSymbolsPlusClick
-        end
-        object btnSymbolGroups: TButton
-          Left = 36
-          Top = 600
-          Width = 205
-          Height = 25
-          Caption = 'Symbol Groups'
-          TabOrder = 13
-          OnClick = btnSymbolGroupsClick
-        end
-        object Button3: TButton
-          Left = 388
-          Top = 12
-          Width = 65
-          Height = 29
-          Caption = 'Button3'
-          TabOrder = 14
-          OnClick = Button3Click
-        end
+        OnClick = btnLadeDialogClick
+      end
+      object Panel23: TPanel
+        Left = 20
+        Top = 32
+        Width = 1433
+        Height = 789
+        Caption = 'Das ist der Startbildschirm'
+        TabOrder = 1
       end
     end
     object TabSheet6: TTabSheet
@@ -578,10 +421,7 @@ object Form2: TForm2
         object Splitter2: TSplitter
           Left = 322
           Top = 1
-          Width = 5
           Height = 869
-          ExplicitLeft = 330
-          ExplicitTop = 17
         end
         object Panel7: TPanel
           Left = 1
@@ -594,19 +434,12 @@ object Form2: TForm2
             Left = 1
             Top = 1
             Width = 319
-            Height = 82
+            Height = 1
             Align = alTop
             TabOrder = 0
-            object Label2: TLabel
-              Left = 184
-              Top = 24
-              Width = 32
-              Height = 14
-              Caption = 'userid'
-            end
             object btnGetSingleUserActions: TButton
               Left = 8
-              Top = 40
+              Top = 17
               Width = 161
               Height = 21
               Caption = 'Get Users Actions'
@@ -615,7 +448,7 @@ object Form2: TForm2
             end
             object edSingleUserActionsId: TEdit
               Left = 184
-              Top = 40
+              Top = 17
               Width = 89
               Height = 22
               TabOrder = 1
@@ -623,114 +456,83 @@ object Form2: TForm2
               OnChange = edSingleUserActionsIdChange
             end
           end
-          object CategoryPanelGroup2: TCategoryPanelGroup
+          inline DynGrid10: TDynGrid
             Left = 1
-            Top = 83
+            Top = 2
             Width = 319
-            Height = 785
-            VertScrollBar.Tracking = True
+            Height = 866
             Align = alClient
-            HeaderFont.Charset = DEFAULT_CHARSET
-            HeaderFont.Color = clWindowText
-            HeaderFont.Height = -16
-            HeaderFont.Name = 'Tahoma'
-            HeaderFont.Style = []
             TabOrder = 1
-            object CategoryPanel7: TCategoryPanel
-              Top = 363
-              Height = 30
-              Caption = '-'
-              Collapsed = True
-              TabOrder = 0
-              OnCollapse = CategoryPanelCollapse2
-              OnExpand = CategoryPanelExpand2
-            end
-            object CategoryPanel6: TCategoryPanel
-              Top = 333
-              Height = 30
-              Caption = '-'
-              Collapsed = True
-              TabOrder = 1
-              OnCollapse = CategoryPanelCollapse2
-              OnExpand = CategoryPanelExpand2
-            end
-            object CategoryPanel5: TCategoryPanel
-              Top = 0
-              Height = 333
-              Caption = 'User Data'
-              TabOrder = 2
-              OnCollapse = CategoryPanelCollapse2
-              OnExpand = CategoryPanelExpand2
-              object lbUserInfo: TListBox
-                Left = 0
-                Top = 1
-                Width = 315
-                Height = 306
-                Align = alClient
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
-                Font.Height = -15
-                Font.Name = 'Tahoma'
-                Font.Style = []
-                ItemHeight = 18
-                ParentFont = False
-                TabOrder = 0
-                TabWidth = 66
+            ExplicitLeft = 1
+            ExplicitTop = 2
+            ExplicitWidth = 319
+            ExplicitHeight = 866
+            inherited Panel1: TPanel
+              inherited lblTime: TLabel
+                Width = 38
+                Height = 14
+                ExplicitWidth = 38
+                ExplicitHeight = 14
               end
-              object Panel14: TPanel
-                Left = 0
-                Top = 0
-                Width = 315
-                Height = 1
-                Align = alTop
-                TabOrder = 1
+            end
+            inherited Panel2: TPanel
+              Left = 0
+              Top = 0
+              Width = 319
+              Height = 866
+              Align = alClient
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 319
+              ExplicitHeight = 866
+              inherited SG: TStringGridSorted
+                Width = 301
+                Height = 864
+                OnMouseDown = DynGrid10SGMouseDown
+                ExplicitWidth = 301
+                ExplicitHeight = 864
+              end
+              inherited ScrollBar1: TScrollBar
+                Left = 302
+                Height = 864
+                ExplicitLeft = 302
+                ExplicitHeight = 864
               end
             end
           end
         end
         object Panel8: TPanel
-          Left = 329
+          Left = 325
           Top = 1
-          Width = 1142
+          Width = 1270
           Height = 869
+          Align = alClient
           Caption = 'Panel8'
           TabOrder = 1
-          object Panel9: TPanel
+          object Splitter3: TSplitter
             Left = 1
-            Top = 1
-            Width = 1140
-            Height = 41
+            Top = 201
+            Width = 1268
+            Height = 8
+            Cursor = crVSplit
             Align = alTop
-            TabOrder = 0
-            object lblSingleUserActions: TLabel
-              Left = 392
-              Top = 8
-              Width = 144
-              Height = 19
-              Caption = 'lblSingleUserActions'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -16
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
+            ExplicitTop = 83
           end
           inline DynGrid4: TDynGrid
             Left = 1
-            Top = 42
-            Width = 1140
-            Height = 826
+            Top = 209
+            Width = 1268
+            Height = 659
             Align = alClient
-            TabOrder = 1
+            TabOrder = 0
             ExplicitLeft = 1
-            ExplicitTop = 42
-            ExplicitWidth = 1140
-            ExplicitHeight = 826
+            ExplicitTop = 209
+            ExplicitWidth = 1268
+            ExplicitHeight = 659
             inherited Panel1: TPanel
-              Width = 1140
+              Width = 1268
               Align = alTop
-              ExplicitWidth = 1140
+              ExplicitWidth = 1268
               inherited lblTime: TLabel
                 Width = 38
                 Height = 14
@@ -741,25 +543,145 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 41
-              Width = 1140
-              Height = 785
+              Width = 1268
+              Height = 618
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
-              ExplicitWidth = 1140
-              ExplicitHeight = 785
+              ExplicitWidth = 1268
+              ExplicitHeight = 618
               inherited SG: TStringGridSorted
                 Tag = 4
-                Width = 1122
-                Height = 783
-                ExplicitWidth = 1122
-                ExplicitHeight = 783
+                Width = 1250
+                Height = 616
+                ExplicitWidth = 1250
+                ExplicitHeight = 616
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1123
-                Height = 783
-                ExplicitLeft = 1123
-                ExplicitHeight = 783
+                Left = 1251
+                Height = 616
+                ExplicitLeft = 1251
+                ExplicitHeight = 616
+              end
+            end
+          end
+          object Panel9: TPanel
+            Left = 1
+            Top = 1
+            Width = 1268
+            Height = 200
+            Align = alTop
+            TabOrder = 1
+            object lbUserInfo: TListBox
+              Left = 592
+              Top = 2
+              Width = 676
+              Height = 198
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -15
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ItemHeight = 18
+              ParentFont = False
+              TabOrder = 0
+              TabWidth = 66
+            end
+            object Panel14: TPanel
+              Left = 4
+              Top = 4
+              Width = 582
+              Height = 189
+              TabOrder = 1
+              object lblUserInfo0: TLabel
+                Left = 8
+                Top = 12
+                Width = 7
+                Height = 23
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -19
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object lblUserInfo1: TLabel
+                Left = 8
+                Top = 41
+                Width = 6
+                Height = 19
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object lblUserInfo2: TLabel
+                Left = 8
+                Top = 66
+                Width = 6
+                Height = 19
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object lblUserInfo3: TLabel
+                Left = 8
+                Top = 91
+                Width = 6
+                Height = 19
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object lblUserInfo4: TLabel
+                Left = 8
+                Top = 116
+                Width = 6
+                Height = 19
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object lblUserInfo5: TLabel
+                Left = 8
+                Top = 141
+                Width = 6
+                Height = 19
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object lblUserInfo6: TLabel
+                Left = 9
+                Top = 166
+                Width = 5
+                Height = 19
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
               end
             end
           end
@@ -767,7 +689,7 @@ object Form2: TForm2
       end
     end
     object TabSheet1: TTabSheet
-      Caption = 'Filtering'
+      Caption = 'Data Inspector'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
@@ -796,59 +718,11 @@ object Form2: TForm2
             Color = clGray
             ParentBackground = False
             TabOrder = 0
-            object Label5: TLabel
-              Left = 15
-              Top = 12
-              Width = 119
-              Height = 19
-              Caption = 'Filter Parameters'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -16
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
             object lblFilterResult: TLabel
               Left = 10
               Top = 426
               Width = 4
               Height = 14
-            end
-            object Label6: TLabel
-              Left = 15
-              Top = 37
-              Width = 34
-              Height = 14
-              Caption = 'on/off'
-            end
-            object Label7: TLabel
-              Left = 60
-              Top = 37
-              Width = 27
-              Height = 14
-              Caption = 'topic'
-            end
-            object Label8: TLabel
-              Left = 176
-              Top = 37
-              Width = 52
-              Height = 14
-              Caption = 'operation'
-            end
-            object Label9: TLabel
-              Left = 244
-              Top = 37
-              Width = 48
-              Height = 14
-              Caption = 'selection'
-            end
-            object Label10: TLabel
-              Left = 493
-              Top = 37
-              Width = 14
-              Height = 14
-              Caption = 'list'
             end
             object Label11: TLabel
               Left = 10
@@ -864,8 +738,8 @@ object Form2: TForm2
               ParentFont = False
             end
             object btnDoubleRemoveCw: TButton
-              Left = 204
-              Top = 399
+              Left = 265
+              Top = 590
               Width = 82
               Height = 25
               Caption = 'DblRemove'
@@ -874,17 +748,18 @@ object Form2: TForm2
               OnClick = btnDoubleRemoveCwClick
             end
             object btnSelectClearCw: TButton
-              Left = 107
-              Top = 399
+              Left = 168
+              Top = 590
               Width = 91
               Height = 25
               Caption = 'Clear all'
               TabOrder = 1
+              Visible = False
               OnClick = btnSelectClearCwClick
             end
             object Button5: TButton
-              Left = 316
-              Top = 399
+              Left = 377
+              Top = 590
               Width = 133
               Height = 25
               Caption = 'Balance direkt filtern'
@@ -894,110 +769,59 @@ object Form2: TForm2
             end
             object pnlFilter: TPanel
               Left = 5
-              Top = 56
+              Top = 8
               Width = 505
               Height = 337
+              Color = clGray
+              ParentBackground = False
               TabOrder = 3
-              inline FilterElemente1: TFilterElemente
-                Left = 2
-                Top = 8
-                Width = 505
-                Height = 28
-                Color = clGray
-                ParentBackground = False
-                ParentColor = False
-                TabOrder = 0
-                ExplicitLeft = 2
-                ExplicitTop = 8
-                inherited cbTopic: TComboBox
-                  Left = 32
-                  Top = 3
-                  Width = 129
-                  Height = 22
-                  TabOrder = 0
-                  Text = 'BrokerId'
-                  Items.Strings = (
-                    'BrokerId'
-                    'AccountId'
-                    'SymbolId'
-                    'Symbol'
-                    'UserId'
-                    'UserName'
-                    'ActionType'
-                    'OpenDateTime'
-                    'CloseDateTime'
-                    'OpenPrice'
-                    'Profit'
-                    'Volume')
-                  ExplicitHeight = 22
-                end
-                inherited cbOperator: TComboBox
-                  Left = 163
-                  Top = 3
-                  Width = 58
-                  Height = 22
-                  ItemIndex = 0
-                  TabOrder = 1
-                  Text = '='
-                  Items.Strings = (
-                    '='
-                    '<>'
-                    '<'
-                    '>'
-                    '<='
-                    '>='
-                    'contains'
-                    'contains not')
-                  ExplicitHeight = 22
-                end
-                inherited edValue: TEdit
-                  Left = 223
-                  Top = 3
-                  Width = 258
-                  Height = 22
-                  TabOrder = 2
-                  ExplicitHeight = 22
-                end
-                inherited dtPicker1: TDateTimePicker
-                  Left = 376
-                  Top = 3
-                  Width = 105
-                  Height = 22
-                  Date = 43549.000000000000000000
-                  Time = 0.616624108799442200
-                  TabOrder = 3
-                  Visible = False
-                  ExplicitHeight = 22
-                end
-                inherited chkActive: TCheckBox
-                  Left = 9
-                  Top = 4
-                  Width = 17
-                  Height = 17
-                  TabOrder = 4
-                end
-                inherited chkLB1: TComboBox
-                  Left = 223
-                  Top = 3
-                  Width = 258
-                  Height = 22
-                  Style = csOwnerDrawFixed
-                  DropDownCount = 24
-                  TabOrder = 6
-                  Items.Strings = ()
-                end
-                inherited btnMore: TButton
-                  Left = 483
-                  Top = 3
-                  Width = 22
-                  Height = 23
-                  Hint = 'Select from list...'
-                  Caption = '>'
-                  ParentShowHint = False
-                  ShowHint = True
-                  TabOrder = 5
-                  Visible = False
-                end
+              object Label5: TLabel
+                Left = 15
+                Top = 6
+                Width = 57
+                Height = 19
+                Caption = 'Filtering'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object Label6: TLabel
+                Left = 15
+                Top = 30
+                Width = 34
+                Height = 14
+                Caption = 'on/off'
+              end
+              object Label7: TLabel
+                Left = 60
+                Top = 30
+                Width = 27
+                Height = 14
+                Caption = 'topic'
+              end
+              object Label8: TLabel
+                Left = 176
+                Top = 30
+                Width = 52
+                Height = 14
+                Caption = 'operation'
+              end
+              object Label9: TLabel
+                Left = 244
+                Top = 30
+                Width = 48
+                Height = 14
+                Caption = 'selection'
+              end
+              object Label10: TLabel
+                Left = 491
+                Top = 30
+                Width = 14
+                Height = 14
+                Caption = 'list'
               end
             end
             object btnSample1: TButton
@@ -1027,11 +851,11 @@ object Form2: TForm2
               TabOrder = 6
               OnClick = btnSampleClick
             end
-            object Panel22: TPanel
-              Left = 4
-              Top = 428
+            object pnlGrouping: TPanel
+              Left = 5
+              Top = 351
               Width = 505
-              Height = 125
+              Height = 154
               Color = clGray
               ParentBackground = False
               TabOrder = 7
@@ -1048,62 +872,44 @@ object Form2: TForm2
                 Font.Style = []
                 ParentFont = False
               end
-              inline Grouping0: TGroupControl
-                Left = 11
-                Top = 28
-                Width = 218
-                Height = 28
-                TabOrder = 0
-                ExplicitLeft = 11
-                ExplicitTop = 28
-                inherited cbTopic: TComboBox
-                  Height = 22
-                  Text = 'symbolGroup'
-                  ExplicitHeight = 22
-                end
+              object Label2: TLabel
+                Left = 19
+                Top = 30
+                Width = 34
+                Height = 14
+                Caption = 'on/off'
               end
-              inline Grouping1: TGroupControl
-                Left = 11
-                Top = 55
-                Width = 218
-                Height = 28
-                TabOrder = 1
-                ExplicitLeft = 11
-                ExplicitTop = 55
-                inherited cbTopic: TComboBox
-                  Height = 22
-                  Text = 'yearsOpen'
-                  ExplicitHeight = 22
-                end
+              object Label12: TLabel
+                Left = 64
+                Top = 30
+                Width = 27
+                Height = 14
+                Caption = 'topic'
               end
-              inline Grouping2: TGroupControl
-                Left = 11
-                Top = 82
-                Width = 218
-                Height = 28
-                TabOrder = 2
-                ExplicitLeft = 11
-                ExplicitTop = 82
-                inherited cbTopic: TComboBox
-                  Height = 22
-                  ExplicitHeight = 22
-                end
-              end
-              object btnDoFilter: TButton
-                Left = 230
-                Top = 28
-                Width = 267
-                Height = 81
-                Caption = 'Filter and Group'
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
-                Font.Height = -16
-                Font.Name = 'Tahoma'
-                Font.Style = []
-                ParentFont = False
-                TabOrder = 3
-                OnClick = btnDoFilterClick
-              end
+            end
+            object btnDoFilter: TButton
+              Left = 4
+              Top = 507
+              Width = 506
+              Height = 81
+              Caption = 'Filter and Group'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -16
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentFont = False
+              TabOrder = 8
+              OnClick = btnDoFilterClick
+            end
+            object Panel22: TPanel
+              Left = 140
+              Top = 660
+              Width = 369
+              Height = 109
+              Color = clGray
+              ParentBackground = False
+              TabOrder = 9
             end
           end
         end
@@ -1335,7 +1141,6 @@ object Form2: TForm2
             Height = 25
             Caption = 'Get CSV Indy UTF8'
             TabOrder = 6
-            OnClick = btnGetCsvClick
           end
           object btnGetSymbolsUsersComments: TButton
             Left = 119
@@ -1414,22 +1219,13 @@ object Form2: TForm2
             TabOrder = 15
             Text = 'http://h2827643.stratoserver.net:8080/csv/symbols'
           end
-          object lbCSVError: TListBox
-            Left = 8
-            Top = 471
-            Width = 562
-            Height = 170
-            ItemHeight = 14
-            TabOrder = 16
-            OnClick = lbCSVErrorClick
-          end
           object lbDebug2: TListBox
             Left = 8
             Top = 296
             Width = 562
             Height = 169
             ItemHeight = 14
-            TabOrder = 17
+            TabOrder = 16
           end
           object chkGetBinAppend: TCheckBox
             Left = 448
@@ -1437,7 +1233,7 @@ object Form2: TForm2
             Width = 105
             Height = 17
             Caption = 'chkGetBinAppend'
-            TabOrder = 18
+            TabOrder = 17
           end
           object Button2: TButton
             Left = 216
@@ -1445,7 +1241,7 @@ object Form2: TForm2
             Width = 105
             Height = 21
             Caption = 'Sorttests'
-            TabOrder = 19
+            TabOrder = 18
             OnClick = Button2Click
           end
           object cbStyles: TComboBox
@@ -1453,7 +1249,7 @@ object Form2: TForm2
             Top = 268
             Width = 119
             Height = 22
-            TabOrder = 20
+            TabOrder = 19
             OnChange = cbStylesChange
           end
         end
@@ -3165,9 +2961,216 @@ object Form2: TForm2
         end
       end
     end
+    object TabSheet10: TTabSheet
+      Caption = 'Data Loading'
+      ImageIndex = 9
+      object Panel10: TPanel
+        AlignWithMargins = True
+        Left = 568
+        Top = 40
+        Width = 813
+        Height = 729
+        TabOrder = 0
+        object Label1: TLabel
+          Left = 32
+          Top = 48
+          Width = 206
+          Height = 19
+          Caption = 'Load actual Data from Server'
+        end
+        object lblWarten: TLabel
+          Left = 327
+          Top = 463
+          Width = 6
+          Height = 19
+          Caption = '-'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -16
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
+        object clbBrokers: TCheckListBox
+          Left = 32
+          Top = 80
+          Width = 209
+          Height = 370
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -21
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ItemHeight = 25
+          ParentFont = False
+          TabOrder = 0
+        end
+        object lbLoadInfo: TListBox
+          Left = 312
+          Top = 80
+          Width = 225
+          Height = 370
+          ItemHeight = 19
+          TabOrder = 1
+        end
+        object btnClbBrokersSelectAll: TButton
+          Left = 33
+          Top = 456
+          Width = 105
+          Height = 25
+          Caption = 'select all'
+          TabOrder = 2
+          OnClick = btnClbBrokersSelectAllClick
+        end
+        object btnClbBrokersDeSelectAll: TButton
+          Left = 140
+          Top = 456
+          Width = 101
+          Height = 25
+          Caption = 'deselect all'
+          TabOrder = 3
+          OnClick = btnClbBrokersDeSelectAllClick
+        end
+        object btnLoadData: TButton
+          Left = 33
+          Top = 487
+          Width = 209
+          Height = 25
+          Caption = 'Load Data'
+          TabOrder = 4
+          OnClick = btnLoadDataClick
+        end
+        object cbLoadActionsFromCache: TCheckBox
+          Left = 33
+          Top = 546
+          Width = 209
+          Height = 17
+          Caption = 'Get Actions from Cache'
+          TabOrder = 5
+        end
+        object Button1: TButton
+          Left = 312
+          Top = 668
+          Width = 109
+          Height = 22
+          Caption = 'Load Cachefile'
+          TabOrder = 6
+          Visible = False
+          OnClick = btnLoadCacheFileCwClick
+        end
+        object Button4: TButton
+          Left = 36
+          Top = 680
+          Width = 117
+          Height = 21
+          Caption = 'Restart HTTP Thread'
+          TabOrder = 7
+          Visible = False
+          OnClick = Button4Click
+        end
+        object Button6: TButton
+          Left = 152
+          Top = 680
+          Width = 53
+          Height = 21
+          Caption = 'Status..'
+          TabOrder = 8
+          Visible = False
+          OnClick = Button6Click
+        end
+        object CheckBox1: TCheckBox
+          Left = 40
+          Top = 704
+          Width = 113
+          Height = 13
+          Caption = 'Sortmethode2'
+          TabOrder = 9
+          Visible = False
+          OnClick = CheckBox1Click
+        end
+        object Panel11: TPanel
+          Left = 312
+          Top = 488
+          Width = 225
+          Height = 161
+          TabOrder = 10
+          object Memo1: TMemo
+            Left = 1
+            Top = 1
+            Width = 223
+            Height = 159
+            Align = alClient
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -15
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 0
+          end
+        end
+        object btnUpdateData: TButton
+          Left = 33
+          Top = 516
+          Width = 209
+          Height = 25
+          Caption = 'Update Data'
+          TabOrder = 11
+          OnClick = btnUpdateDataClick
+        end
+        object btnDoUsersAndSymbolsPlus: TButton
+          Left = 36
+          Top = 572
+          Width = 205
+          Height = 25
+          Caption = 'Additional computations'
+          TabOrder = 12
+          Visible = False
+          OnClick = btnDoUsersAndSymbolsPlusClick
+        end
+        object btnSymbolGroups: TButton
+          Left = 36
+          Top = 600
+          Width = 205
+          Height = 25
+          Caption = 'Symbol Groups'
+          TabOrder = 13
+          Visible = False
+          OnClick = btnSymbolGroupsClick
+        end
+        object lbCSVError: TListBox
+          Left = 567
+          Top = 83
+          Width = 231
+          Height = 565
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ItemHeight = 14
+          ParentFont = False
+          TabOrder = 14
+          OnClick = lbCSVErrorClick
+        end
+      end
+    end
   end
   object AdvChartPanesEditorDialogGDIP1: TAdvChartPanesEditorDialogGDIP
-    Left = 20
-    Top = 56
+    Left = 504
+    Top = 36
+  end
+  object ApplicationEvents1: TApplicationEvents
+    OnModalBegin = ApplicationEvents1ModalBegin
+    OnModalEnd = ApplicationEvents1ModalEnd
+    Left = 538
+    Top = 38
+  end
+  object StartTimer: TTimer
+    Enabled = False
+    Interval = 100
+    OnTimer = StartTimerTimer
+    Left = 580
+    Top = 36
   end
 end
