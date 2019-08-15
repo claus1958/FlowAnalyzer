@@ -1,34 +1,32 @@
 object TwoLabel: TTwoLabel
   Left = 0
   Top = 0
-  Width = 320
-  Height = 38
-  Color = clGray
+  Width = 351
+  Height = 81
+  Color = 3355443
   ParentBackground = False
   ParentColor = False
   TabOrder = 0
-  object Label1: TLabel
-    Left = 4
-    Top = 16
-    Width = 6
-    Height = 19
-    Caption = '-'
+  object l1: TLabel
+    Left = 3
+    Top = 3
+    Width = 5
+    Height = 18
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -16
+    Font.Height = -15
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
   end
-  object Label2: TLabel
-    Left = 172
-    Top = 6
+  object l2: TLabel
+    Left = 8
+    Top = 32
     Width = 9
-    Height = 29
-    Caption = '-'
+    Height = 35
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -24
+    Font.Height = -29
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False

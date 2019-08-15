@@ -43,6 +43,9 @@ type
     CalendarPicker1: TCalendarPicker;
     TimePicker1: TTimePicker;
     DateTimePicker2: TDateTimePicker;
+    Label1: TLabel;
+    ListBox2: TListBox;
+    Button7: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     function vergleichInteger(was, mit: integer; op: string): boolean;
@@ -57,6 +60,10 @@ type
     procedure CheckBox1Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
     procedure Panel2Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure initest;
+    procedure Button7Click(Sender: TObject);
+
   private
     { Private-Deklarationen }
   public
@@ -69,6 +76,11 @@ var
 implementation
 
 {$R *.dfm}
+
+uses Unit9;
+const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
+{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
 
 procedure TForm45.Button1Click(Sender: TObject);
 var
@@ -241,13 +253,81 @@ begin
 button6.parent:=panel1;
 button6.Left:=0;
 button6.top:=0;
+form9.Show;
 
+initest;
+
+end;
+
+ function GetAddressOf( var X ) : String;
+  begin
+    Result := IntToHex( Integer( Pointer( @X ) ), 8 );
+    //Result:=IntToHex(Integer ( X ),4); // ao funciona
+  end;
+
+
+procedure TForm45.Button7Click(Sender: TObject);
+var a:array of integer;
+p,q:pinteger;
+begin
+setlength(a,10);
+p:=@a;
+setlength(a,102);
+q:=@a;
+showmessage(getaddressof(p)+' ' +getaddressof(q));
+
+end;
+
+procedure TForm45.Initest();
+var
+  DataIni : TIniFile;
+  s:string;
+  AFileName:string;
+begin
+  AFileName:='abcde.ini';
+  DataIni := TIniFile.Create(getcurrentdir+'\'+AFileName);
+  try
+  DataIni.WriteString('INFO','n1','Claus1');
+  DataIni.WriteString('INFO','n2','Claus2');
+  DataIni.WriteString('INFO','n3','Claus3');
+  finally
+    FreeAndNil(DataIni);
+  end;
+
+  DataIni := TIniFile.Create(getcurrentdir+'\'+AFileName);
+
+  try
+    s := DataIni.ReadString('INFO','n2', '');
+    s := DataIni.ReadString('INFO','n1', '');
+    s := DataIni.ReadString('INFO','n3', '');
+    s := DataIni.ReadString('INFO','n4', '');
+    S:=dataini.readstring('nix','nix','?');
+  finally
+    FreeAndNil(DataIni);
+  end;
 end;
 
 procedure TForm45.CheckBox1Click(Sender: TObject);
 begin
 form45.AlphaBlendValue:=strtoint(edit1.text);
 form45.AlphaBlend:=true;
+end;
+
+procedure TForm45.FormCreate(Sender: TObject);
+  var
+  GMS: TMemoryStatusEx;
+begin
+
+  GMS.dwLength := SizeOf(TMemoryStatusEx);
+  GlobalMemoryStatusEx(GMS);
+  listbox1.items.add('used (system):               '+inttostr( GMS.dwMemoryLoad)+ ' %');
+  listbox1.items.add('physical memory - total:     '+inttostr(trunc( GMS.ullTotalPhys     / 1048576))+ ' MB');
+  listbox1.items.add(' (system)       - available: '+inttostr(trunc( GMS.ullAvailPhys     / 1048576 ))+ ' MB');
+  listbox1.items.add('page file       - total:     '+inttostr( trunc(GMS.ullTotalPageFile / 1048576 ))+ ' MB');
+  listbox1.items.add('                - available: '+inttostr( trunc(GMS.ullAvailPageFile / 1048576 ))+ ' MB');
+  listbox1.items.add('virtual memory  - total:     '+inttostr( trunc(GMS.ullTotalVirtual  / 1048576 ))+ ' MB');
+  listbox1.items.add(' (this program) - available: '+inttostr(trunc( GMS.ullAvailVirtual  / 1048576 ))+ ' MB');
+
 end;
 
 procedure TForm45.Panel2Click(Sender: TObject);

@@ -11,7 +11,7 @@ object Form5: TForm5
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  Position = poOwnerFormCenter
+  Position = poDesigned
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13

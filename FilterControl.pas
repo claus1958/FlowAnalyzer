@@ -563,6 +563,8 @@ begin
   then
   begin
     vString := edValue.Text;
+    if(vString='') then
+      vString:='0';
     if pos('.', vString) = 0 then
       vInteger := strtoint(vString)
     else

@@ -30,6 +30,8 @@ var
 implementation
 
 {$R *.dfm}
+const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
+{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
 
 procedure TForm5.Button1Click(Sender: TObject);
 begin

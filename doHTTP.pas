@@ -18,6 +18,10 @@ implementation
 
 uses SysUtils;
 
+const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
+{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
+
 function doHTTPGetByteArraySL(Url: string; sl: TStringList): byteArray;
 
 var

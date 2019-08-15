@@ -2,7 +2,7 @@ object Form45: TForm45
   Left = 0
   Top = 0
   Caption = 'Form45'
-  ClientHeight = 412
+  ClientHeight = 608
   ClientWidth = 1050
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -11,8 +11,20 @@ object Form45: TForm45
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
+  object Label1: TLabel
+    Left = 8
+    Top = 367
+    Width = 1037
+    Height = 19
+    Alignment = taCenter
+    AutoSize = False
+    BiDiMode = bdLeftToRight
+    Caption = 'ydnvdnkjdnfkafdkahsdfkjsahfkjahsfdkajshfjkashfkjahsfakshfd'
+    ParentBiDiMode = False
+  end
   inline Frame41: TFrame4
     Left = 464
     Top = 44
@@ -98,7 +110,7 @@ object Form45: TForm45
     Left = 484
     Top = 268
     Width = 305
-    Height = 141
+    Height = 61
     ParentCustomHint = False
     BiDiMode = bdLeftToRight
     Caption = 'Panel1'
@@ -121,8 +133,8 @@ object Form45: TForm45
     StyleElements = [seFont, seBorder]
   end
   object Button6: TButton
-    Left = 812
-    Top = 296
+    Left = 500
+    Top = 407
     Width = 113
     Height = 65
     Caption = 'Button6'
@@ -130,8 +142,8 @@ object Form45: TForm45
     OnClick = Button6Click
   end
   object Panel2: TPanel
-    Left = 40
-    Top = 331
+    Left = 576
+    Top = 124
     Width = 389
     Height = 78
     Caption = 'Panel2'
@@ -266,5 +278,36 @@ object Form45: TForm45
     Time = 0.897918043978279500
     Kind = dtkTime
     TabOrder = 20
+  end
+  object ListBox2: TListBox
+    Left = 20
+    Top = 396
+    Width = 453
+    Height = 197
+    Color = clOlive
+    ItemHeight = 13
+    Items.Strings = (
+      'dfdasfg'
+      'sdfg'
+      'sdfg'
+      'sdfgsdfgsdfg'
+      'sdfgsdf'
+      'gsdfgsd'
+      'fgsdfgsdf'
+      'gsdfgsd'
+      'fgsdfgs'
+      'dfgsdfg'
+      'sdfgsdyfgsdfgs')
+    TabOrder = 21
+    StyleElements = [seFont, seBorder]
+  end
+  object Button7: TButton
+    Left = 720
+    Top = 424
+    Width = 85
+    Height = 33
+    Caption = 'Button7'
+    TabOrder = 22
+    OnClick = Button7Click
   end
 end

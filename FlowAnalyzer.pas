@@ -7,8 +7,12 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.strutils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.ComCtrls, FTCommons, Vcl.StdCtrls, Vcl.Grids,
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
-  Vcl.Themes, UDynGrid, AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
-  AdvChartPaneEditor, AdvChartSerieEditor, GroupControl, DateUtils, Vcl.AppEvnts,uTwoLabel;
+  Vcl.Themes, UDynGrid,GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons;
+//  AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
+//  AdvChartPaneEditor, AdvChartSerieEditor, ;
+
+
+
 
 type
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -69,10 +73,6 @@ type
     CategoryPanel1: TCategoryPanel;
     Panel3: TPanel;
     lblAllDataInfo: TLabel;
-    btnSample1: TButton;
-    Label11: TLabel;
-    btnSample2: TButton;
-    btnSample3: TButton;
     Button2: TButton;
     cbStyles: TComboBox;
     TabSheet3: TTabSheet;
@@ -82,7 +82,6 @@ type
     DynGrid2: TDynGrid;
     DynGrid3: TDynGrid;
     DynGrid4: TDynGrid;
-    Splitter1: TSplitter;
     Panel13: TPanel;
     btnGetSingleUserActions: TButton;
     edSingleUserActionsId: TEdit;
@@ -105,12 +104,11 @@ type
     SGCwSymbolsGroups: FTCommons.TStringGridSorted;
     TabSheet8: TTabSheet;
     Button9: TButton;
-    AdvChartPanesEditorDialogGDIP1: TAdvChartPanesEditorDialogGDIP;
-    AdvGDIPChartView2: TAdvGDIPChartView;
-    AdvGDIPChartView1: TAdvGDIPChartView;
-    AdvGDIPChartView3: TAdvGDIPChartView;
+//    AdvChartPanesEditorDialogGDIP1: TAdvChartPanesEditorDialogGDIP;
+//    AdvGDIPChartView2: TAdvGDIPChartView;
+//    AdvGDIPChartView1: TAdvGDIPChartView;
+//    AdvGDIPChartView3: TAdvGDIPChartView;
     Panel20: TPanel;
-    SymbolsGroupsPieChartView: TAdvGDIPChartView;
     pnlPieButtons: TPanel;
     btnPieChart1: TButton;
     btnPieChart2: TButton;
@@ -151,7 +149,6 @@ type
     Label10: TLabel;
     Label2: TLabel;
     Label12: TLabel;
-    Panel22: TPanel;
     ApplicationEvents1: TApplicationEvents;
     StartTimer: TTimer;
     TabSheet10: TTabSheet;
@@ -173,9 +170,26 @@ type
     btnUpdateData: TButton;
     btnDoUsersAndSymbolsPlus: TButton;
     btnSymbolGroups: TButton;
-    Panel23: TPanel;
+    pnlStartBack: TPanel;
     lbCSVError: TListBox;
     pnlStart: TPanel;
+    updateTimer: TTimer;
+    pnlIcons: TPanel;
+    SpeedButton1: TSpeedButton;
+    SpeedButton4: TSpeedButton;
+    SpeedButton3: TSpeedButton;
+    SpeedButton2: TSpeedButton;
+    SpeedButton5: TSpeedButton;
+    SpeedButton6: TSpeedButton;
+    Panel22: TPanel;
+    Label11: TLabel;
+    btnSample1: TButton;
+    btnSample2: TButton;
+    btnSample3: TButton;
+    Splitter1: TSplitter;
+    btnSample4: TButton;
+    lblUserInfo7: TLabel;
+    infoTimer: TTimer;
     procedure getSymbolsUsersComments(useCache: boolean);
 
     procedure btnGetCsvClick(Sender: TObject);
@@ -246,8 +260,8 @@ type
     procedure CategoryPanel9CollapseExpand(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure btnPieChartClick(Sender: TObject);
-    procedure machPieChart(data: DAPieValue; datact: integer; para: TPieParameters; cv: TAdvGDIPChartView;
-      pane: integer; serie: integer);
+//    procedure machPieChart(data: DAPieValue; datact: integer; para: TPieParameters; cv: TAdvGDIPChartView;
+//      pane: integer; serie: integer);
 
     procedure SGCwSymbolsGroupsDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
     procedure SGCwSymbolsGroupsMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
@@ -269,6 +283,20 @@ type
     procedure btnSaveCacheFileCwClick(Sender: TObject);
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure doFinalizeData;
+    procedure fillStartScreen;
+    procedure computeStartScreen;
+    procedure updateTimerTimer(Sender: TObject);
+    procedure pnlStartBackResize(Sender: TObject);
+    procedure makelabels;
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButton4Click(Sender: TObject);
+    procedure SpeedButton3Click(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
+    procedure SpeedButton5Click(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure CategoryPanel1Click(Sender: TObject);
+    procedure SpeedButton6Click(Sender: TObject);
+    procedure infoTimerTimer(Sender: TObject);
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -282,8 +310,8 @@ var
   FilterCt: integer;
   Grouping: array [1 .. 3] of TGroupControl;
   GroupingCt: integer;
-  twoLblStartCt:integer;
-  twoLblStart: array [1..10] of TTwoLabel;
+  twoLblStartCt: integer;
+  twoLblStart: array [1 .. 20] of TTwoLabel;
   FilterTopic: string;
   SGFieldCol: DAInteger;
   SGColField: DAInteger;
@@ -292,12 +320,22 @@ var
   HTTPWorker1Aktiv: boolean; // wenn create->true wenn terminate -> false
   HTTPWorkCriticalSection: TRTLCriticalSection;
   gridsortmethode2: boolean;
-
+  info: TInfo;
+  firstSampleDone: boolean;
+  makeLabelsDone: boolean;
+  nextUpdateTicks:integer;
+  claus:boolean;
+  CSleep:integer;
 implementation
 
 {$R *.dfm}
 
+
+
 uses doHTTP, Dialog1, Dialog2;
+const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
+{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
 
 procedure TForm2.btnGetBinDataClick(Sender: TObject);
 var
@@ -526,6 +564,7 @@ begin
       Stream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
       Stream.Position := 0;
       ParseDelimited(typ, lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, Stream, append);
+      Stream.free;
       if (typ = 'users') then
       begin
         cwusersct := length(cwUsers);
@@ -583,7 +622,7 @@ begin
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
-        Stream.Free; // Speicher freigeben
+        Stream.free; // Speicher freigeben
       except
         lbCSVError.Items.Add('F:writeUsersStream');
       end;
@@ -617,7 +656,7 @@ begin
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
-        Stream.Free; // Speicher freigeben
+        Stream.free; // Speicher freigeben
       except
         lbCSVError.Items.Add('F:writeUsersStream');
       end;
@@ -634,7 +673,7 @@ begin
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
-        Stream.Free; // Speicher freigeben
+        Stream.free; // Speicher freigeben
       except
         lbCSVError.Items.Add('F:writeCommentsStream');
       end;
@@ -649,9 +688,9 @@ begin
       cwTicksCt := length(cwTicks);
 
     end;
-    LoadInfo('from Server');
+    // LoadInfo('from Server');
   end;
-  ms.Free;
+  ms.free;
 
 end;
 
@@ -770,6 +809,7 @@ begin
   cwsingleuseractionsCt := fz + 1;
 
   zeigUserInfo(id, lbUserInfo);
+  showmemory(lbUserInfo);
 
   DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 25);
 
@@ -917,8 +957,8 @@ begin
     groups[i].TradesProfitTotal := 0;
   end;
 
-  t.Free;
-  t2.Free;
+  t.free;
+  t2.free;
   found := -1;
   for i := 0 to cwsymbolsct - 1 do
   begin
@@ -986,7 +1026,12 @@ begin
     // alle Actions mit Gruppe/UserID in Matrix um 1 erhöhen
     // alte Variante
     // inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]);
+    try
     inc(aba[cwSymbolsPlus[cwactions[i].symbolId].groupId, actionsPlus[i].userIndex]);
+    except
+      on E: Exception do
+      lbCSVError.Items.Add('Err doSymbolGroupValues:'+E.ToString);
+    end;
   end;
   lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
 
@@ -1073,6 +1118,7 @@ begin
   Panel10.enabled := false;
   lbLoadInfo.Items.clear;
   Dialog2.FDialog2.lbLoadInfo.Items.clear;
+  Dialog2.FDialog2.info('');
   all := true;
   for i := 0 to clbBrokers.Count - 1 do
   begin
@@ -1095,12 +1141,12 @@ begin
     else
     begin
       getSymbolsUsersComments(false); // holt vom Server
-      LoadInfo('Load All Actions...');
+      LoadInfo('Load All Actions (wait!) ...');
       GetBinData('http://h2827643.stratoserver.net:8080/bin/actions', 'actions', lbCSVError, false);
-      btnSaveCacheFileCwClick(nil); // ACHTUNG TEST
+      btnSaveCacheFileCwClick(nil);
       LoadInfo(inttostr(length(cwactions)) + ' Actions loaded from Server');
     end;
-    LoadInfo('Loading finished');
+    LoadInfo('Loading data finished');
     whichAccounts := 'All accounts/';
   end
   else
@@ -1149,6 +1195,10 @@ begin
     end;
 
   end;
+
+  // fillStartScreen;
+
+  LoadInfo('Data preparations');
   whichAccounts := leftstr(whichAccounts, length(whichAccounts) - 1);
   lblAllDataInfo.Caption := whichAccounts + #13#10 + ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwactions)) + #13#10 + #13#10;
@@ -1160,14 +1210,25 @@ begin
 
   // TabSheet7.TabVisible := true; // SymbolsGroups
 
+  dosleep(CSleep);
   doFinalizeData;
 
   Panel10.enabled := true;
-
-  Dialog2.FDialog2.Button1click(nil);
+  LoadInfo('Finished');
+  Dialog2.FDialog2.info2('');
 
   PageControl1.TabIndex := 0; // START
+
+  computeStartScreen;
+  dosleep(CSleep);
+  pnlStart.Caption := '';
+  pnlStart.Visible := true;
+  pnlStart.Refresh;
   lbCSVError.Items.Add('Ladezeit komplett:' + inttostr(GetTickCount - gt));
+  Dialog2.FDialog2.Button1click(nil);
+
+  updateTimer.enabled := false;
+  //nextUpdateTicks:=gettickcount+updateTimer.interval;
 end;
 
 procedure TForm2.LoadInfo(s: string);
@@ -1175,12 +1236,13 @@ begin
   // lblLoadInfo.Caption := s;
   lbLoadInfo.Items.Add(s);
   Dialog2.FDialog2.lbLoadInfo.Items.Add(s);
-
+  Dialog2.FDialog2.info(s);
   Memo1.lines.clear;
   Memo1.lines.Add(s);
   // lblLoadInfo.Repaint;
   lbLoadInfo.Repaint;
   Dialog2.FDialog2.lbLoadInfo.Repaint;
+
 end;
 
 procedure TForm2.machActionsUserIndex;
@@ -1220,7 +1282,9 @@ begin
     sort[i] := cwSymbols[i].name;
     cwsymbolsSortindex[i] := i;
   end;
+  dosleep(CSleep);
   fastsort2arrayString(sort, cwsymbolsSortindex, 'VUAS');
+  dosleep(CSleep);
 
   // users sortieren in einem extra Feld
   cwusersct := length(cwUsers);
@@ -1233,47 +1297,60 @@ begin
     isort[i] := cwUsers[i].userId;
     cwUsersSortindex[i] := inttostr(cwUsers[i].userId) + '=' + inttostr(i);
   end;
+  dosleep(CSleep);
   fastsort2arrayIntegerString(isort, cwUsersSortindex, 'VUA');
+  dosleep(CSleep);
   for i := 0 to cwusersct - 1 do
   begin
     p := pos('=', cwUsersSortindex[i]) - 1;
     cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
   end;
 
+  dosleep(CSleep);
+
   machActionsUserIndex(); // einmalig die Userindices aus den Useraccountnummern berechnen
+  dosleep(CSleep);
 
   btnDoUsersAndSymbolsPlusClick(nil);
   // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus  und cwsymbolsplus
+  dosleep(CSleep);
 
   // den ersten User 'anklicken' und dessen actions im Grid darstellen
   edSingleUserActionsId.text := inttostr(cwactions[0].userId);
+
   btnGetSingleUserActionsClick(nil);
+  dosleep(CSleep);
 
   btnSymbolGroupsClick(nil); // Symbolgruppen erzeugen und anschliessend Werte berechnen
+  dosleep(CSleep);
 
   lbCSVError.Items.Add('Sym/Users prepare:' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   // die 4 Grids in Alle befüllen
+  dosleep(CSleep);
   btnCwSymbolsToGridClick(nil);
+  dosleep(CSleep);
   btnCwusersToGridClick(nil);
+  dosleep(CSleep);
   btnCwCommentsToGridClick(nil);
+  dosleep(CSleep);
   btnCwactionsToGridClick(nil);
   lbCSVError.Items.Add('4 Grid:' + inttostr(GetTickCount - gt));
 
 end;
 
-procedure TForm2.machPieChart(data: DAPieValue; datact: integer; para: TPieParameters; cv: TAdvGDIPChartView;
-  pane: integer; serie: integer);
-var
-  i: integer;
-begin
-  cv.BeginUpdate;
-  cv.panes[pane].series[serie].ClearPoints;
-  for i := 0 to datact - 1 do
-    cv.panes[pane].series[serie].AddPiePoints(data[i].value, data[i].text, data[i].color1, data[i].color2, 0, true);
-  cv.EndUpdate;
-
-end;
+//procedure TForm2.machPieChart(data: DAPieValue; datact: integer; para: TPieParameters; cv: TAdvGDIPChartView;
+//  pane: integer; serie: integer);
+//var
+//  i: integer;
+//begin
+//  cv.BeginUpdate;
+//  cv.panes[pane].series[serie].ClearPoints;
+//  for i := 0 to datact - 1 do
+//    cv.panes[pane].series[serie].AddPiePoints(data[i].value, data[i].text, data[i].color1, data[i].color2, 0, true);
+//  cv.EndUpdate;
+//
+//end;
 
 procedure TForm2.PageControl1Change(Sender: TObject);
 var
@@ -1288,7 +1365,12 @@ begin
   end;
   if PageControl1.ActivePage.TabIndex = 3 then // caption='SymbolsGroups' then
   begin
-    btnSampleClick(btnSample2);
+
+    if (firstSampleDone = false) then
+    begin
+      btnSampleClick(btnSample2);
+      firstSampleDone := true;
+    end;
   end;
   if PageControl1.ActivePage.TabIndex = 1 then // all data
   begin
@@ -1312,6 +1394,12 @@ begin
   //
   a := 1;
 
+end;
+
+procedure TForm2.pnlStartBackResize(Sender: TObject);
+begin
+  pnlStart.Left := pnlStartBack.Left + trunc(pnlStartBack.Width / 2 - pnlStart.Width / 2);
+  pnlStart.top := pnlStartBack.top + trunc(pnlStartBack.height / 2 - pnlStart.height / 2);
 end;
 
 procedure TForm2.btnLoadCacheFileCwClick(Sender: TObject);
@@ -1398,7 +1486,7 @@ begin
     data[i].color1 := random($1000000);
     data[i].color2 := random($1000000);
   end;
-  machPieChart(data, datact, para, SymbolsGroupsPieChartView, pane, serie);
+  //machPieChart(data, datact, para, SymbolsGroupsPieChartView, pane, serie);
 end;
 
 procedure TForm2.btnLadeDialogClick(Sender: TObject);
@@ -1472,6 +1560,7 @@ begin
     lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
   end
 end;
+
 
 procedure TForm2.btnDoFilterClick(Sender: TObject);
 begin
@@ -1842,6 +1931,12 @@ begin
 
 end;
 
+procedure TForm2.updateTimerTimer(Sender: TObject);
+begin
+  // Update timer
+  btnUpdateDataClick(nil);
+end;
+
 function TForm2.groupingTyp(styp: string): integer;
 begin
   result := 0;
@@ -1896,10 +1991,11 @@ begin
 
   setlength(cwfilterParameter, FilterCt + 1);
   setlength(chk, FilterCt + 1);
+  //sowieso hier blöd
   for i := 1 to FilterCt do
   begin
     Filter[i].getValues(cwfilterParameter[i]);
-    Filter[i].machVergleichArrays;
+//    Filter[i].machVergleichArrays;
     chk[i] := Filter[i].chkActive.Checked;
     Filter[i].counter := 0;
   end;
@@ -1914,7 +2010,17 @@ begin
   for i := 1 to FilterCt do
   begin
     if (chk[i] = true) and (Filter[i].edValue.text = '') then
-      chk[i] := false;
+      chk[i] := false
+    else
+
+  end;
+
+  for i := 1 to FilterCt do
+  begin
+    if (chk[i] = true)  then
+
+        Filter[i].machVergleichArrays;//verlegt
+
   end;
 
   for i := 0 to length(cwactions) - 1 do
@@ -1925,6 +2031,7 @@ begin
       begin
         r := Filter[j].checkCwaction(cwactions[i]);
         if (r = false) then
+        // die erste nicht erfüllte Bedingung lässt diese action herausfallen
           goto weiter
       end;
     end;
@@ -2116,6 +2223,11 @@ var
   a1, a2: integer;
 begin
   // update data
+  Dialog2.FDialog2.Show; // Modal;
+  Dialog2.FDialog2.top := Form2.top + Form2.height - FDialog2.height - 4;
+  Dialog2.FDialog2.Left := Form2.Left + Form2.Width - FDialog2.Width - 4;
+
+  Dialog2.FDialog2.info('Update data ...');
   gtall := GetTickCount;
   gt := GetTickCount;
   merkOpenTime := 0;
@@ -2158,6 +2270,8 @@ begin
 
   // showmessage(' Actions:' + inttostr(length(cwActions)));
 
+  dosleep(CSleep);
+
   // btnSaveCacheFileCwClick(nil);
   lnew := length(cwactions);
 
@@ -2166,8 +2280,10 @@ begin
   if (cnew = 0) then
   begin
     lbCSVError.Items.Add('[Abbruch - keine Änderungen]' + inttostr(GetTickCount - gt));
+    Dialog2.FDialog2.Close;
     exit;
   end;
+
   setlength(na2, cnew);
   setlength(na, cnew);
   p := -1;
@@ -2178,8 +2294,12 @@ begin
     na[p] := i;
   end;
 
+  dosleep(CSleep);
+
   fastsort2arrayInt64Int(na2, na, 'VUI'); // VDI
   lbCSVError.Items.Add('[sort1]' + inttostr(GetTickCount - gt));
+  dosleep(CSleep);
+
   gt := GetTickCount;
 
   // doppelte daraus entfernen
@@ -2188,6 +2308,7 @@ begin
     if na2[i] = na2[i - 1] then
       cwactions[na[i - 1]].actionId := 0;
   end;
+  dosleep(CSleep);
 
   // jetzt sieht cwactions so aus: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa nnn0nn0nn0nn0n0n0nnn     a=die alten Action n=die neuen 0 dir doppelten
 
@@ -2199,8 +2320,11 @@ begin
     ia2[i] := cwactions[i].actionId;
     ia[i] := i;
   end;
+  dosleep(CSleep);
+
   fastsort2arrayInt64Int(ia2, ia, 'VUI'); // VDI
   lbCSVError.Items.Add('[sort2]' + inttostr(GetTickCount - gt));
+  dosleep(CSleep);
   gt := GetTickCount;
 
   // das ist das sortierte alte cwactions array vor den Neuanfügungen
@@ -2223,8 +2347,10 @@ begin
       end;
     end;
   end;
+
   lbCSVError.Items.Add('[einfügen1]' + inttostr(GetTickCount - gt));
-  gt := GetTickCount;
+   dosleep(CSleep);
+ gt := GetTickCount;
 
   p := lold - 1; // zeiger auf den letzten alten index
   for i := lold to lnew - 1 do
@@ -2239,142 +2365,154 @@ begin
   setlength(cwactions, p + 1);
   setlength(cwActionsPlus, p + 1);
   lbCSVError.Items.Add('[einfügen2]' + inttostr(GetTickCount - gt));
+  dosleep(CSleep);
   gt := GetTickCount;
   // fertig
   doFinalizeData;
+  dosleep(CSleep);
   lbCSVError.Items.Add('[finalize]' + inttostr(GetTickCount - gt));
 
   lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) +
     #13#10 + ' Actions:' + inttostr(length(cwactions));
   lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
 
+  dosleep(CSleep);
+  computeStartScreen;
+  dosleep(CSleep);
+  getSymbolsUsersComments(false); // vom Server damit die Werte aktuell sind
+  dosleep(CSleep);
+  computeStartScreen;
+  dosleep(CSleep);
+
+  Dialog2.FDialog2.Close;
+
 end;
 
 procedure TForm2.Button9Click(Sender: TObject);
 
-const
-  colors1: array [0 .. 4] of TCOLOR = (clWhite, clYellow, clBlack, clWhite, clWhite);
-  // (clRed, clBlue, clGreen, clPurple, clMaroon);
-  colors2: array [0 .. 4] of TCOLOR = (clDkGray, clLtGray, clLime, clOlive, clLime);
-  colors3: array [0 .. 4] of TCOLOR = (clBlack, clWhite, clRed, clRed, clBlack);
-  // (clBlue, clLime, clFuchsia, clAqua, clRed);
-  values: array [0 .. 19] of String = ('Mercedes', 'Audi', 'Land rover', 'BMW', 'Ferrari', 'Bugatti', 'Porsche',
-    'Range rover', 'Lamborghini', 'Rolls Royce', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a');
-var
-  i, j: integer;
-  c: TCOLOR;
-  X, Y: integer;
+//const
+//  colors1: array [0 .. 4] of TCOLOR = (clWhite, clYellow, clBlack, clWhite, clWhite);
+//  // (clRed, clBlue, clGreen, clPurple, clMaroon);
+//  colors2: array [0 .. 4] of TCOLOR = (clDkGray, clLtGray, clLime, clOlive, clLime);
+//  colors3: array [0 .. 4] of TCOLOR = (clBlack, clWhite, clRed, clRed, clBlack);
+//  // (clBlue, clLime, clFuchsia, clAqua, clRed);
+//  values: array [0 .. 19] of String = ('Mercedes', 'Audi', 'Land rover', 'BMW', 'Ferrari', 'Bugatti', 'Porsche',
+//    'Range rover', 'Lamborghini', 'Rolls Royce', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a');
+//var
+//  i, j: integer;
+//  c: TCOLOR;
+//  X, Y: integer;
 begin
-
-  // AdvGDIPChartView1.Panes[0].Series.add;//von Hand eine Series hinzufügen (zwei bereits im Editor)
-
-  for j := 0 to 3 do
-  begin
-    for i := 0 to 9 do
-    begin
-      Randomize;
-      if i <= 5 then
-      begin
-
-        AdvGDIPChartView2.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors1[1],
-          colors3[i], 0, true);
-      end
-      else
-      begin
-        c := RGB(random(255), random(255), random(255));
-        AdvGDIPChartView2.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors2[i],
-          colors3[i], 0, true);
-      end;
-    end;
-    AdvGDIPChartView2.panes[0].series[j].ChartType := ctpie;
-    AdvGDIPChartView2.panes[0].series[j].LegendText := 'Donut Chart 1';
-    AdvGDIPChartView2.panes[0].series[j].Pie.LegendGradientType := gtHatch;
-    AdvGDIPChartView2.panes[0].series[j].Pie.LegendHatchStyle := HatchStyleForwardDiagonal;
-    AdvGDIPChartView2.panes[0].series[j].Pie.LegendOpacity := 100;
-    AdvGDIPChartView2.panes[0].series[j].Pie.LegendOpacityTo := 100;
-    AdvGDIPChartView2.panes[0].series[j].Pie.ValueFont.Color := clNavy;
-    AdvGDIPChartView2.panes[0].series[j].Pie.Size := 100 + j * 100;
-    AdvGDIPChartView2.Color := clBlue;
-  end;
-
-  for j := 0 to 1 do
-  begin
-    for i := 0 to 9 do
-    begin
-      Randomize;
-      if i <= 5 then
-      begin
-        AdvGDIPChartView3.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors1[1],
-          colors3[i], 0, true);
-      end
-      else
-      begin
-        c := RGB(random(255), random(255), random(255));
-        AdvGDIPChartView3.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors2[i],
-          colors3[i], 0, true);
-      end;
-    end;
-    AdvGDIPChartView3.panes[0].series[j].ChartType := ctpie;
-    AdvGDIPChartView3.panes[0].series[j].LegendText := 'Donut Chart 1';
-    AdvGDIPChartView3.panes[0].series[j].Pie.LegendGradientType := gtHatch;
-    AdvGDIPChartView3.panes[0].series[j].Pie.LegendHatchStyle := HatchStyleForwardDiagonal;
-    AdvGDIPChartView3.panes[0].series[j].Pie.LegendOpacity := 100;
-    AdvGDIPChartView3.panes[0].series[j].Pie.LegendOpacityTo := 100;
-    AdvGDIPChartView3.panes[0].series[j].Pie.ValueFont.Color := clNavy;
-    AdvGDIPChartView3.panes[0].series[j].Pie.Size := 100 + j * 100;
-    AdvGDIPChartView3.Color := clBlue;
-  end;
-
-  for j := 0 to 0 do
-  begin
-    for i := 0 to 19 do
-    begin
-      Randomize;
-      if i <= 5 then
-      begin
-        AdvGDIPChartView1.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors1[1],
-          colors3[i], 0, true);
-      end
-      else
-      begin
-        c := RGB(random(255), random(255), random(255));
-        AdvGDIPChartView1.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors2[i],
-          colors3[i], 0, true);
-      end;
-    end;
-    AdvGDIPChartView1.panes[0].series[j].ChartType := ctpie;
-    AdvGDIPChartView1.panes[0].series[j].LegendText := 'Donut Chart 1';
-    AdvGDIPChartView1.panes[0].series[j].Pie.LegendGradientType := gtHatch;
-    AdvGDIPChartView1.panes[0].series[j].Pie.LegendHatchStyle := HatchStyleForwardDiagonal;
-    AdvGDIPChartView1.panes[0].series[j].Pie.LegendOpacity := 100;
-    AdvGDIPChartView1.panes[0].series[j].Pie.LegendOpacityTo := 100;
-    AdvGDIPChartView1.panes[0].series[j].Pie.ValueFont.Color := clNavy;
-    AdvGDIPChartView1.panes[0].series[j].Pie.Size := 100 + j * 100;
-    AdvGDIPChartView1.Color := clBlue;
-  end;
-
-  for j := 1 to 9 do
-  begin
-    AdvGDIPChartView1.panes[0].series.Add.Assign(AdvGDIPChartView1.panes[0].series[0]);
-  end;
-
-  X := 50;
-  Y := 40;
-  for j := 0 to 9 do
-  begin
-    AdvGDIPChartView1.panes[0].series[j].Pie.Size := 70 + random(40);
-    AdvGDIPChartView1.panes[0].series[j].Pie.left := X;
-    AdvGDIPChartView1.panes[0].series[j].Pie.top := Y;
-    X := X + 100;
-    if X > 800 then
-    begin
-      X := 50;
-      Y := Y + 50;
-    end;
-  end;
-
-  //
-  // SwitchtoDonut1Click(self);
+//
+//  // AdvGDIPChartView1.Panes[0].Series.add;//von Hand eine Series hinzufügen (zwei bereits im Editor)
+//
+//  for j := 0 to 3 do
+//  begin
+//    for i := 0 to 9 do
+//    begin
+//      Randomize;
+//      if i <= 5 then
+//      begin
+//
+//        AdvGDIPChartView2.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors1[1],
+//          colors3[i], 0, true);
+//      end
+//      else
+//      begin
+//        c := RGB(random(255), random(255), random(255));
+//        AdvGDIPChartView2.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors2[i],
+//          colors3[i], 0, true);
+//      end;
+//    end;
+//    AdvGDIPChartView2.panes[0].series[j].ChartType := ctpie;
+//    AdvGDIPChartView2.panes[0].series[j].LegendText := 'Donut Chart 1';
+//    AdvGDIPChartView2.panes[0].series[j].Pie.LegendGradientType := gtHatch;
+//    AdvGDIPChartView2.panes[0].series[j].Pie.LegendHatchStyle := HatchStyleForwardDiagonal;
+//    AdvGDIPChartView2.panes[0].series[j].Pie.LegendOpacity := 100;
+//    AdvGDIPChartView2.panes[0].series[j].Pie.LegendOpacityTo := 100;
+//    AdvGDIPChartView2.panes[0].series[j].Pie.ValueFont.Color := clNavy;
+//    AdvGDIPChartView2.panes[0].series[j].Pie.Size := 100 + j * 100;
+//    AdvGDIPChartView2.Color := clBlue;
+//  end;
+//
+//  for j := 0 to 1 do
+//  begin
+//    for i := 0 to 9 do
+//    begin
+//      Randomize;
+//      if i <= 5 then
+//      begin
+//        AdvGDIPChartView3.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors1[1],
+//          colors3[i], 0, true);
+//      end
+//      else
+//      begin
+//        c := RGB(random(255), random(255), random(255));
+//        AdvGDIPChartView3.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors2[i],
+//          colors3[i], 0, true);
+//      end;
+//    end;
+//    AdvGDIPChartView3.panes[0].series[j].ChartType := ctpie;
+//    AdvGDIPChartView3.panes[0].series[j].LegendText := 'Donut Chart 1';
+//    AdvGDIPChartView3.panes[0].series[j].Pie.LegendGradientType := gtHatch;
+//    AdvGDIPChartView3.panes[0].series[j].Pie.LegendHatchStyle := HatchStyleForwardDiagonal;
+//    AdvGDIPChartView3.panes[0].series[j].Pie.LegendOpacity := 100;
+//    AdvGDIPChartView3.panes[0].series[j].Pie.LegendOpacityTo := 100;
+//    AdvGDIPChartView3.panes[0].series[j].Pie.ValueFont.Color := clNavy;
+//    AdvGDIPChartView3.panes[0].series[j].Pie.Size := 100 + j * 100;
+//    AdvGDIPChartView3.Color := clBlue;
+//  end;
+//
+//  for j := 0 to 0 do
+//  begin
+//    for i := 0 to 19 do
+//    begin
+//      Randomize;
+//      if i <= 5 then
+//      begin
+//        AdvGDIPChartView1.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors1[1],
+//          colors3[i], 0, true);
+//      end
+//      else
+//      begin
+//        c := RGB(random(255), random(255), random(255));
+//        AdvGDIPChartView1.panes[0].series[j].AddPiePoints(RandomRange(20, 300), values[i], colors2[i],
+//          colors3[i], 0, true);
+//      end;
+//    end;
+//    AdvGDIPChartView1.panes[0].series[j].ChartType := ctpie;
+//    AdvGDIPChartView1.panes[0].series[j].LegendText := 'Donut Chart 1';
+//    AdvGDIPChartView1.panes[0].series[j].Pie.LegendGradientType := gtHatch;
+//    AdvGDIPChartView1.panes[0].series[j].Pie.LegendHatchStyle := HatchStyleForwardDiagonal;
+//    AdvGDIPChartView1.panes[0].series[j].Pie.LegendOpacity := 100;
+//    AdvGDIPChartView1.panes[0].series[j].Pie.LegendOpacityTo := 100;
+//    AdvGDIPChartView1.panes[0].series[j].Pie.ValueFont.Color := clNavy;
+//    AdvGDIPChartView1.panes[0].series[j].Pie.Size := 100 + j * 100;
+//    AdvGDIPChartView1.Color := clBlue;
+//  end;
+//
+//  for j := 1 to 9 do
+//  begin
+//    AdvGDIPChartView1.panes[0].series.Add.Assign(AdvGDIPChartView1.panes[0].series[0]);
+//  end;
+//
+//  X := 50;
+//  Y := 40;
+//  for j := 0 to 9 do
+//  begin
+//    AdvGDIPChartView1.panes[0].series[j].Pie.Size := 70 + random(40);
+//    AdvGDIPChartView1.panes[0].series[j].Pie.Left := X;
+//    AdvGDIPChartView1.panes[0].series[j].Pie.top := Y;
+//    X := X + 100;
+//    if X > 800 then
+//    begin
+//      X := 50;
+//      Y := Y + 50;
+//    end;
+//  end;
+//
+//  //
+//  // SwitchtoDonut1Click(self);
 end;
 
 procedure TForm2.btnOnePageClick(Sender: TObject);
@@ -2409,6 +2547,7 @@ var
   i: integer;
   fe: TFilterParameter;
 begin
+  //erstmal alle abschalten
   fe.Active := false;
   for i := 1 to FilterCt do
   begin
@@ -2431,6 +2570,7 @@ begin
     fe.operator := '>=';
     fe.values := '1000';
     Filter[1].setValues(fe);
+
     fe.Active := true;
     fe.topic := 'ActionType';
     fe.operator := '<>';
@@ -2446,9 +2586,52 @@ begin
     fe.operator := 'contains';
     fe.values := 'GOLD';
     Filter[1].setValues(fe);
+
+    fe.Active := true;
+    fe.topic := 'Profit';
+    fe.operator := '<';
+    fe.values := '0';
+    Filter[2].setValues(fe);
+
+    fe.Active := true;
+    fe.topic := 'CloseDateTime';
+    fe.operator := '>';
+    fe.values := '0';
+    Filter[3].setValues(fe);
+
+
   end;
+
+  if (Sender = btnSample4) then
+  begin
+    fe.Active := true;
+    fe.topic := 'Symbol';
+    fe.operator := 'contains';
+    fe.values := 'GOLD';
+    Filter[1].setValues(fe);
+
+    fe.Active := true;
+    fe.topic := 'Profit';
+    fe.operator := '>';
+    fe.values := '0';
+    Filter[2].setValues(fe);
+
+    fe.Active := true;
+    fe.topic := 'CloseDateTime';
+    fe.operator := '<>';
+    fe.values := '0';
+    Filter[3].setValues(fe);
+
+
+  end;
+
+
   FilterTopic := (Sender as TButton).Caption;
 
+  Grouping[1].chkActive.checked:=true;
+  Grouping[2].chkActive.checked:=false;
+  Grouping[3].chkActive.checked:=false;
+  grouping[1].cbTopic.text:='yearsOpen';
   Form2.Refresh;
 
   doFilter();
@@ -2460,6 +2643,12 @@ procedure TForm2.btnSaveCacheFileCwClick(Sender: TObject);
 begin
   //
   saveCacheFileCw('cwactions', 'actions', lbCSVError);
+end;
+
+procedure TForm2.CategoryPanel1Click(Sender: TObject);
+begin
+//
+
 end;
 
 procedure TForm2.CategoryPanel1Collapse(Sender: TObject);
@@ -2531,11 +2720,11 @@ begin
         inc(coll);
   if coll < c1.ControlCount then
   begin
-    SplitHeight := (c1.Height - coll * 30) div (c1.ControlCount - coll);
+    SplitHeight := (c1.height - coll * 30) div (c1.ControlCount - coll);
     for i := 0 to c1.ControlCount - 1 do
       if c1.Controls[i] is TCategoryPanel then
         if not TCategoryPanel(c1.Controls[i]).collapsed then
-          TCategoryPanel(c1.Controls[i]).Height := SplitHeight;
+          TCategoryPanel(c1.Controls[i]).height := SplitHeight;
   end;
 end;
 
@@ -2545,6 +2734,10 @@ var
   folder, fileName: string;
   style: string;
 begin
+  CSleep:=10;//msec Pausen
+  claus:=true;
+  firstSampleDone := false;
+  makeLabelsDone := false;
   for style in TStyleManager.StyleNames do
   begin
     cbStyles.AddItem(style, nil);
@@ -2565,12 +2758,13 @@ begin
     cbLoadActionsFromCache.Visible := false;
   end;
 
-  TabSheet1.TabVisible := true;
-  TabSheet6.TabVisible := true;
-  TabSheet5.TabVisible := true;
-  TabSheet7.TabVisible := true;
-  TabSheet9.TabVisible := true;
-  TabSheet4.TabVisible := true;
+  TabSheet1.TabVisible := claus;
+  TabSheet6.TabVisible := claus;
+  TabSheet5.TabVisible := claus;
+  TabSheet7.TabVisible := claus;
+  TabSheet9.TabVisible := claus;
+  TabSheet4.TabVisible := claus;
+  TabSheet10.TabVisible := claus;
 
   brokerShort[1] := 'LCG';
   brokerShort[2] := 'AT';
@@ -2588,26 +2782,17 @@ begin
   begin
     Filter[i] := TFilterElemente.Create(self);
     Filter[i].name := 'Filter_' + inttostr(i); // muss sein
-    Filter[i].SetBounds(0, (i - 1 + 2) * Filter[i].Height, Filter[i].Width, Filter[i].Height);
+    Filter[i].SetBounds(0, (i - 1 + 2) * Filter[i].height, Filter[i].Width, Filter[i].height);
     Filter[i].Parent := pnlFilter;
   end;
 
-  twoLblStartCt:=10;
-  for i := 1 to twoLblStartCt do
-  begin
-    twoLblStart[i] := TTwoLabel.Create(self);
-    twoLblStart[i].name := 'twoLblStart_' + inttostr(i); // muss sein
-    twoLblStart[i].SetBounds(0, (i - 1 + 2) * twoLblStart[i].Height, twoLblStart[i].Width, twoLblStart[i].Height);
-    twoLblStart[i].Parent := pnlStart;
-  end;
-
-
+  pnlStartBack.Refresh;
   GroupingCt := 3;
   for i := 1 to GroupingCt do
   begin
     Grouping[i] := TGroupControl.Create(self);
     Grouping[i].name := 'Grouping_' + inttostr(i); // muss sein
-    Grouping[i].SetBounds(0, (i - 1 + 2) * Grouping[i].Height, Grouping[i].Width, Grouping[i].Height);
+    Grouping[i].SetBounds(0, (i - 1 + 2) * Grouping[i].height, Grouping[i].Width, Grouping[i].height);
     Grouping[i].Parent := pnlGrouping;
   end;
 
@@ -2638,12 +2823,38 @@ begin
     clbBrokers.Checked[i] := true;
 
   InitializeCriticalSection(HTTPWorkCriticalSection);
-  dosleep(100);
+  dosleep(CSleep);
   StartHTTPWorker;
   remeasureCategoryPanels(CategoryPanelGroup1);
+
+  pnlStartBack.Repaint;
+  pnlStartBack.Refresh;
+
+
   // btnStartDialogClick(nil);
+  // fillStartScreen;
 
   btnLadeDialogClick(nil);
+  // fillStartScreen;
+end;
+
+procedure TForm2.makelabels;
+var
+  i: integer;
+begin
+  twoLblStartCt := 14;
+  for i := 1 to twoLblStartCt do
+  begin
+    twoLblStart[i] := TTwoLabel.Create(self);
+    twoLblStart[i].name := 'twoLblStart_' + inttostr(i); // muss sein
+    if(i<=trunc(twolblstartct/2)) then
+      twoLblStart[i].SetBounds(98,35+(i - 1 + 0) * twoLblStart[i].height, twoLblStart[i].Width, twoLblStart[i].height)
+    else
+      twoLblStart[i].SetBounds(500,35+ (i - 1 + 0 -trunc(twolblstartct/2)) * twoLblStart[i].height, twoLblStart[i].Width, twoLblStart[i].height);
+
+    twoLblStart[i].Parent := pnlStart;
+
+  end;
 end;
 
 procedure TForm2.ApplicationEvents1ModalBegin(Sender: TObject);
@@ -2914,10 +3125,10 @@ begin
       Canvas.Brush.Color := clGray;
 
       r := Rect;
-      r.left := r.left - 4; // -4 wird ganz gefüllt
+      r.Left := r.Left - 4; // -4 wird ganz gefüllt
       Canvas.FillRect(r);
       // Canvas.Pen.Color := clBlue;
-      r.left := r.left + 6;
+      r.Left := r.Left + 6;
       r.top := r.top + 4;
       DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
 
@@ -3100,12 +3311,48 @@ begin
       end;
     finally
       // Free the List
-      MyList.Free;
+      MyList.free;
     end;
 
   end;
 
-  procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
+  procedure TForm2.SpeedButton1Click(Sender: TObject);
+  begin
+    PageControl1.TabIndex := 0;
+
+  end;
+
+  procedure TForm2.SpeedButton2Click(Sender: TObject);
+  begin
+    PageControl1.TabIndex := 3;
+
+
+  end;
+
+  procedure TForm2.SpeedButton3Click(Sender: TObject);
+  begin
+    PageControl1.TabIndex := 2;
+
+  end;
+
+  procedure TForm2.SpeedButton4Click(Sender: TObject);
+  begin
+    PageControl1.TabIndex := 1;
+  end;
+
+  procedure TForm2.SpeedButton5Click(Sender: TObject);
+  begin
+    PageControl1.TabIndex := 4;
+
+  end;
+
+  procedure TForm2.SpeedButton6Click(Sender: TObject);
+  begin
+    PageControl1.TabIndex := 4;
+
+  end;
+
+procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
 
   const
     // Define the Separator
@@ -3170,14 +3417,14 @@ begin
       end;
     finally
       // Free the List
-      MyList.Free;
+      MyList.free;
     end;
 
   end;
 
   procedure TForm2.TabSheet2Resize(Sender: TObject);
   begin
-    Panel10.left := trunc(TabSheet2.Width / 2) - trunc(Panel10.Width / 2);
+    Panel10.Left := trunc(TabSheet2.Width / 2) - trunc(Panel10.Width / 2);
   end;
 
   procedure TForm2.StartTimerTimer(Sender: TObject);
@@ -3186,6 +3433,9 @@ begin
     StartTimer.enabled := false;
 
     Dialog2.FDialog2.Show; // Modal;
+    Dialog2.FDialog2.top := Form2.top + Form2.height - FDialog2.height - 4;
+    Dialog2.FDialog2.Left := Form2.Left + Form2.Width - FDialog2.Width - 4;
+    Form2.Repaint;
     btnLoadDataClick(nil);
 
   end;
@@ -3236,7 +3486,8 @@ begin
     lblUserInfo3.Caption := 'Balance:   ' + FormatFloat('#0.00', cwUsers[k].balance);
     lblUserInfo4.Caption := 'T.Trades:  ' + inttostr(cwUsersPlus[k].totaltrades);
     lblUserInfo5.Caption := 'T.Balance: ' + FormatFloat('#0.00', cwUsersPlus[k].totalbalance);
-    lblUserInfo5.Caption := 'T.Profit:  ' + FormatFloat('#0.00', cwUsersPlus[k].totalprofit);
+    lblUserInfo6.Caption := 'T.Profit:  ' + FormatFloat('#0.00', cwUsersPlus[k].totalprofit);
+    lblUserInfo7.Caption := inttostr(cwUsers[k].userId);
 
     lblUserInfo0.Hint := 'Users Name';
     lblUserInfo1.Hint := 'Registration Time';
@@ -3244,7 +3495,8 @@ begin
     lblUserInfo3.Hint := 'Balance';
     lblUserInfo4.Hint := 'Total Trades';
     lblUserInfo5.Hint := 'Total Balance';
-    lblUserInfo5.Hint := 'Total Profit';
+    lblUserInfo6.Hint := 'Total Profit';
+    lblUserInfo7.Hint := 'UserID';
 
     lblUserInfo0.ShowHint := true;
     lblUserInfo1.ShowHint := true;
@@ -3253,6 +3505,7 @@ begin
     lblUserInfo4.ShowHint := true;
     lblUserInfo5.ShowHint := true;
     lblUserInfo6.ShowHint := true;
+    lblUserInfo7.ShowHint:=true;
   end;
 
   procedure TForm2.StartHTTPWorker();
@@ -3286,7 +3539,12 @@ begin
 
   end;
 
-  procedure TForm2.lbCSVErrorClick(Sender: TObject);
+  procedure TForm2.infoTimerTimer(Sender: TObject);
+begin
+  //lblInfoTimer.caption:=inttostr(nextUpdateT
+end;
+
+procedure TForm2.lbCSVErrorClick(Sender: TObject);
   begin
     lbCSVError.Items.clear;
   end;
@@ -3297,12 +3555,12 @@ begin
     gt, ngt: Cardinal;
 
     li: integer;
-    liText: array [1 .. 15] of string;
+    liText: array [1 .. 8] of string;
 
   begin
     while (HTTPWorker1.RequestBusy = true) do
     begin
-      dosleep(100);
+      dosleep(CSleep);
     end;
 
     EnterCriticalSection(HTTPWorkCriticalSection);
@@ -3320,22 +3578,21 @@ begin
     // damit sind die Variablen gesetzt und der Thread kann ab jetzt arbeiten
     flag := 0;
     lblWarten.Caption := '********************';
-    liText[1] :=
-      'Beim ersten Laden der Actions wird ein Cache angelegt, der später für einen schnellen Programmstart sorgt';
-    liText[2] :=
-      'Das erste Laden aller über 3 Millionen Actions kann je nach Internetgeschwindigkeit etliche Minuten dauern';
-    liText[3] := 'Die Grids können durch Rechtsclick in die Spaltenheader sortiert werden';
-    liText[4] := 'Es kann sich nur noch um Stunden handeln ... noch etwas Geduld !';
-    liText[5] := 'Es wurden inzwischen ' + inttostr(length(cwSymbols)) + ' Symbole geladen';
-    liText[6] := 'Es wurden inzwischen ' + inttostr(length(cwUsers)) + ' User geladen';
-    liText[7] := 'Es wurden inzwischen ' + inttostr(length(cwComments)) + ' Kommentare geladen';
+    liText[1] := 'Beim ersten Laden der Actions wird ein Cache angelegt';
+    liText[2] := 'Dieser sorgt später für einen schnellen Programmstart';
+    liText[3] := 'Das erste Laden aller über 3 Millionen Actions ...';
+    liText[4] := 'kann je nach Leitung etliche Minuten dauern';
+    liText[5] := 'Es kann sich nur noch um Stunden handeln ... noch etwas Geduld !';
+    liText[6] := 'Es wurden inzwischen ' + inttostr(length(cwSymbols)) + ' Symbole geladen';
+    liText[7] := 'Es wurden inzwischen ' + inttostr(length(cwUsers)) + ' User geladen';
+    liText[8] := 'Es wurden inzwischen ' + inttostr(length(cwComments)) + ' Kommentare geladen';
     gt := GetTickCount;
     ngt := gt + 1000;
     li := 0;
     while (HTTPWorker1.RequestBusy = true) do
     begin
       gt := GetTickCount;
-      dosleep(100);
+      dosleep(CSleep);
       if flag < 20 then
       begin
         inc(flag);
@@ -3361,6 +3618,8 @@ begin
             li := 1;
           Memo1.lines.clear;
           Memo1.lines.Add(liText[li]);
+          Dialog2.FDialog2.info2(liText[li]);
+
         end;
         ngt := gt + 8000;
 
@@ -3391,12 +3650,22 @@ begin
     begin
       HTTPWorker1.Terminate;
       HTTPWorker1.waitfor;
-      HTTPWorker1.Free;
-      HTTPWorker1.ResultList.Free;
+      HTTPWorker1.free;
+      HTTPWorker1.ResultList.free;
       HTTPWorker1Aktiv := false;
       dosleep(10);
     end;
     DeleteCriticalSection(HTTPWorkCriticalSection);
+
+  end;
+
+  procedure TForm2.FormResize(Sender: TObject);
+  begin
+    PageControl1.height := Form2.height;
+    PageControl1.Width := Form2.Width - pnlIcons.Width;
+    PageControl1.top := -30;
+    if(claus=true) then
+        PageControl1.top := 0;
 
   end;
 
@@ -3406,5 +3675,125 @@ begin
   end;
 
   // Trackbar.Position must run at range 1-255...
+  procedure TForm2.fillStartScreen;
+  begin
+    twoLblStart[1].l1.Caption := 'Users total:';
+    twoLblStart[2].l1.Caption := 'Actions total:';
+    twoLblStart[3].l1.Caption := 'Users online:';
+    twoLblStart[4].l1.Caption := 'Open Actions:';
+    twoLblStart[5].l1.Caption := 'New Users 1 week:';
+    twoLblStart[6].l1.Caption := 'New Users 1 month:';
+    twoLblStart[7].l1.Caption := 'Actions new today:';
+    twoLblStart[8].l1.Caption := 'Actions 1 week:';
+    twoLblStart[9].l1.Caption := 'Profit today:';
+    twoLblStart[10].l1.Caption := 'Profit 1 week:';
+    twoLblStart[11].l1.Caption := 'logged Users 1 day:';
+    twoLblStart[12].l1.Caption := 'logged Users 1 week:';
+    twoLblStart[13].l1.Caption := 'logged Users 1 month:';
+
+    twoLblStart[1].l2.Caption := inttostr(length(cwUsers));
+    twoLblStart[2].l2.Caption := inttostr(length(cwactions)); // 'Actions total:';
+    twoLblStart[3].l2.Caption := '33';//inttostr(info.usersOnline); // '...';//'Users online:';
+    twoLblStart[4].l2.Caption := inttostr(info.openActions); // ''/'Open Actions:';
+    twoLblStart[5].l2.Caption := inttostr(info.newUsers1w); // ''/'New Users 1 week:';
+    twoLblStart[6].l2.Caption := inttostr(info.newUsers1m); // ''/'New Users 1 month:';
+    twoLblStart[7].l2.Caption := inttostr(info.newActions1d); // ''/'Actions new today:';
+    twoLblStart[8].l2.Caption := inttostr(info.newActions1w); // ''/'Actions 1 week:';
+    twoLblStart[9].l2.Caption := FormatFloat('#0.00', info.profit1d); // ''/'Profit today:';
+    twoLblStart[10].l2.Caption := FormatFloat('#0.00', info.profit1w); // ''/'Profit 1 week:';
+    twoLblStart[11].l2.Caption := inttostr(info.logUsers1d); // ''/'Actions new today:';
+    twoLblStart[12].l2.Caption := inttostr(info.logUsers1w); // ''/'Actions new today:';
+    twoLblStart[13].l2.Caption := inttostr(info.logUsers1m); // ''/'Actions new today:';
+    pnlStart.Refresh;
+  end;
+
+  procedure TForm2.computeStartScreen;
+
+  // tInfo=record
+  // usersOnline: integer;
+  // openActions:integer;
+  // newUsers1w:integer;
+  // newUsers1m:integer;
+  // newActions1d:integer;
+  // newActions1w:integer;
+  // newActions1m:integer;
+  // profit1d:double;
+  // profit1w:double;
+  // profit1m:double;
+  // end;
+
+  var
+    i: integer;
+    t, dt: tdatetime;
+  begin
+    t := now;
+    info.newUsers1w := 0;
+    info.newUsers1m := 0;
+    info.logUsers1w := 0;
+    info.logUsers1m := 0;
+    info.newActions1d := 0;
+    info.newActions1w := 0;
+    info.newActions1m := 0;
+    info.profit1d := 0;
+    info.profit1w := 0;
+    info.profit1m := 0;
+    info.openActions := 0;
+    for i := 0 to cwusersct - 1 do
+    begin
+      dt := unixtodatetime(cwUsers[i].registrationTime);
+      if ((now - dt) < 7) then
+        inc(info.newUsers1w);
+      if ((now - dt) < 30) then
+        inc(info.newUsers1m);
+      dt := unixtodatetime(cwUsers[i].lastLoginTime);
+      if ((now - dt) < 1) then
+        inc(info.logUsers1d);
+      if ((now - dt) < 7) then
+        inc(info.logUsers1w);
+      if ((now - dt) < 30) then
+        inc(info.logUsers1m);
+    end;
+    for i := 0 to cwactionsct - 1 do
+    begin
+      dt := unixtodatetime(cwactions[i].openTime);
+      if ((now - dt) < 1) then
+        inc(info.newActions1d);
+      if ((now - dt) < 7) then
+        inc(info.newActions1w);
+      if ((now - dt) < 30) then
+        inc(info.newActions1m);
+
+      if (cwactions[i].typeId = 7) then // balance
+      begin
+        dt := dt;
+      end;
+      if (cwactions[i].typeId <> 7) then // balance
+      begin
+        dt := unixtodatetime(cwactions[i].closeTime);
+
+        // offene Orders weisen immer einen momentanen Profit aus
+        if (cwactions[i].closeTime > 0) then
+        begin
+          if ((now - dt) < 1) then
+            info.profit1d := info.profit1d + cwactions[i].profit;
+          if ((now - dt) < 7) then
+            info.profit1w := info.profit1d + cwactions[i].profit;
+          if ((now - dt) < 30) then
+            info.profit1m := info.profit1d + cwactions[i].profit;
+        end
+        else
+          inc(info.openActions);
+
+      end;
+    end;
+    if (makeLabelsDone = false) then
+    begin
+
+      makeLabelsDone := true;
+      makelabels;
+
+    end;
+    fillStartScreen;
+  end;
 
 end.

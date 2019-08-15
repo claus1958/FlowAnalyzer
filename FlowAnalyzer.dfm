@@ -12,6 +12,7 @@ object Form2: TForm2
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object StatusBar1: TStatusBar
@@ -22,19 +23,17 @@ object Form2: TForm2
     Panels = <>
   end
   object PageControl1: TPageControl
-    Left = 0
+    Left = 77
     Top = 0
-    Width = 1604
-    Height = 907
-    ActivePage = TabSheet10
-    Align = alClient
+    Width = 1527
+    Height = 937
+    ActivePage = TabSheet1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
     Font.Name = 'Tahoma'
     Font.Style = []
     ParentFont = False
-    TabHeight = 26
     TabOrder = 1
     OnChange = PageControl1Change
     OnChanging = PageControl1Changing
@@ -64,17 +63,36 @@ object Form2: TForm2
         TabOrder = 0
         OnClick = btnLadeDialogClick
       end
-      object Panel23: TPanel
-        Left = 20
-        Top = 32
-        Width = 1433
-        Height = 789
+      object pnlStartBack: TPanel
+        Left = 0
+        Top = 0
+        Width = 1519
+        Height = 903
+        Align = alClient
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clGrayText
+        Font.Height = -96
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         TabOrder = 1
+        StyleElements = [seClient, seBorder]
+        OnResize = pnlStartBackResize
         object pnlStart: TPanel
-          Left = 472
-          Top = 68
-          Width = 537
+          Left = 252
+          Top = 96
+          Width = 969
           Height = 637
+          Align = alCustom
+          Caption = 'FLOW ANALYZER'
+          Ctl3D = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clMedGray
+          Font.Height = -96
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentCtl3D = False
+          ParentFont = False
           TabOrder = 0
         end
       end
@@ -88,18 +106,11 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 5
       ParentFont = False
-      object Splitter1: TSplitter
-        Left = 229
-        Top = 0
-        Width = 8
-        Height = 871
-        ExplicitLeft = 177
-      end
       object CategoryPanelGroup1: TCategoryPanelGroup
-        Left = 237
+        Left = 0
         Top = 0
-        Width = 1359
-        Height = 871
+        Width = 1519
+        Height = 903
         VertScrollBar.Tracking = True
         Align = alClient
         HeaderFont.Charset = DEFAULT_CHARSET
@@ -120,17 +131,17 @@ object Form2: TForm2
           inline DynGrid7: TDynGrid
             Left = 0
             Top = 0
-            Width = 1355
+            Width = 1515
             Height = 219
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 1355
+            ExplicitWidth = 1515
             ExplicitHeight = 219
             inherited Panel1: TPanel
-              Width = 1355
+              Width = 1515
               Height = 5
               Align = alTop
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
@@ -142,25 +153,25 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 1355
+              Width = 1515
               Height = 214
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 214
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 1337
+                Width = 1497
                 Height = 212
                 Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1337
+                ExplicitWidth = 1497
                 ExplicitHeight = 212
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1338
+                Left = 1498
                 Height = 212
-                ExplicitLeft = 1338
+                ExplicitLeft = 1498
                 ExplicitHeight = 212
               end
             end
@@ -176,17 +187,17 @@ object Form2: TForm2
           inline DynGrid6: TDynGrid
             Left = 0
             Top = 0
-            Width = 1355
+            Width = 1515
             Height = 174
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 1355
+            ExplicitWidth = 1515
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 1355
+              Width = 1515
               Height = 5
               Align = alTop
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
@@ -198,25 +209,25 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 1355
+              Width = 1515
               Height = 169
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 1337
+                Width = 1497
                 Height = 167
                 Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1337
+                ExplicitWidth = 1497
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1338
+                Left = 1498
                 Height = 167
-                ExplicitLeft = 1338
+                ExplicitLeft = 1498
                 ExplicitHeight = 167
               end
             end
@@ -232,17 +243,17 @@ object Form2: TForm2
           inline DynGrid5: TDynGrid
             Left = 0
             Top = 0
-            Width = 1355
+            Width = 1515
             Height = 174
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 1355
+            ExplicitWidth = 1515
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 1355
+              Width = 1515
               Height = 5
               Align = alTop
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
@@ -254,25 +265,25 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 1355
+              Width = 1515
               Height = 169
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 1337
+                Width = 1497
                 Height = 167
                 Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1337
+                ExplicitWidth = 1497
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1338
+                Left = 1498
                 Height = 167
-                ExplicitLeft = 1338
+                ExplicitLeft = 1498
                 ExplicitHeight = 167
               end
             end
@@ -290,21 +301,22 @@ object Form2: TForm2
           ParentFont = False
           TabOrder = 3
           OnCollapse = CategoryPanel1Collapse
+          OnClick = CategoryPanel1Click
           OnExpand = CategoryPanel1Expand
           inline DynGrid3: TDynGrid
             Left = 0
             Top = 0
-            Width = 1355
+            Width = 1515
             Height = 174
             Align = alClient
             TabOrder = 0
-            ExplicitWidth = 1355
+            ExplicitWidth = 1515
             ExplicitHeight = 174
             inherited Panel1: TPanel
-              Width = 1355
+              Width = 1515
               Height = 5
               Align = alTop
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 5
               inherited lblTime: TLabel
                 Width = 38
@@ -316,25 +328,25 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 5
-              Width = 1355
+              Width = 1515
               Height = 169
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 5
-              ExplicitWidth = 1355
+              ExplicitWidth = 1515
               ExplicitHeight = 169
               inherited SG: TStringGridSorted
                 Tag = 3
-                Width = 1337
+                Width = 1497
                 Height = 167
                 Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1337
+                ExplicitWidth = 1497
                 ExplicitHeight = 167
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1338
+                Left = 1498
                 Height = 167
-                ExplicitLeft = 1338
+                ExplicitLeft = 1498
                 ExplicitHeight = 167
               end
             end
@@ -344,8 +356,8 @@ object Form2: TForm2
       object Panel3: TPanel
         Left = 0
         Top = 0
-        Width = 229
-        Height = 871
+        Width = 0
+        Height = 903
         Align = alLeft
         TabOrder = 1
         object lblAllDataInfo: TLabel
@@ -420,26 +432,28 @@ object Form2: TForm2
       object Panel6: TPanel
         Left = 0
         Top = 0
-        Width = 1596
-        Height = 871
+        Width = 1519
+        Height = 903
         Align = alClient
         TabOrder = 0
         object Splitter2: TSplitter
-          Left = 322
+          Left = 501
           Top = 1
-          Height = 869
+          Height = 901
+          ExplicitLeft = 322
+          ExplicitHeight = 869
         end
         object Panel7: TPanel
           Left = 1
           Top = 1
-          Width = 321
-          Height = 869
+          Width = 500
+          Height = 901
           Align = alLeft
           TabOrder = 0
           object Panel13: TPanel
             Left = 1
             Top = 1
-            Width = 319
+            Width = 498
             Height = 1
             Align = alTop
             TabOrder = 0
@@ -465,14 +479,14 @@ object Form2: TForm2
           inline DynGrid10: TDynGrid
             Left = 1
             Top = 2
-            Width = 319
-            Height = 866
+            Width = 498
+            Height = 898
             Align = alClient
             TabOrder = 1
             ExplicitLeft = 1
             ExplicitTop = 2
-            ExplicitWidth = 319
-            ExplicitHeight = 866
+            ExplicitWidth = 498
+            ExplicitHeight = 898
             inherited Panel1: TPanel
               inherited lblTime: TLabel
                 Width = 38
@@ -484,61 +498,63 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 0
-              Width = 319
-              Height = 866
+              Width = 498
+              Height = 898
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 0
-              ExplicitWidth = 319
-              ExplicitHeight = 866
+              ExplicitWidth = 498
+              ExplicitHeight = 898
               inherited SG: TStringGridSorted
-                Width = 301
-                Height = 864
+                Width = 480
+                Height = 896
                 OnMouseDown = DynGrid10SGMouseDown
-                ExplicitWidth = 301
-                ExplicitHeight = 864
+                ExplicitWidth = 480
+                ExplicitHeight = 896
               end
               inherited ScrollBar1: TScrollBar
-                Left = 302
-                Height = 864
-                ExplicitLeft = 302
-                ExplicitHeight = 864
+                Left = 481
+                Height = 896
+                ExplicitLeft = 481
+                ExplicitHeight = 896
               end
             end
           end
         end
         object Panel8: TPanel
-          Left = 325
+          Left = 504
           Top = 1
-          Width = 1270
-          Height = 869
+          Width = 1014
+          Height = 901
           Align = alClient
-          Caption = 'Panel8'
           TabOrder = 1
           object Splitter3: TSplitter
             Left = 1
             Top = 201
-            Width = 1268
+            Width = 1012
             Height = 8
             Cursor = crVSplit
             Align = alTop
             ExplicitTop = 83
+            ExplicitWidth = 1268
           end
           inline DynGrid4: TDynGrid
             Left = 1
             Top = 209
-            Width = 1268
-            Height = 659
+            Width = 1012
+            Height = 691
             Align = alClient
             TabOrder = 0
             ExplicitLeft = 1
             ExplicitTop = 209
-            ExplicitWidth = 1268
-            ExplicitHeight = 659
+            ExplicitWidth = 1012
+            ExplicitHeight = 691
             inherited Panel1: TPanel
-              Width = 1268
+              Width = 1012
+              Height = 0
               Align = alTop
-              ExplicitWidth = 1268
+              ExplicitWidth = 1012
+              ExplicitHeight = 0
               inherited lblTime: TLabel
                 Width = 38
                 Height = 14
@@ -548,43 +564,45 @@ object Form2: TForm2
             end
             inherited Panel2: TPanel
               Left = 0
-              Top = 41
-              Width = 1268
-              Height = 618
+              Top = 0
+              Width = 1012
+              Height = 691
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 41
-              ExplicitWidth = 1268
-              ExplicitHeight = 618
+              ExplicitTop = 0
+              ExplicitWidth = 1012
+              ExplicitHeight = 691
               inherited SG: TStringGridSorted
                 Tag = 4
-                Width = 1250
-                Height = 616
-                ExplicitWidth = 1250
-                ExplicitHeight = 616
+                Width = 994
+                Height = 689
+                ExplicitWidth = 994
+                ExplicitHeight = 689
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1251
-                Height = 616
-                ExplicitLeft = 1251
-                ExplicitHeight = 616
+                Left = 995
+                Height = 689
+                ExplicitLeft = 995
+                ExplicitHeight = 689
               end
             end
           end
           object Panel9: TPanel
             Left = 1
             Top = 1
-            Width = 1268
+            Width = 1012
             Height = 200
             Align = alTop
             TabOrder = 1
             object lbUserInfo: TListBox
-              Left = 592
-              Top = 2
-              Width = 676
+              Left = 485
+              Top = 1
+              Width = 526
               Height = 198
+              Align = alClient
+              Color = 5263440
               Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
+              Font.Color = clSilver
               Font.Height = -15
               Font.Name = 'Tahoma'
               Font.Style = []
@@ -592,13 +610,26 @@ object Form2: TForm2
               ParentFont = False
               TabOrder = 0
               TabWidth = 66
+              StyleElements = [seFont, seBorder]
             end
             object Panel14: TPanel
-              Left = 4
-              Top = 4
-              Width = 582
-              Height = 189
+              Left = 1
+              Top = 1
+              Width = 484
+              Height = 198
+              Align = alLeft
+              Color = clGray
+              Ctl3D = False
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -12
+              Font.Name = 'Tahoma'
+              Font.Style = []
+              ParentBackground = False
+              ParentCtl3D = False
+              ParentFont = False
               TabOrder = 1
+              StyleElements = [seFont, seBorder]
               object lblUserInfo0: TLabel
                 Left = 8
                 Top = 12
@@ -606,11 +637,12 @@ object Form2: TForm2
                 Height = 23
                 Caption = '-'
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -19
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
               object lblUserInfo1: TLabel
                 Left = 8
@@ -619,11 +651,12 @@ object Form2: TForm2
                 Height = 19
                 Caption = '-'
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -16
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
               object lblUserInfo2: TLabel
                 Left = 8
@@ -632,11 +665,12 @@ object Form2: TForm2
                 Height = 19
                 Caption = '-'
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -16
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
               object lblUserInfo3: TLabel
                 Left = 8
@@ -645,11 +679,12 @@ object Form2: TForm2
                 Height = 19
                 Caption = '-'
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -16
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
               object lblUserInfo4: TLabel
                 Left = 8
@@ -658,11 +693,12 @@ object Form2: TForm2
                 Height = 19
                 Caption = '-'
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -16
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
               object lblUserInfo5: TLabel
                 Left = 8
@@ -671,11 +707,12 @@ object Form2: TForm2
                 Height = 19
                 Caption = '-'
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -16
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
               object lblUserInfo6: TLabel
                 Left = 9
@@ -683,11 +720,26 @@ object Form2: TForm2
                 Width = 5
                 Height = 19
                 Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWindowText
+                Font.Color = clWhite
                 Font.Height = -16
                 Font.Name = 'Tahoma'
                 Font.Style = []
                 ParentFont = False
+                StyleElements = [seClient, seBorder]
+              end
+              object lblUserInfo7: TLabel
+                Left = 364
+                Top = 15
+                Width = 6
+                Height = 19
+                Caption = '-'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWhite
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+                StyleElements = [seClient, seBorder]
               end
             end
           end
@@ -705,15 +757,15 @@ object Form2: TForm2
       object Panel26: TPanel
         Left = 0
         Top = 0
-        Width = 1596
-        Height = 871
+        Width = 1519
+        Height = 903
         Align = alClient
         TabOrder = 0
         object Panel34: TPanel
           Left = 1
           Top = 1
           Width = 524
-          Height = 869
+          Height = 901
           Align = alLeft
           TabOrder = 0
           object Panel36: TPanel
@@ -730,22 +782,9 @@ object Form2: TForm2
               Width = 4
               Height = 14
             end
-            object Label11: TLabel
-              Left = 10
-              Top = 655
-              Width = 91
-              Height = 19
-              Caption = 'Samplefilters'
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -16
-              Font.Name = 'Tahoma'
-              Font.Style = []
-              ParentFont = False
-            end
             object btnDoubleRemoveCw: TButton
-              Left = 265
-              Top = 590
+              Left = 409
+              Top = 722
               Width = 82
               Height = 25
               Caption = 'DblRemove'
@@ -754,8 +793,8 @@ object Form2: TForm2
               OnClick = btnDoubleRemoveCwClick
             end
             object btnSelectClearCw: TButton
-              Left = 168
-              Top = 590
+              Left = 419
+              Top = 726
               Width = 91
               Height = 25
               Caption = 'Clear all'
@@ -764,8 +803,8 @@ object Form2: TForm2
               OnClick = btnSelectClearCwClick
             end
             object Button5: TButton
-              Left = 377
-              Top = 590
+              Left = 385
+              Top = 711
               Width = 133
               Height = 25
               Caption = 'Balance direkt filtern'
@@ -830,33 +869,6 @@ object Form2: TForm2
                 Caption = 'list'
               end
             end
-            object btnSample1: TButton
-              Left = 7
-              Top = 680
-              Width = 120
-              Height = 25
-              Caption = 'Balance only'
-              TabOrder = 4
-              OnClick = btnSampleClick
-            end
-            object btnSample2: TButton
-              Left = 6
-              Top = 711
-              Width = 120
-              Height = 25
-              Caption = 'Winner>1000'
-              TabOrder = 5
-              OnClick = btnSampleClick
-            end
-            object btnSample3: TButton
-              Left = 6
-              Top = 742
-              Width = 120
-              Height = 25
-              Caption = 'Gold 2018 Loosers'
-              TabOrder = 6
-              OnClick = btnSampleClick
-            end
             object pnlGrouping: TPanel
               Left = 5
               Top = 351
@@ -864,7 +876,7 @@ object Form2: TForm2
               Height = 154
               Color = clGray
               ParentBackground = False
-              TabOrder = 7
+              TabOrder = 4
               object Label3: TLabel
                 Left = 16
                 Top = 6
@@ -905,38 +917,94 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
-              TabOrder = 8
+              TabOrder = 5
               OnClick = btnDoFilterClick
             end
             object Panel22: TPanel
-              Left = 140
-              Top = 660
-              Width = 369
-              Height = 109
-              Color = clGray
-              ParentBackground = False
-              TabOrder = 9
+              Left = 5
+              Top = 594
+              Width = 501
+              Height = 151
+              TabOrder = 6
+              object Label11: TLabel
+                Left = 16
+                Top = 16
+                Width = 59
+                Height = 19
+                Caption = 'Samples'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -16
+                Font.Name = 'Tahoma'
+                Font.Style = []
+                ParentFont = False
+              end
+              object btnSample1: TButton
+                Left = 10
+                Top = 46
+                Width = 120
+                Height = 25
+                Caption = 'Balance only'
+                TabOrder = 0
+                OnClick = btnSampleClick
+              end
+              object btnSample2: TButton
+                Left = 10
+                Top = 108
+                Width = 120
+                Height = 25
+                Caption = 'Winner>1000'
+                TabOrder = 1
+                OnClick = btnSampleClick
+              end
+              object btnSample3: TButton
+                Left = 10
+                Top = 77
+                Width = 120
+                Height = 25
+                Caption = 'Gold 2018 Loosers'
+                TabOrder = 2
+                OnClick = btnSampleClick
+              end
+              object btnSample4: TButton
+                Left = 142
+                Top = 46
+                Width = 123
+                Height = 25
+                Caption = 'Gold Open Winners'
+                TabOrder = 3
+                OnClick = btnSampleClick
+              end
             end
           end
         end
         object Panel4: TPanel
           Left = 525
           Top = 1
-          Width = 1070
-          Height = 869
+          Width = 993
+          Height = 901
           Align = alClient
           TabOrder = 1
+          object Splitter1: TSplitter
+            Left = 1
+            Top = 455
+            Width = 991
+            Height = 10
+            Cursor = crVSplit
+            Align = alTop
+            ExplicitWidth = 521
+          end
           object Panel5: TPanel
             Left = 1
             Top = 1
-            Width = 1068
+            Width = 991
             Height = 41
             Align = alTop
             TabOrder = 0
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 1066
+              Width = 989
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -953,13 +1021,13 @@ object Form2: TForm2
           inline DynGrid2: TDynGrid
             Left = 1
             Top = 42
-            Width = 1068
+            Width = 991
             Height = 413
             Align = alTop
             TabOrder = 1
             ExplicitLeft = 1
             ExplicitTop = 42
-            ExplicitWidth = 1068
+            ExplicitWidth = 991
             ExplicitHeight = 413
             inherited Panel1: TPanel
               inherited lblTime: TLabel
@@ -972,44 +1040,44 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 0
-              Width = 1068
+              Width = 991
               Height = 413
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 0
-              ExplicitWidth = 1068
+              ExplicitWidth = 991
               ExplicitHeight = 413
               inherited SG: TStringGridSorted
                 Tag = 2
-                Width = 1050
+                Width = 973
                 Height = 411
                 Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1050
+                ExplicitWidth = 973
                 ExplicitHeight = 411
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1051
+                Left = 974
                 Height = 411
-                ExplicitLeft = 1051
+                ExplicitLeft = 974
                 ExplicitHeight = 411
               end
             end
           end
           inline DynGrid9: TDynGrid
             Left = 1
-            Top = 455
-            Width = 1068
-            Height = 413
+            Top = 465
+            Width = 991
+            Height = 435
             Align = alClient
             TabOrder = 2
             ExplicitLeft = 1
-            ExplicitTop = 455
-            ExplicitWidth = 1068
-            ExplicitHeight = 413
+            ExplicitTop = 465
+            ExplicitWidth = 991
+            ExplicitHeight = 435
             inherited Panel1: TPanel
-              Width = 1068
+              Width = 991
               Align = alTop
-              ExplicitWidth = 1068
+              ExplicitWidth = 991
               inherited lblTime: TLabel
                 Width = 53
                 Height = 19
@@ -1022,24 +1090,24 @@ object Form2: TForm2
             inherited Panel2: TPanel
               Left = 0
               Top = 41
-              Width = 1068
-              Height = 372
+              Width = 991
+              Height = 394
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
-              ExplicitWidth = 1068
-              ExplicitHeight = 372
+              ExplicitWidth = 991
+              ExplicitHeight = 394
               inherited SG: TStringGridSorted
-                Width = 1050
-                Height = 370
-                ExplicitWidth = 1050
-                ExplicitHeight = 370
+                Width = 973
+                Height = 392
+                ExplicitWidth = 973
+                ExplicitHeight = 392
               end
               inherited ScrollBar1: TScrollBar
-                Left = 1051
-                Height = 370
-                ExplicitLeft = 1051
-                ExplicitHeight = 370
+                Left = 974
+                Height = 392
+                ExplicitLeft = 974
+                ExplicitHeight = 392
               end
             end
           end
@@ -1276,26 +1344,26 @@ object Form2: TForm2
       object Panel12: TPanel
         Left = 0
         Top = 0
-        Width = 1596
-        Height = 871
+        Width = 1519
+        Height = 903
         Align = alClient
         Caption = 'Panel12'
         TabOrder = 0
         inline DynGrid1: TDynGrid
           Left = 1
           Top = 1
-          Width = 1594
-          Height = 869
+          Width = 1517
+          Height = 901
           Align = alClient
           TabOrder = 0
           ExplicitLeft = 1
           ExplicitTop = 1
-          ExplicitWidth = 1594
-          ExplicitHeight = 869
+          ExplicitWidth = 1517
+          ExplicitHeight = 901
           inherited Panel1: TPanel
-            Width = 1594
+            Width = 1517
             Align = alTop
-            ExplicitWidth = 1594
+            ExplicitWidth = 1517
             inherited lblTime: TLabel
               Width = 38
               Height = 14
@@ -1306,26 +1374,26 @@ object Form2: TForm2
           inherited Panel2: TPanel
             Left = 0
             Top = 41
-            Width = 1594
-            Height = 828
+            Width = 1517
+            Height = 860
             Align = alClient
             ExplicitLeft = 0
             ExplicitTop = 41
-            ExplicitWidth = 1594
-            ExplicitHeight = 828
+            ExplicitWidth = 1517
+            ExplicitHeight = 860
             inherited SG: TStringGridSorted
               Tag = 1
-              Width = 1576
-              Height = 826
+              Width = 1499
+              Height = 858
               Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goFixedColClick]
-              ExplicitWidth = 1576
-              ExplicitHeight = 826
+              ExplicitWidth = 1499
+              ExplicitHeight = 858
             end
             inherited ScrollBar1: TScrollBar
-              Left = 1577
-              Height = 826
-              ExplicitLeft = 1577
-              ExplicitHeight = 826
+              Left = 1500
+              Height = 858
+              ExplicitLeft = 1500
+              ExplicitHeight = 858
             end
           end
         end
@@ -1347,7 +1415,7 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 261
-        Height = 871
+        Height = 903
         Align = alLeft
         TabOrder = 0
         object Label4: TLabel
@@ -1414,14 +1482,14 @@ object Form2: TForm2
       object Panel16: TPanel
         Left = 261
         Top = 0
-        Width = 1335
-        Height = 871
+        Width = 1258
+        Height = 903
         Align = alClient
         TabOrder = 1
         object Panel17: TPanel
           Left = 1
           Top = 1
-          Width = 1333
+          Width = 1256
           Height = 33
           Align = alTop
           TabOrder = 0
@@ -1429,16 +1497,16 @@ object Form2: TForm2
         object Panel18: TPanel
           Left = 1
           Top = 34
-          Width = 1333
-          Height = 836
+          Width = 1256
+          Height = 868
           Align = alClient
           Caption = 'Panel18'
           TabOrder = 1
           object CategoryPanelGroup3: TCategoryPanelGroup
             Left = 1
             Top = 1
-            Width = 1331
-            Height = 834
+            Width = 1254
+            Height = 866
             VertScrollBar.Tracking = True
             Align = alClient
             HeaderFont.Charset = DEFAULT_CHARSET
@@ -1457,17 +1525,17 @@ object Form2: TForm2
               inline DynGrid8: TDynGrid
                 Left = 0
                 Top = 0
-                Width = 1310
+                Width = 1233
                 Height = 274
                 Align = alClient
                 TabOrder = 0
-                ExplicitWidth = 1310
+                ExplicitWidth = 1233
                 ExplicitHeight = 274
                 inherited Panel1: TPanel
-                  Width = 1310
+                  Width = 1233
                   Height = 5
                   Align = alTop
-                  ExplicitWidth = 1310
+                  ExplicitWidth = 1233
                   ExplicitHeight = 5
                   inherited lblTime: TLabel
                     Width = 53
@@ -1479,25 +1547,25 @@ object Form2: TForm2
                 inherited Panel2: TPanel
                   Left = 0
                   Top = 5
-                  Width = 1310
+                  Width = 1233
                   Height = 269
                   Align = alClient
                   ExplicitLeft = 0
                   ExplicitTop = 5
-                  ExplicitWidth = 1310
+                  ExplicitWidth = 1233
                   ExplicitHeight = 269
                   inherited SG: TStringGridSorted
                     Tag = 3
-                    Width = 1292
+                    Width = 1215
                     Height = 267
                     Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                    ExplicitWidth = 1292
+                    ExplicitWidth = 1215
                     ExplicitHeight = 267
                   end
                   inherited ScrollBar1: TScrollBar
-                    Left = 1293
+                    Left = 1216
                     Height = 267
-                    ExplicitLeft = 1293
+                    ExplicitLeft = 1216
                     ExplicitHeight = 267
                   end
                 end
@@ -1513,211 +1581,11 @@ object Form2: TForm2
               object Panel20: TPanel
                 Left = 0
                 Top = 0
-                Width = 1310
+                Width = 1233
                 Height = 539
                 Align = alClient
                 Caption = 'Panel20'
                 TabOrder = 0
-                object SymbolsGroupsPieChartView: TAdvGDIPChartView
-                  Left = 1
-                  Top = 1
-                  Width = 1308
-                  Height = 537
-                  Align = alClient
-                  Color = clWhite
-                  Panes = <
-                    item
-                      Bands.Distance = 2.000000000000000000
-                      Background.Color = clSilver
-                      Background.ColorTo = 3355443
-                      Background.Font.Charset = DEFAULT_CHARSET
-                      Background.Font.Color = clWindowText
-                      Background.Font.Height = -11
-                      Background.Font.Name = 'Tahoma'
-                      Background.Font.Style = []
-                      Background.GradientType = gtForwardDiagonal
-                      BorderColor = clBlack
-                      CrossHair.CrossHairYValues.Position = [chYAxis]
-                      CrossHair.Distance = 0
-                      Height = 100.000000000000000000
-                      Legend.Color = clGray
-                      Legend.ColorTo = clSilver
-                      Legend.Font.Charset = DEFAULT_CHARSET
-                      Legend.Font.Color = clWindowText
-                      Legend.Font.Height = -11
-                      Legend.Font.Name = 'Tahoma'
-                      Legend.Font.Style = []
-                      Legend.GradientType = gtVertical
-                      Legend.Shadow = True
-                      Name = 'ChartPane 0'
-                      Options = []
-                      Range.StartDate = 43675.893897118050000000
-                      Range.RangeTo = 5
-                      Series = <
-                        item
-                          AutoRange = arDisabled
-                          Pie.Size = 500
-                          Pie.ShowValues = True
-                          Pie.ValuePosition = vpOutSideSlice
-                          Pie.ShowLegendOnSlice = True
-                          Pie.ValueFont.Charset = DEFAULT_CHARSET
-                          Pie.ValueFont.Color = clWindowText
-                          Pie.ValueFont.Height = -11
-                          Pie.ValueFont.Name = 'Tahoma'
-                          Pie.ValueFont.Style = []
-                          Pie.LegendFont.Charset = DEFAULT_CHARSET
-                          Pie.LegendFont.Color = clWindowText
-                          Pie.LegendFont.Height = -11
-                          Pie.LegendFont.Name = 'Tahoma'
-                          Pie.LegendFont.Style = []
-                          Annotations = <>
-                          ChartType = ctPie
-                          Color = 22015
-                          CrossHairYValue.BorderWidth = 0
-                          CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                          CrossHairYValue.Font.Color = clWindowText
-                          CrossHairYValue.Font.Height = -11
-                          CrossHairYValue.Font.Name = 'Tahoma'
-                          CrossHairYValue.Font.Style = []
-                          CrossHairYValue.GradientSteps = 0
-                          LineColor = 22015
-                          LegendText = 'Serie 0'
-                          Marker.MarkerType = mCircle
-                          Marker.MarkerColor = 22015
-                          Marker.SelectedColor = 22015
-                          Marker.SelectedLineColor = clBlack
-                          Marker.SelectedSize = 15
-                          Maximum = 12.000000000000000000
-                          Name = 'Serie 0'
-                          ValueFont.Charset = DEFAULT_CHARSET
-                          ValueFont.Color = clWindowText
-                          ValueFont.Height = -11
-                          ValueFont.Name = 'Tahoma'
-                          ValueFont.Style = []
-                          ValueFormat = '%g'
-                          ValueWidth = 80
-                          XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                          XAxis.DateTimeFont.Color = clWindowText
-                          XAxis.DateTimeFont.Height = -11
-                          XAxis.DateTimeFont.Name = 'Tahoma'
-                          XAxis.DateTimeFont.Style = []
-                          XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                          XAxis.MajorFont.Color = clWindowText
-                          XAxis.MajorFont.Height = -11
-                          XAxis.MajorFont.Name = 'Tahoma'
-                          XAxis.MajorFont.Style = []
-                          XAxis.MajorUnit = 1.000000000000000000
-                          XAxis.MajorUnitSpacing = 0
-                          XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                          XAxis.MinorFont.Color = clWindowText
-                          XAxis.MinorFont.Height = -11
-                          XAxis.MinorFont.Name = 'Tahoma'
-                          XAxis.MinorFont.Style = []
-                          XAxis.MinorUnit = 1.000000000000000000
-                          XAxis.MinorUnitSpacing = 0
-                          XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                          XAxis.TextTop.Font.Color = clWindowText
-                          XAxis.TextTop.Font.Height = -11
-                          XAxis.TextTop.Font.Name = 'Tahoma'
-                          XAxis.TextTop.Font.Style = []
-                          XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                          XAxis.TextBottom.Font.Color = clWindowText
-                          XAxis.TextBottom.Font.Height = -11
-                          XAxis.TextBottom.Font.Name = 'Tahoma'
-                          XAxis.TextBottom.Font.Style = []
-                          XAxis.TickMarkSize = 6
-                          YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                          YAxis.MajorFont.Color = clWindowText
-                          YAxis.MajorFont.Height = -11
-                          YAxis.MajorFont.Name = 'Tahoma'
-                          YAxis.MajorFont.Style = []
-                          YAxis.MajorUnit = 1.000000000000000000
-                          YAxis.MajorUnitSpacing = 0
-                          YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                          YAxis.MinorFont.Color = clWindowText
-                          YAxis.MinorFont.Height = -11
-                          YAxis.MinorFont.Name = 'Tahoma'
-                          YAxis.MinorFont.Style = []
-                          YAxis.MinorUnitSpacing = 10
-                          YAxis.TextLeft.Angle = -90
-                          YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                          YAxis.TextLeft.Font.Color = clWindowText
-                          YAxis.TextLeft.Font.Height = -11
-                          YAxis.TextLeft.Font.Name = 'Tahoma'
-                          YAxis.TextLeft.Font.Style = []
-                          YAxis.TextRight.Angle = 90
-                          YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                          YAxis.TextRight.Font.Color = clWindowText
-                          YAxis.TextRight.Font.Height = -11
-                          YAxis.TextRight.Font.Name = 'Tahoma'
-                          YAxis.TextRight.Font.Style = []
-                          YAxis.TickMarkColor = clRed
-                          BarValueTextFont.Charset = DEFAULT_CHARSET
-                          BarValueTextFont.Color = clWindowText
-                          BarValueTextFont.Height = -11
-                          BarValueTextFont.Name = 'Tahoma'
-                          BarValueTextFont.Style = []
-                          XAxisGroups = <>
-                          GradientType = gtHorizontal
-                          SerieType = stNormal
-                        end>
-                      Title.Alignment = taCenter
-                      Title.Color = clGray
-                      Title.Font.Charset = DEFAULT_CHARSET
-                      Title.Font.Color = clWindowText
-                      Title.Font.Height = -11
-                      Title.Font.Name = 'Tahoma'
-                      Title.Font.Style = []
-                      Title.Position = tTop
-                      Title.Text = 'Darstellung'
-                      XAxis.Font.Charset = DEFAULT_CHARSET
-                      XAxis.Font.Color = clWindowText
-                      XAxis.Font.Height = -11
-                      XAxis.Font.Name = 'Tahoma'
-                      XAxis.Font.Style = []
-                      XAxis.Position = xNone
-                      XAxis.Text = 'X-axis'
-                      XGrid.MajorFont.Charset = DEFAULT_CHARSET
-                      XGrid.MajorFont.Color = clWindowText
-                      XGrid.MajorFont.Height = -11
-                      XGrid.MajorFont.Name = 'Tahoma'
-                      XGrid.MajorFont.Style = []
-                      XGrid.MinorFont.Charset = DEFAULT_CHARSET
-                      XGrid.MinorFont.Color = clWindowText
-                      XGrid.MinorFont.Height = -11
-                      XGrid.MinorFont.Name = 'Tahoma'
-                      XGrid.MinorFont.Style = []
-                      YAxis.Font.Charset = DEFAULT_CHARSET
-                      YAxis.Font.Color = clWindowText
-                      YAxis.Font.Height = -11
-                      YAxis.Font.Name = 'Tahoma'
-                      YAxis.Font.Style = []
-                      YAxis.Position = yNone
-                      YAxis.Size = 40
-                      YAxis.Text = 'Y-axis'
-                      YGrid.MinorDistance = 1.000000000000000000
-                      YGrid.MajorDistance = 2.000000000000000000
-                    end>
-                  Tracker.Font.Charset = DEFAULT_CHARSET
-                  Tracker.Font.Color = clWindowText
-                  Tracker.Font.Height = -11
-                  Tracker.Font.Name = 'Tahoma'
-                  Tracker.Font.Style = []
-                  Tracker.Title.Font.Charset = DEFAULT_CHARSET
-                  Tracker.Title.Font.Color = clWindowText
-                  Tracker.Title.Font.Height = -11
-                  Tracker.Title.Font.Name = 'Tahoma'
-                  Tracker.Title.Font.Style = []
-                  Tracker.Title.Text = 'TRACKER'
-                  Tracker.OpenValuePrefix = 'O:'
-                  Tracker.HighValuePrefix = 'H:'
-                  Tracker.LowValuePrefix = 'L:'
-                  Tracker.CloseValuePrefix = 'C:'
-                  Version = '4.2.1.6 APR, 2018'
-                  XAxisZoomSensitivity = 1.000000000000000000
-                  YAxisZoomSensitivity = 1.000000000000000000
-                  DoubleBuffered = True
-                end
               end
             end
           end
@@ -1736,1149 +1604,6 @@ object Form2: TForm2
         Caption = 'Button9'
         TabOrder = 0
         OnClick = Button9Click
-      end
-      object AdvGDIPChartView2: TAdvGDIPChartView
-        Left = 859
-        Top = -8
-        Width = 633
-        Height = 561
-        ShowDesignHelper = False
-        Color = clWhite
-        Panes = <
-          item
-            Bands.Distance = 2.000000000000000000
-            Bands.GradientDirection = cgdVertical
-            Bands.PrimaryColorTo = clSilver
-            Bands.SecondaryColor = clGray
-            Bands.SecondaryColorTo = clGray
-            Background.BackGroundPosition = bpStretched
-            Background.Color = 26367
-            Background.ColorTo = 10092543
-            Background.Font.Charset = DEFAULT_CHARSET
-            Background.Font.Color = clWindowText
-            Background.Font.Height = -11
-            Background.Font.Name = 'Tahoma'
-            Background.Font.Style = []
-            Background.PictureVisible = True
-            Background.GradientType = gtHorizontal
-            BorderColor = clGreen
-            BorderWidth = 7
-            CrossHair.CrossHairYValues.Position = [chYAxis]
-            CrossHair.Distance = 0
-            Height = 100.000000000000000000
-            Legend.ColorTo = clWhite
-            Legend.Font.Charset = DEFAULT_CHARSET
-            Legend.Font.Color = clWindowText
-            Legend.Font.Height = -19
-            Legend.Font.Name = 'Tahoma'
-            Legend.Font.Style = []
-            Legend.Left = 5
-            Legend.Top = 5
-            Legend.RectangleSize = 20
-            Legend.Visible = False
-            Legend.GradientType = gtVertical
-            Legend.Opacity = 100
-            Legend.OpacityTo = 100
-            Name = 'ChartPane 0'
-            Options = []
-            Range.RangeTo = 9
-            Series = <
-              item
-                AutoRange = arEnabledZeroBased
-                Pie.Position = spCustom
-                Pie.Left = 111
-                Pie.Top = 111
-                Pie.Size = 120
-                Pie.ShowValues = True
-                Pie.ValueFont.Charset = ANSI_CHARSET
-                Pie.ValueFont.Color = clWhite
-                Pie.ValueFont.Height = -13
-                Pie.ValueFont.Name = 'Tw Cen MT'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = ANSI_CHARSET
-                Pie.LegendFont.Color = clBlack
-                Pie.LegendFont.Height = -13
-                Pie.LegendFont.Name = 'Tw Cen MT'
-                Pie.LegendFont.Style = []
-                Pie.LegendTitleColor = clWhite
-                Pie.LegendTitleColorTo = 52377
-                Pie.LegendTitleGradientType = gtHatch
-                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
-                Annotations = <>
-                BorderColor = clGray
-                ChartType = ctPie
-                Color = clNone
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LegendText = 'Pie Chart 1'
-                Marker.MarkerColorTo = clBlack
-                Maximum = 12.000000000000000000
-                Name = 'Serie 1'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%.2g'
-                ValueType = cvPercentage
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 0
-                YAxis.Position = yNone
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                Angle = 90
-                Opacity = 209
-                GradientType = gtBackwardDiagonal
-                SerieType = stNormal
-              end
-              item
-                AutoRange = arEnabledZeroBased
-                Pie.Position = spCustom
-                Pie.Left = 121
-                Pie.Top = 555
-                Pie.Size = 120
-                Pie.ShowValues = True
-                Pie.ValueFont.Charset = ANSI_CHARSET
-                Pie.ValueFont.Color = clWhite
-                Pie.ValueFont.Height = -13
-                Pie.ValueFont.Name = 'Tw Cen MT'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = ANSI_CHARSET
-                Pie.LegendFont.Color = clBlack
-                Pie.LegendFont.Height = -13
-                Pie.LegendFont.Name = 'Tw Cen MT'
-                Pie.LegendFont.Style = []
-                Pie.LegendTitleColor = clWhite
-                Pie.LegendTitleColorTo = 52377
-                Pie.LegendTitleGradientType = gtHatch
-                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
-                Annotations = <>
-                BorderColor = clGray
-                ChartType = ctPie
-                Color = clNone
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LegendText = 'Pie Chart 1'
-                Marker.MarkerColorTo = clBlack
-                Maximum = 12.000000000000000000
-                Name = 'Serie 1'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%.2g'
-                ValueType = cvPercentage
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 0
-                YAxis.Position = yNone
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                Angle = 90
-                Opacity = 209
-                GradientType = gtBackwardDiagonal
-                SerieType = stNormal
-              end
-              item
-                AutoRange = arEnabledZeroBased
-                Pie.Position = spCustom
-                Pie.Left = 221
-                Pie.Top = 555
-                Pie.Size = 120
-                Pie.ShowValues = True
-                Pie.ValueFont.Charset = ANSI_CHARSET
-                Pie.ValueFont.Color = clWhite
-                Pie.ValueFont.Height = -13
-                Pie.ValueFont.Name = 'Tw Cen MT'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = ANSI_CHARSET
-                Pie.LegendFont.Color = clBlack
-                Pie.LegendFont.Height = -13
-                Pie.LegendFont.Name = 'Tw Cen MT'
-                Pie.LegendFont.Style = []
-                Pie.LegendTitleColor = clWhite
-                Pie.LegendTitleColorTo = 52377
-                Pie.LegendTitleGradientType = gtHatch
-                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
-                Annotations = <>
-                BorderColor = clGray
-                ChartType = ctPie
-                Color = clNone
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LegendText = 'Pie Chart 1'
-                Marker.MarkerColorTo = clBlack
-                Maximum = 12.000000000000000000
-                Name = 'Serie 1'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%.2g'
-                ValueType = cvPercentage
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 0
-                YAxis.Position = yNone
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                Angle = 90
-                Opacity = 209
-                GradientType = gtBackwardDiagonal
-                SerieType = stNormal
-              end
-              item
-                Pie.Position = spCustom
-                Pie.Left = 300
-                Pie.Top = 300
-                Pie.ShowValues = True
-                Pie.ValueFont.Charset = DEFAULT_CHARSET
-                Pie.ValueFont.Color = clWindowText
-                Pie.ValueFont.Height = -11
-                Pie.ValueFont.Name = 'Tahoma'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = DEFAULT_CHARSET
-                Pie.LegendFont.Color = clWindowText
-                Pie.LegendFont.Height = -11
-                Pie.LegendFont.Name = 'Tahoma'
-                Pie.LegendFont.Style = []
-                Annotations = <>
-                ChartType = ctPie
-                Color = clNone
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LegendText = 'Serie 3'
-                Maximum = 12.000000000000000000
-                Name = 'Serie 3'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%.2g'
-                ValueType = cvPercentage
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 0
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                Angle = 90
-                Opacity = 205
-                GradientType = gtBackwardDiagonal
-                SerieType = stNormal
-              end>
-            Title.Alignment = taCenter
-            Title.GradientSteps = 0
-            Title.Font.Charset = DEFAULT_CHARSET
-            Title.Font.Color = clWhite
-            Title.Font.Height = -24
-            Title.Font.Name = 'Tahoma'
-            Title.Font.Style = []
-            Title.Position = tTop
-            Title.Size = 30
-            Title.Text = 'Pie chart with TAdvChartviewGDIP'
-            XAxis.Font.Charset = DEFAULT_CHARSET
-            XAxis.Font.Color = clWindowText
-            XAxis.Font.Height = -11
-            XAxis.Font.Name = 'Tahoma'
-            XAxis.Font.Style = []
-            XAxis.Position = xNone
-            XAxis.Text = 'X-axis'
-            XAxis.Enable3D = True
-            XAxis.Offset3D = 49
-            XGrid.MinorDistance = 1
-            XGrid.MajorDistance = 2
-            XGrid.MajorFont.Charset = DEFAULT_CHARSET
-            XGrid.MajorFont.Color = clWindowText
-            XGrid.MajorFont.Height = -11
-            XGrid.MajorFont.Name = 'Tahoma'
-            XGrid.MajorFont.Style = []
-            XGrid.MinorFont.Charset = DEFAULT_CHARSET
-            XGrid.MinorFont.Color = clWindowText
-            XGrid.MinorFont.Height = -11
-            XGrid.MinorFont.Name = 'Tahoma'
-            XGrid.MinorFont.Style = []
-            YAxis.Font.Charset = DEFAULT_CHARSET
-            YAxis.Font.Color = clWindowText
-            YAxis.Font.Height = -11
-            YAxis.Font.Name = 'Tahoma'
-            YAxis.Font.Style = []
-            YAxis.Position = yNone
-            YAxis.Size = 40
-            YAxis.Text = 'Y-axis'
-            YGrid.MinorDistance = 1.000000000000000000
-            YGrid.MajorDistance = 2.000000000000000000
-            YGrid.ShowBorder = True
-            ZoomControl.Visible = True
-          end>
-        TabOrder = 1
-        Tracker.Font.Charset = DEFAULT_CHARSET
-        Tracker.Font.Color = clWindowText
-        Tracker.Font.Height = -11
-        Tracker.Font.Name = 'Tahoma'
-        Tracker.Font.Style = []
-        Tracker.Title.Font.Charset = DEFAULT_CHARSET
-        Tracker.Title.Font.Color = clWindowText
-        Tracker.Title.Font.Height = -11
-        Tracker.Title.Font.Name = 'Tahoma'
-        Tracker.Title.Font.Style = []
-        Tracker.Title.Text = 'TRACKER'
-        Tracker.OpenValuePrefix = 'O:'
-        Tracker.HighValuePrefix = 'H:'
-        Tracker.LowValuePrefix = 'L:'
-        Tracker.CloseValuePrefix = 'C:'
-        Version = '4.2.1.6 APR, 2018'
-        XAxisZoomSensitivity = 1.000000000000000000
-        YAxisZoomSensitivity = 1.000000000000000000
-        DoubleBuffered = True
-      end
-      object AdvGDIPChartView1: TAdvGDIPChartView
-        Left = 288
-        Top = 10
-        Width = 565
-        Height = 853
-        Color = clWhite
-        Panes = <
-          item
-            Bands.Distance = 2.000000000000000000
-            Bands.GradientDirection = cgdVertical
-            Bands.PrimaryColorTo = clSilver
-            Bands.SecondaryColor = clGray
-            Bands.SecondaryColorTo = clGray
-            Background.BackGroundPosition = bpStretched
-            Background.Color = clWhite
-            Background.Font.Charset = DEFAULT_CHARSET
-            Background.Font.Color = clWindowText
-            Background.Font.Height = -11
-            Background.Font.Name = 'Tahoma'
-            Background.Font.Style = []
-            Background.PictureVisible = True
-            Background.GradientType = gtSolid
-            CrossHair.CrossHairYValues.Position = [chYAxis]
-            CrossHair.Distance = 0
-            Height = 100.000000000000000000
-            Legend.ColorTo = clWhite
-            Legend.Font.Charset = DEFAULT_CHARSET
-            Legend.Font.Color = clWindowText
-            Legend.Font.Height = -19
-            Legend.Font.Name = 'Tahoma'
-            Legend.Font.Style = []
-            Legend.Left = 5
-            Legend.Top = 5
-            Legend.RectangleSize = 20
-            Legend.Visible = False
-            Legend.GradientType = gtVertical
-            Legend.Opacity = 100
-            Legend.OpacityTo = 100
-            Name = 'ChartPane 0'
-            Options = []
-            Range.RangeTo = 9
-            Series = <
-              item
-                AutoRange = arEnabledZeroBased
-                Pie.Position = spCustom
-                Pie.Left = 222
-                Pie.Top = 222
-                Pie.ShowValues = True
-                Pie.ValueFont.Charset = ANSI_CHARSET
-                Pie.ValueFont.Color = clWhite
-                Pie.ValueFont.Height = -13
-                Pie.ValueFont.Name = 'Tw Cen MT'
-                Pie.ValueFont.Style = []
-                Pie.LegendVisible = False
-                Pie.LegendFont.Charset = ANSI_CHARSET
-                Pie.LegendFont.Color = clBlack
-                Pie.LegendFont.Height = -13
-                Pie.LegendFont.Name = 'Tw Cen MT'
-                Pie.LegendFont.Style = []
-                Pie.LegendTitleColor = clWhite
-                Pie.LegendTitleColorTo = 52377
-                Pie.LegendTitleGradientType = gtHatch
-                Pie.LegendTitleHatchStyle = HatchStyleForwardDiagonal
-                Annotations = <>
-                BorderColor = clGray
-                ChartType = ctBar
-                Color = clNone
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LegendText = 'Pie Chart 1'
-                Marker.MarkerColorTo = clBlack
-                Maximum = 12.000000000000000000
-                Name = 'Serie 1'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%.2g'
-                ValueType = cvPercentage
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 0
-                YAxis.Position = yNone
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                Angle = 90
-                Opacity = 209
-                GradientType = gtBackwardDiagonal
-                SerieType = stNormal
-              end>
-            Title.Alignment = taCenter
-            Title.GradientSteps = 0
-            Title.Font.Charset = DEFAULT_CHARSET
-            Title.Font.Color = clWhite
-            Title.Font.Height = -24
-            Title.Font.Name = 'Tahoma'
-            Title.Font.Style = []
-            Title.Position = tTop
-            Title.Size = 30
-            Title.Text = 'Pie chart with TAdvChartviewGDIP'
-            XAxis.Font.Charset = DEFAULT_CHARSET
-            XAxis.Font.Color = clWindowText
-            XAxis.Font.Height = -11
-            XAxis.Font.Name = 'Tahoma'
-            XAxis.Font.Style = []
-            XAxis.Position = xNone
-            XAxis.Text = 'X-axis'
-            XGrid.MinorDistance = 1
-            XGrid.MajorDistance = 2
-            XGrid.MajorFont.Charset = DEFAULT_CHARSET
-            XGrid.MajorFont.Color = clWindowText
-            XGrid.MajorFont.Height = -11
-            XGrid.MajorFont.Name = 'Tahoma'
-            XGrid.MajorFont.Style = []
-            XGrid.MinorFont.Charset = DEFAULT_CHARSET
-            XGrid.MinorFont.Color = clWindowText
-            XGrid.MinorFont.Height = -11
-            XGrid.MinorFont.Name = 'Tahoma'
-            XGrid.MinorFont.Style = []
-            YAxis.Font.Charset = DEFAULT_CHARSET
-            YAxis.Font.Color = clWindowText
-            YAxis.Font.Height = -11
-            YAxis.Font.Name = 'Tahoma'
-            YAxis.Font.Style = []
-            YAxis.Position = yNone
-            YAxis.Size = 40
-            YAxis.Text = 'Y-axis'
-            YGrid.MinorDistance = 1.000000000000000000
-            YGrid.MajorDistance = 2.000000000000000000
-            YGrid.ShowBorder = True
-          end>
-        TabOrder = 2
-        Tracker.Font.Charset = DEFAULT_CHARSET
-        Tracker.Font.Color = clWindowText
-        Tracker.Font.Height = -11
-        Tracker.Font.Name = 'Tahoma'
-        Tracker.Font.Style = []
-        Tracker.Title.Font.Charset = DEFAULT_CHARSET
-        Tracker.Title.Font.Color = clWindowText
-        Tracker.Title.Font.Height = -11
-        Tracker.Title.Font.Name = 'Tahoma'
-        Tracker.Title.Font.Style = []
-        Tracker.Title.Text = 'TRACKER'
-        Tracker.OpenValuePrefix = 'O:'
-        Tracker.HighValuePrefix = 'H:'
-        Tracker.LowValuePrefix = 'L:'
-        Tracker.CloseValuePrefix = 'C:'
-        Version = '4.2.1.6 APR, 2018'
-        XAxisZoomSensitivity = 1.000000000000000000
-        YAxisZoomSensitivity = 1.000000000000000000
-        DoubleBuffered = True
-      end
-      object AdvGDIPChartView3: TAdvGDIPChartView
-        Left = 864
-        Top = 568
-        Width = 597
-        Height = 305
-        Color = clWhite
-        Panes = <
-          item
-            Bands.Distance = 2.000000000000000000
-            Background.Color = clSilver
-            Background.ColorTo = 3355443
-            Background.Font.Charset = DEFAULT_CHARSET
-            Background.Font.Color = clWindowText
-            Background.Font.Height = -11
-            Background.Font.Name = 'Tahoma'
-            Background.Font.Style = []
-            Background.GradientType = gtForwardDiagonal
-            BorderColor = clBlack
-            CrossHair.CrossHairYValues.Position = [chYAxis]
-            CrossHair.Distance = 0
-            Height = 100.000000000000000000
-            Legend.Font.Charset = DEFAULT_CHARSET
-            Legend.Font.Color = clWindowText
-            Legend.Font.Height = -11
-            Legend.Font.Name = 'Tahoma'
-            Legend.Font.Style = []
-            Name = 'ChartPane 0'
-            Options = []
-            Range.StartDate = 43675.893897118050000000
-            Range.RangeTo = 5
-            Series = <
-              item
-                AutoRange = arDisabled
-                Pie.ValueFont.Charset = DEFAULT_CHARSET
-                Pie.ValueFont.Color = clWindowText
-                Pie.ValueFont.Height = -11
-                Pie.ValueFont.Name = 'Tahoma'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = DEFAULT_CHARSET
-                Pie.LegendFont.Color = clWindowText
-                Pie.LegendFont.Height = -11
-                Pie.LegendFont.Name = 'Tahoma'
-                Pie.LegendFont.Style = []
-                Annotations = <>
-                ChartType = ctPie
-                Color = 22015
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LineColor = 22015
-                LegendText = 'Serie 0'
-                Marker.MarkerType = mCircle
-                Marker.MarkerColor = 22015
-                Marker.SelectedColor = 22015
-                Marker.SelectedLineColor = clBlack
-                Marker.SelectedSize = 15
-                Maximum = 12.000000000000000000
-                Name = 'Serie 0'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%g'
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.TickMarkSize = 6
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnit = 1.000000000000000000
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 10
-                YAxis.TextLeft.Angle = -90
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Angle = 90
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                YAxis.TickMarkColor = clRed
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                GradientType = gtHorizontal
-                SerieType = stNormal
-              end
-              item
-                AutoRange = arDisabled
-                Pie.ValueFont.Charset = DEFAULT_CHARSET
-                Pie.ValueFont.Color = clWindowText
-                Pie.ValueFont.Height = -11
-                Pie.ValueFont.Name = 'Tahoma'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = DEFAULT_CHARSET
-                Pie.LegendFont.Color = clWindowText
-                Pie.LegendFont.Height = -11
-                Pie.LegendFont.Name = 'Tahoma'
-                Pie.LegendFont.Style = []
-                Annotations = <>
-                Color = 13599488
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LineColor = 13599488
-                LegendText = 'Serie 1'
-                Marker.MarkerType = mCircle
-                Marker.MarkerColor = 13599488
-                Marker.SelectedColor = 13599488
-                Marker.SelectedLineColor = clBlack
-                Marker.SelectedSize = 15
-                Maximum = 12.000000000000000000
-                Name = 'Serie 1'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%g'
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 0
-                YAxis.TextLeft.Angle = -90
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Angle = 90
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                YAxis.Visible = False
-                SelectedIndex = 5
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                SerieType = stNormal
-              end
-              item
-                AutoRange = arDisabled
-                Pie.ValueFont.Charset = DEFAULT_CHARSET
-                Pie.ValueFont.Color = clWindowText
-                Pie.ValueFont.Height = -11
-                Pie.ValueFont.Name = 'Tahoma'
-                Pie.ValueFont.Style = []
-                Pie.LegendFont.Charset = DEFAULT_CHARSET
-                Pie.LegendFont.Color = clWindowText
-                Pie.LegendFont.Height = -11
-                Pie.LegendFont.Name = 'Tahoma'
-                Pie.LegendFont.Style = []
-                Annotations = <>
-                Color = 6732418
-                CrossHairYValue.BorderWidth = 0
-                CrossHairYValue.Font.Charset = DEFAULT_CHARSET
-                CrossHairYValue.Font.Color = clWindowText
-                CrossHairYValue.Font.Height = -11
-                CrossHairYValue.Font.Name = 'Tahoma'
-                CrossHairYValue.Font.Style = []
-                CrossHairYValue.GradientSteps = 0
-                LineColor = 6732418
-                LegendText = 'Serie 2'
-                Marker.MarkerType = mCircle
-                Marker.MarkerColor = 6732418
-                Marker.SelectedColor = 6732418
-                Marker.SelectedLineColor = clBlack
-                Marker.SelectedSize = 15
-                Maximum = 12.000000000000000000
-                Name = 'Serie 2'
-                ValueFont.Charset = DEFAULT_CHARSET
-                ValueFont.Color = clWindowText
-                ValueFont.Height = -11
-                ValueFont.Name = 'Tahoma'
-                ValueFont.Style = []
-                ValueFormat = '%g'
-                ValueWidth = 80
-                XAxis.DateTimeFont.Charset = DEFAULT_CHARSET
-                XAxis.DateTimeFont.Color = clWindowText
-                XAxis.DateTimeFont.Height = -11
-                XAxis.DateTimeFont.Name = 'Tahoma'
-                XAxis.DateTimeFont.Style = []
-                XAxis.MajorFont.Charset = DEFAULT_CHARSET
-                XAxis.MajorFont.Color = clWindowText
-                XAxis.MajorFont.Height = -11
-                XAxis.MajorFont.Name = 'Tahoma'
-                XAxis.MajorFont.Style = []
-                XAxis.MajorUnit = 1.000000000000000000
-                XAxis.MajorUnitSpacing = 0
-                XAxis.MinorFont.Charset = DEFAULT_CHARSET
-                XAxis.MinorFont.Color = clWindowText
-                XAxis.MinorFont.Height = -11
-                XAxis.MinorFont.Name = 'Tahoma'
-                XAxis.MinorFont.Style = []
-                XAxis.MinorUnit = 1.000000000000000000
-                XAxis.MinorUnitSpacing = 0
-                XAxis.TextTop.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextTop.Font.Color = clWindowText
-                XAxis.TextTop.Font.Height = -11
-                XAxis.TextTop.Font.Name = 'Tahoma'
-                XAxis.TextTop.Font.Style = []
-                XAxis.TextBottom.Font.Charset = DEFAULT_CHARSET
-                XAxis.TextBottom.Font.Color = clWindowText
-                XAxis.TextBottom.Font.Height = -11
-                XAxis.TextBottom.Font.Name = 'Tahoma'
-                XAxis.TextBottom.Font.Style = []
-                XAxis.TickMarkColor = clRed
-                XAxis.TickMarkSize = 6
-                XAxis.TickMarkWidth = 2
-                XAxis.Visible = False
-                YAxis.MajorFont.Charset = DEFAULT_CHARSET
-                YAxis.MajorFont.Color = clWindowText
-                YAxis.MajorFont.Height = -11
-                YAxis.MajorFont.Name = 'Tahoma'
-                YAxis.MajorFont.Style = []
-                YAxis.MajorUnit = 2.000000000000000000
-                YAxis.MajorUnitSpacing = 0
-                YAxis.MinorFont.Charset = DEFAULT_CHARSET
-                YAxis.MinorFont.Color = clWindowText
-                YAxis.MinorFont.Height = -11
-                YAxis.MinorFont.Name = 'Tahoma'
-                YAxis.MinorFont.Style = []
-                YAxis.MinorUnitSpacing = 10
-                YAxis.TextLeft.Angle = -90
-                YAxis.TextLeft.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextLeft.Font.Color = clWindowText
-                YAxis.TextLeft.Font.Height = -11
-                YAxis.TextLeft.Font.Name = 'Tahoma'
-                YAxis.TextLeft.Font.Style = []
-                YAxis.TextRight.Angle = 90
-                YAxis.TextRight.Font.Charset = DEFAULT_CHARSET
-                YAxis.TextRight.Font.Color = clWindowText
-                YAxis.TextRight.Font.Height = -11
-                YAxis.TextRight.Font.Name = 'Tahoma'
-                YAxis.TextRight.Font.Style = []
-                YAxis.TickMarkColor = clBlue
-                YAxis.Visible = False
-                BarValueTextFont.Charset = DEFAULT_CHARSET
-                BarValueTextFont.Color = clWindowText
-                BarValueTextFont.Height = -11
-                BarValueTextFont.Name = 'Tahoma'
-                BarValueTextFont.Style = []
-                XAxisGroups = <>
-                SerieType = stNormal
-              end>
-            Title.Alignment = taCenter
-            Title.Color = clGray
-            Title.Font.Charset = DEFAULT_CHARSET
-            Title.Font.Color = clWindowText
-            Title.Font.Height = -11
-            Title.Font.Name = 'Tahoma'
-            Title.Font.Style = []
-            Title.Position = tTop
-            Title.Text = 'Darstellung'
-            XAxis.Font.Charset = DEFAULT_CHARSET
-            XAxis.Font.Color = clWindowText
-            XAxis.Font.Height = -11
-            XAxis.Font.Name = 'Tahoma'
-            XAxis.Font.Style = []
-            XAxis.Position = xNone
-            XAxis.Text = 'X-axis'
-            XGrid.MajorFont.Charset = DEFAULT_CHARSET
-            XGrid.MajorFont.Color = clWindowText
-            XGrid.MajorFont.Height = -11
-            XGrid.MajorFont.Name = 'Tahoma'
-            XGrid.MajorFont.Style = []
-            XGrid.MinorFont.Charset = DEFAULT_CHARSET
-            XGrid.MinorFont.Color = clWindowText
-            XGrid.MinorFont.Height = -11
-            XGrid.MinorFont.Name = 'Tahoma'
-            XGrid.MinorFont.Style = []
-            YAxis.Font.Charset = DEFAULT_CHARSET
-            YAxis.Font.Color = clWindowText
-            YAxis.Font.Height = -11
-            YAxis.Font.Name = 'Tahoma'
-            YAxis.Font.Style = []
-            YAxis.Position = yNone
-            YAxis.Size = 40
-            YAxis.Text = 'Y-axis'
-            YGrid.MinorDistance = 1.000000000000000000
-            YGrid.MajorDistance = 2.000000000000000000
-          end>
-        TabOrder = 3
-        Tracker.Font.Charset = DEFAULT_CHARSET
-        Tracker.Font.Color = clWindowText
-        Tracker.Font.Height = -11
-        Tracker.Font.Name = 'Tahoma'
-        Tracker.Font.Style = []
-        Tracker.Title.Font.Charset = DEFAULT_CHARSET
-        Tracker.Title.Font.Color = clWindowText
-        Tracker.Title.Font.Height = -11
-        Tracker.Title.Font.Name = 'Tahoma'
-        Tracker.Title.Font.Style = []
-        Tracker.Title.Text = 'TRACKER'
-        Tracker.OpenValuePrefix = 'O:'
-        Tracker.HighValuePrefix = 'H:'
-        Tracker.LowValuePrefix = 'L:'
-        Tracker.CloseValuePrefix = 'C:'
-        Version = '4.2.1.6 APR, 2018'
-        XAxisZoomSensitivity = 1.000000000000000000
-        YAxisZoomSensitivity = 1.000000000000000000
-        DoubleBuffered = True
       end
     end
     object TabSheet9: TTabSheet
@@ -2974,9 +1699,9 @@ object Form2: TForm2
       ImageIndex = 9
       object Panel10: TPanel
         AlignWithMargins = True
-        Left = 568
-        Top = 40
-        Width = 813
+        Left = 216
+        Top = 44
+        Width = 1181
         Height = 729
         TabOrder = 0
         object Label1: TLabel
@@ -3149,7 +1874,7 @@ object Form2: TForm2
         object lbCSVError: TListBox
           Left = 567
           Top = 83
-          Width = 231
+          Width = 602
           Height = 565
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -3164,21 +1889,976 @@ object Form2: TForm2
       end
     end
   end
-  object AdvChartPanesEditorDialogGDIP1: TAdvChartPanesEditorDialogGDIP
-    Left = 504
-    Top = 36
+  object pnlIcons: TPanel
+    Left = 0
+    Top = 0
+    Width = 77
+    Height = 907
+    Align = alLeft
+    TabOrder = 2
+    object SpeedButton1: TSpeedButton
+      Left = 1
+      Top = -3
+      Width = 77
+      Height = 121
+      GroupIndex = 1
+      Caption = 'Info'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Glyph.Data = {
+        5A0E0000424D5A0E000000000000320400002800000032000000320000000100
+        080000000000280A0000120B0000120B0000FF000000FF000000FFFFFF003838
+        3800F9F9F900D5D5D500FAFAFA00E1E1E100EAEAEA0033333300393939004141
+        41006D6D6D00A0A0A000C4C4C400D7D7D700E2E2E200A1A1A100FDFDFD00E9E9
+        E90044444400F1F1F100545454007171710073737300E0E0E000999999003F3F
+        3F00CDCDCD0042424200DFDFDF008D8D8D00363636008E8E8E006B6B6B003535
+        3500E3E3E300F8F8F800AAAAAA00454545004D4D4D0055555500C1C1C1007474
+        7400EBEBEB00FCFCFC007D7D7D0034343400D8D8D800D9D9D9006F6F6F005656
+        5600E4E4E4005959590058585800D4D4D4003C3C3C0037373700F0F0F000EEEE
+        EE00A2A2A200A3A3A30097979700757575007272720098989800CBCBCB003E3E
+        3E0070707000C5C5C5007B7B7B00C7C7C700404040007A7A7A00838383008B8B
+        8B00848484008585850086868600D6D6D600DADADA00434343003A3A3A00A8A8
+        A8008C8C8C00F7F7F700ADADAD008A8A8A00D1D1D100D3D3D300464646009F9F
+        9F00DEDEDE00C2C2C200CACACA00C8C8C800C9C9C900CCCCCC007C7C7C008F8F
+        8F006C6C6C00909090003D3D3D00D0D0D0006666660067676700686868006969
+        69006A6A6A006B6B6B006C6C6C006D6D6D006E6E6E006F6F6F00707070007171
+        7100727272007373730074747400757575007676760077777700787878007979
+        79007A7A7A007B7B7B007C7C7C007D7D7D007E7E7E007F7F7F00808080008181
+        8100828282008383830084848400858585008686860087878700888888008989
+        89008A8A8A008B8B8B008C8C8C008D8D8D008E8E8E008F8F8F00909090009191
+        9100929292009393930094949400959595009696960097979700989898009999
+        99009A9A9A009B9B9B009C9C9C009D9D9D009E9E9E009F9F9F00A0A0A000A1A1
+        A100A2A2A200A3A3A300A4A4A400A5A5A500A6A6A600A7A7A700A8A8A800A9A9
+        A900AAAAAA00ABABAB00ACACAC00ADADAD00AEAEAE00AFAFAF00B0B0B000B1B1
+        B100B2B2B200B3B3B300B4B4B400B5B5B500B6B6B600B7B7B700B8B8B800B9B9
+        B900BABABA00BBBBBB00BCBCBC00BDBDBD00BEBEBE00BFBFBF00C0C0C000C1C1
+        C100C2C2C200C3C3C300C4C4C400C5C5C500C6C6C600C7C7C700C8C8C800C9C9
+        C900CACACA00CBCBCB00CCCCCC00CDCDCD00CECECE00CFCFCF00D0D0D000D1D1
+        D100D2D2D200D3D3D300D4D4D400D5D5D500D6D6D600D7D7D700D8D8D800D9D9
+        D900DADADA00DBDBDB00DCDCDC00DDDDDD00DEDEDE00DFDFDF00E0E0E000E1E1
+        E100E2E2E200E3E3E300E4E4E400E5E5E500E6E6E600E7E7E700E8E8E800E9E9
+        E900EAEAEA00EBEBEB00ECECEC00EDEDED00EEEEEE00EFEFEF00F0F0F000F1F1
+        F100F2F2F200F3F3F300F4F4F400F5F5F500F6F6F600F7F7F700F8F8F800F9F9
+        F900FAFAFA00FBFBFB00FCFCFC00FDFDFD00FEFEFE0007070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707000007070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070700000707
+        0707070707070707070707070707070719150F5B1C380404385A280F15410707
+        0707070707070707070707070707070700000707070707070707070707070707
+        07084443100000000000000000000000002B0C47080707070707070707070707
+        07070707000007070707070707070707070707081D110000041A1829271B0101
+        1B313D181A040000114908070707070707070707070707070000070707070707
+        0707070707070A0E00000D4B09070707070707070707070707094C2E00000520
+        070707070707070707070707000007070707070707070707082400002F0A0707
+        0707070707070707070707070707072D304E0000510807070707070707070707
+        0000070707070707070707250300231D1E070707070707070707070707070707
+        07070707071E1F0200352507070707070707070700000707070707070707260E
+        000533070707070707070707070707070707070707070707070707330E000526
+        0707070707070707000007070707070707121700031207070707070707070707
+        0707070707070707070707070707070709560022250707070707070700000707
+        0707070708030057360707070707070707070707070707070707070707070707
+        0707070707643500350807070707070700000707070707072400051B07070707
+        0707070707070707070707070707070707070707070707070707120E00510707
+        07070707000007070707070A0023340707070707070707070707070000000000
+        0000000707070707070707070707073302002007070707070000070707070822
+        0052070707070707070707070707070000000000000000070707070707070707
+        070707071F000508070707070000070707071F002E2107070707070707070707
+        0707070707000000000707070707070707070707070707071E4E004907070707
+        0000070707081100620707070707070707070707070707070700000000070707
+        0707070707070707070707070742001108070707000007070760004D07070707
+        0707070707070707070707070700000000070707070707070707070707070707
+        072D2E0047070707000007070745004A07070707070707070707070707070707
+        070000000007070707070707070707070707070707074C000C07070700000707
+        0910024607070707070707070707070707070707070000000007070707070707
+        0707070707070707070709042B41070700000707160040070707070707070707
+        070707070707070707000000000707070707070707070707070707070707071A
+        00420707000007073B003F070707070707070707070707070707070707000000
+        0007070707070707070707070707070707070718000F0707000007070C003E07
+        0707070707070707070707070707070707000000000707070707070707070707
+        070707070707073D002807070000070705001407070707070707070707070707
+        0707070707000000000707070707070707070707070707070707072700170707
+        0000070713000907070707070707070707070707070707070700000000070707
+        0707070707070707070707070707071200390707000007070400010707070707
+        0707070707070707070707070700000000070707070707070707070707070707
+        0707070800020707000007070400010707070707070707070707070707070707
+        0700000000070707070707070707070707070707070707080002070700000707
+        1300090707070707070707070707070707070707070000000007070707070707
+        07070707070707070707074F0039070700000707050014070707070707070707
+        0707070707070700000000000007070707070707070707070707070707070727
+        00170707000007070C0015070707070707070707070707070707070000000000
+        000707070707070707070707070707070707072900280707000007073B003C07
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070718000F07070000070729005C07070707070707070707070707
+        0707070707070707070707070707070707070707070707070707071A00150707
+        0000070709100219070707070707070707070707070707070707070707070707
+        070707070707070707070707070709042B19070700000707075E004807070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07074B004307070700000707072C000307070707070707070707070707070707
+        010B06060B010707070707070707070707070707072D0D004407070700000707
+        07082A00200707070707070707070707070707070B0000000059070707070707
+        0707070707070707070A00110807070700000707070763000D21070707070707
+        070707070707070706000000000607070707070707070707070707071E2F001D
+        0707070700000707070750320055070707070707070707070707070706000000
+        000607070707070707070707070707071D000E08070707070000070707070730
+        005331070707070707070707070707070B000000000B07070707070707070707
+        0707073423000A0707070707000007070707070754001C090707070707070707
+        07070707010F2A060B010707070707070707070707071B050024070707070707
+        0000070707070707080D00563607070707070707070707070707070707070707
+        0707070707070707073657000308070707070707000007070707070707120500
+        034F070707070707070707070707070707070707070707070707070709650032
+        5807070707070707000007070707070707072622001C31070707070707070707
+        0707070707070707070707070707073405000E26070707070707070700000707
+        07070707070707580D0053552107070707070707070707070707070707070707
+        0721522300032507070707070707070700000707070707070707070708540000
+        0D200707070707070707070707070707070707070A2F00002408070707070707
+        0707070700000707070707070707070707073032000003481907070707070707
+        0707070707464A4D0000220A0707070707070707070707070000070707070707
+        0707070707070750612A000002403C16140937370914163F5F020000061F0807
+        0707070707070707070707070000070707070707070707070707070707082C5D
+        1000000000000000000000000010452C08070707070707070707070707070707
+        000007070707070707070707070707070707070709163A0C17130404131C0C3A
+        3E09070707070707070707070707070707070707000007070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707000007070707070707070707070707070707070707070707
+        070707070707070707070707070707070707070707070707070707070000}
+      Layout = blGlyphTop
+      ParentFont = False
+      StyleElements = []
+      OnClick = SpeedButton1Click
+    end
+    object SpeedButton4: TSpeedButton
+      Left = 1
+      Top = 117
+      Width = 77
+      Height = 121
+      GroupIndex = 1
+      Caption = 'All Data'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Glyph.Data = {
+        5A0E0000424D5A0E000000000000320400002800000032000000320000000100
+        080000000000280A0000120B0000120B0000FF000000FF000000FFFFFF003333
+        3300EBEBEB00A0A0A00038383800A1A1A100EAEAEA00CECECE00D0D0D0009F9F
+        9F000A0A0A000B0B0B000C0C0C000D0D0D000E0E0E000F0F0F00101010001111
+        1100121212001313130014141400151515001616160017171700181818001919
+        19001A1A1A001B1B1B001C1C1C001D1D1D001E1E1E001F1F1F00202020002121
+        2100222222002323230024242400252525002626260027272700282828002929
+        29002A2A2A002B2B2B002C2C2C002D2D2D002E2E2E002F2F2F00303030003131
+        3100323232003333330034343400353535003636360037373700383838003939
+        39003A3A3A003B3B3B003C3C3C003D3D3D003E3E3E003F3F3F00404040004141
+        4100424242004343430044444400454545004646460047474700484848004949
+        49004A4A4A004B4B4B004C4C4C004D4D4D004E4E4E004F4F4F00505050005151
+        5100525252005353530054545400555555005656560057575700585858005959
+        59005A5A5A005B5B5B005C5C5C005D5D5D005E5E5E005F5F5F00606060006161
+        6100626262006363630064646400656565006666660067676700686868006969
+        69006A6A6A006B6B6B006C6C6C006D6D6D006E6E6E006F6F6F00707070007171
+        7100727272007373730074747400757575007676760077777700787878007979
+        79007A7A7A007B7B7B007C7C7C007D7D7D007E7E7E007F7F7F00808080008181
+        8100828282008383830084848400858585008686860087878700888888008989
+        89008A8A8A008B8B8B008C8C8C008D8D8D008E8E8E008F8F8F00909090009191
+        9100929292009393930094949400959595009696960097979700989898009999
+        99009A9A9A009B9B9B009C9C9C009D9D9D009E9E9E009F9F9F00A0A0A000A1A1
+        A100A2A2A200A3A3A300A4A4A400A5A5A500A6A6A600A7A7A700A8A8A800A9A9
+        A900AAAAAA00ABABAB00ACACAC00ADADAD00AEAEAE00AFAFAF00B0B0B000B1B1
+        B100B2B2B200B3B3B300B4B4B400B5B5B500B6B6B600B7B7B700B8B8B800B9B9
+        B900BABABA00BBBBBB00BCBCBC00BDBDBD00BEBEBE00BFBFBF00C0C0C000C1C1
+        C100C2C2C200C3C3C300C4C4C400C5C5C500C6C6C600C7C7C700C8C8C800C9C9
+        C900CACACA00CBCBCB00CCCCCC00CDCDCD00CECECE00CFCFCF00D0D0D000D1D1
+        D100D2D2D200D3D3D300D4D4D400D5D5D500D6D6D600D7D7D700D8D8D800D9D9
+        D900DADADA00DBDBDB00DCDCDC00DDDDDD00DEDEDE00DFDFDF00E0E0E000E1E1
+        E100E2E2E200E3E3E300E4E4E400E5E5E500E6E6E600E7E7E700E8E8E800E9E9
+        E900EAEAEA00EBEBEB00ECECEC00EDEDED00EEEEEE00EFEFEF00F0F0F000F1F1
+        F100F2F2F200F3F3F300F4F4F400F5F5F500F6F6F600F7F7F700F8F8F800F9F9
+        F900FAFAFA00FBFBFB00FCFCFC00FDFDFD00FEFEFE0001010101010101010101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0101010101010101000001010101010101010101010101010101010101010101
+        0101010101010101010101010101010101010101010101010101010100000101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0101010101010101010101010101010100000101010101010101010101010101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0101010100000101010108000000000000000000000000000000000007010101
+        0108000000000000000000000000000000000007010101010000010101010000
+        0000000000000000000000000000000000010101010000000000000000000000
+        0000000000000000010101010000010101010000010101010101010101010101
+        0101010000010101010000010101010101010101010101010101000001010101
+        0000010101010000010101010101010101010101010101000001010101000001
+        0101010101010101010101010101000001010101000001010101000001010101
+        0101010101010101010101000001010101000001010101010101010101010101
+        0101000001010101000001010101000001010101010101010101010101010100
+        0001010101000001010101010101010101010101010100000101010100000101
+        0101000001010101010101010101010101010100000101010100000101010101
+        0101010101010101010100000101010100000101010100000101010101010101
+        0101010101010100000101010100000101010101010101010101010101010000
+        0101010100000101010100000101010101010101010101010101010000010101
+        0100000101010101010101010101010101010000010101010000010101010000
+        0101010101010101010101010101010000010101010000010101010101010101
+        0101010101010000010101010000010101010000010101010101010101010101
+        0101010000010101010000010101010101010101010101010101000001010101
+        0000010101010000010101010101010101010101010101000001010101000001
+        0101010101010101010101010101000001010101000001010101000001010101
+        0101010101010101010101000001010101000001010101010101010101010101
+        0101000001010101000001010101000000000000000000000000000000000000
+        0001010101000000000000000000000000000000000000000101010100000101
+        0101000000000000000000000000000000000000000101010100000000000000
+        0000000000000000000000000101010100000101010100000000000000000000
+        0000000000000000000101010100000000000000000000000000000000000000
+        0101010100000101010102000000000000000000000000000000000002010101
+        0102000000000000000000000000000000000002010101010000010101010300
+        0000000000000000000000000000000009010101010300000000000000000000
+        0000000000000009010101010000010101010405020000000000000000000000
+        0000060304010101010405020000000000000000000000000006030401010101
+        0000010101010101010101010101010101010101010101010101010101010101
+        0101010101010101010101010101010101010101000001010101010101010101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0101010101010101000001010101010101010101010101010101010101010101
+        0101010101010101010101010101010101010101010101010101010100000101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0101010101010101010101010101010100000101010108000000000000000000
+        0000000000000000070101010108000000000000000000000000000000000007
+        0101010100000101010100000000000000000000000000000000000000010101
+        0100000000000000000000000000000000000000010101010000010101010000
+        0101010101010101010101010101010000010101010000010101010101010101
+        0101010101010000010101010000010101010000010101010101010101010101
+        0101010000010101010000010101010101010101010101010101000001010101
+        0000010101010000010101010101010101010101010101000001010101000001
+        0101010101010101010101010101000001010101000001010101000001010101
+        0101010101010101010101000001010101000001010101010101010101010101
+        0101000001010101000001010101000001010101010101010101010101010100
+        0001010101000001010101010101010101010101010100000101010100000101
+        0101000001010101010101010101010101010100000101010100000101010101
+        0101010101010101010100000101010100000101010100000101010101010101
+        0101010101010100000101010100000101010101010101010101010101010000
+        0101010100000101010100000101010101010101010101010101010000010101
+        0100000101010101010101010101010101010000010101010000010101010000
+        0101010101010101010101010101010000010101010000010101010101010101
+        0101010101010000010101010000010101010000010101010101010101010101
+        0101010000010101010000010101010101010101010101010101000001010101
+        0000010101010000010101010101010101010101010101000001010101000001
+        0101010101010101010101010101000001010101000001010101000000000000
+        0000000000000000000000000001010101000000000000000000000000000000
+        0000000001010101000001010101000000000000000000000000000000000000
+        0001010101000000000000000000000000000000000000000101010100000101
+        0101000000000000000000000000000000000000000101010100000000000000
+        0000000000000000000000000101010100000101010102000000000000000000
+        0000000000000000020101010102000000000000000000000000000000000002
+        0101010100000101010103000000000000000000000000000000000009010101
+        0103000000000000000000000000000000000009010101010000010101010405
+        0200000000000000000000000000060304010101010405020000000000000000
+        0000000000060304010101010000010101010101010101010101010101010101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0000010101010101010101010101010101010101010101010101010101010101
+        0101010101010101010101010101010101010101000001010101010101010101
+        0101010101010101010101010101010101010101010101010101010101010101
+        0101010101010101000001010101010101010101010101010101010101010101
+        010101010101010101010101010101010101010101010101010101010000}
+      Layout = blGlyphTop
+      ParentFont = False
+      StyleElements = []
+      OnClick = SpeedButton4Click
+    end
+    object SpeedButton3: TSpeedButton
+      Left = 1
+      Top = 237
+      Width = 77
+      Height = 121
+      GroupIndex = 1
+      Caption = 'User'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Glyph.Data = {
+        32140000424D3214000000000000320400002800000040000000400000000100
+        08000000000000100000120B0000120B0000FF000000FF000000FFFFFF00FEFE
+        FE005D5D5D008D8D8D00F1F1F1003535350041414100333333003D3D3D00FDFD
+        FD00919191003F3F3F00BDBDBD00F5F5F500C8C8C80071717100363636004F4F
+        4F009D9D9D00E1E1E100D5D5D500C9C9C900F6F6F60038383800E0E0E0008585
+        8500EBEBEB00CDCDCD00F9F9F90045454500FCFCFC004D4D4D00474747003737
+        3700A5A5A500FBFBFB007B7B7B00FAFAFA00ADADAD00A0A0A00092929200E8E8
+        E80061616100E2E2E20034343400CECECE00A6A6A6006A6A6A0039393900A7A7
+        A700D9D9D9003E3E3E00D4D4D400C3C3C300525252006F6F6F00D6D6D6005858
+        580051515100CACACA0065656500545454008E8E8E007D7D7D00EFEFEF00F7F7
+        F7009696960055555500E4E4E400BFBFBF0057575700BBBBBB00B6B6B6005050
+        500078787800C5C5C500B0B0B000707070005B5B5B008686860046464600EAEA
+        EA00B9B9B900B2B2B200CFCFCF0088888800C1C1C1007A7A7A003A3A3A00F4F4
+        F400EDEDED00E6E6E6006D6D6D00D1D1D1008383830099999900A9A9A900C6C6
+        C600E5E5E5004A4A4A005A5A5A00E9E9E900696969006363630064646400D7D7
+        D700E7E7E700CCCCCC00DBDBDB00F8F8F8007F7F7F007272720048484800C2C2
+        C20049494900D8D8D80043434300D2D2D20093939300E3E3E30087878700B7B7
+        B700DCDCDC0080808000DDDDDD00565656008181810079797900535353004B4B
+        4B0090909000C7C7C700DEDEDE00858585008686860087878700888888008989
+        89008A8A8A008B8B8B008C8C8C008D8D8D008E8E8E008F8F8F00909090009191
+        9100929292009393930094949400959595009696960097979700989898009999
+        99009A9A9A009B9B9B009C9C9C009D9D9D009E9E9E009F9F9F00A0A0A000A1A1
+        A100A2A2A200A3A3A300A4A4A400A5A5A500A6A6A600A7A7A700A8A8A800A9A9
+        A900AAAAAA00ABABAB00ACACAC00ADADAD00AEAEAE00AFAFAF00B0B0B000B1B1
+        B100B2B2B200B3B3B300B4B4B400B5B5B500B6B6B600B7B7B700B8B8B800B9B9
+        B900BABABA00BBBBBB00BCBCBC00BDBDBD00BEBEBE00BFBFBF00C0C0C000C1C1
+        C100C2C2C200C3C3C300C4C4C400C5C5C500C6C6C600C7C7C700C8C8C800C9C9
+        C900CACACA00CBCBCB00CCCCCC00CDCDCD00CECECE00CFCFCF00D0D0D000D1D1
+        D100D2D2D200D3D3D300D4D4D400D5D5D500D6D6D600D7D7D700D8D8D800D9D9
+        D900DADADA00DBDBDB00DCDCDC00DDDDDD00DEDEDE00DFDFDF00E0E0E000E1E1
+        E100E2E2E200E3E3E300E4E4E400E5E5E500E6E6E600E7E7E700E8E8E800E9E9
+        E900EAEAEA00EBEBEB00ECECEC00EDEDED00EEEEEE00EFEFEF00F0F0F000F1F1
+        F100F2F2F200F3F3F300F4F4F400F5F5F500F6F6F600F7F7F700F8F8F800F9F9
+        F900FAFAFA00FBFBFB00FCFCFC00FDFDFD00FEFEFE0007070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707086730070707070707070707070707070707070707070707070707070707
+        07070707070707173C0807070707070707070707070707070707070707070707
+        070769003B050707070707070707070707070707070707070707070707070707
+        070707070707056B001407070707070707070707070707070707070707070707
+        0705410000030707070707070707070707070707070707070707070707070707
+        0707070707073E00001605070707070707070707070707070707070707070707
+        0707420000413607070707070707070707070707070707070707070707070707
+        07070707073D6D00004207070707070707070707070707070707070707070707
+        070710380000441D070707070707070707070707070707070707070707070707
+        0707070774130000322107070707070707070707070707070707070707070707
+        0707073916000075080707070707070707070707070707070707070707070707
+        0707073334000016460707070707070707070707070707070707070707070707
+        07070707371E00006C7207070707070707070707070707070707070707070707
+        070720730000096F070707070707070707070707070707070707070707070707
+        0707070707780100006A68070707070707070707070707070707070707070707
+        073C650000011907070707070707070707070707070707070707070707070707
+        0707070707076E23000009220807070707070707070707070707070707070708
+        31090000253F0707070707070707070707070707070707070707070707070707
+        070707070707072F040000004028080707070707070707070707070707087640
+        0000000466070707070707070707070707070707070707070707070707070707
+        07070707070707077035000000000D480F0B07070707070707070B0F790D0000
+        0000712007070707070707070707070707070707070707070707070707070707
+        070707070707070707073F44000000000001180C262727260C13010000000000
+        7724070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707217E7C000000000000000000000000000000007A7B
+        1007070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707074612142500000000000000002514127D0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707070717024A192828194A02170707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707498283840D1618150A800707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707074347000000000000000000001502070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707102209000000000000000000000000012E2107
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070B0E000000234824810B05497F45230000002D0B
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707100E0000000C1F0707070707070707110E00000015
+        1707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707220000010307070707070707070707070712000000
+        6007070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707640900000A0707070707070707070707070707120000
+        0902070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070E000045070707070707070707070707070707052D00
+        001B070707070707070707070707070707070707070707070707070707070707
+        0707070707070707073A00001C11070707070707070707070707070707070200
+        00003A0707070707070707070707070707070707070707070707070707070707
+        0707070707070707070A00000C0707070707070707070707070707070707073B
+        00005F0707070707070707070707070707070707070707070707070707070707
+        0707070707070707071500002407070707070707070707070707070707070703
+        0000610707070707070707070707070707070707070707070707070707070707
+        0707070707070707071300003D07070707070707070707070707070707070702
+        0000620707070707070707070707070707070707070707070707070707070707
+        0707070707070707070D00000807070707070707070707070707070707070763
+        0000090707070707070707070707070707070707070707070707070707070707
+        0707070707070707071300180707070707070707070707070707070707070708
+        0000000707070707070707070707070707070707070707070707070707070707
+        070707070707070707113E110707070707070707070707070707070707070708
+        0000000707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070708
+        0000000707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070706
+        0000000707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070703
+        0000000707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707070707070707070707070707074E522900
+        0000000707070707070707070707070707070707070707070707070707070707
+        0707070707071F32040404040404292B1456311939050707070707071B000000
+        0000000707070707070707070707070707070707070707070707070707070707
+        0707070707070A00000000000000000000000000001A2E360707070703000000
+        0000000707070707070707070707070707070707070707070707070707070707
+        0707070707074F000000000000000000000000000000001E4C06070707530000
+        0000090707070707070707070707070707070707070707070707070707070707
+        0707070707070F0000000000000000000000000000000000005B2A07075E0000
+        00001A0707070707070707070707070707070707070707070707070707070707
+        0707070707071D090000000000000000000000000000000000001C552F180000
+        00000C0707070707070707070707070707070707070707070707070707070707
+        0707070707070754000000000000000000000000000000000000000000000000
+        00004D0707070707070707070707070707070707070707070707070707070707
+        0707070707070757000000000000000000000000000000000000000000000000
+        004B2C0707070707070707070707070707070707070707070707070707070707
+        070707070707072C380000000000000000000000000000000000000000000000
+        3406070707070707070707070707070707070707070707070707070707070707
+        0707070707070707435900000000000000000000000000000000000000000D27
+        5807070707070707070707070707070707070707070707070707070707070707
+        070707070707070707371C00000000000000000000000000000000005D0F3307
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707072A5A0000000000000000000000000000002B1D070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070720261E000000000000000000000000355007070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707071F0A1B1A09000000000151475C070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707050606060630070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070707070707}
+      Layout = blGlyphTop
+      ParentFont = False
+      StyleElements = []
+      OnClick = SpeedButton3Click
+    end
+    object SpeedButton2: TSpeedButton
+      Left = 1
+      Top = 357
+      Width = 77
+      Height = 121
+      GroupIndex = 1
+      Caption = 'Inspector'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Glyph.Data = {
+        5A0E0000424D5A0E000000000000320400002800000032000000320000000100
+        080000000000280A0000120B0000120B0000FF000000FF000000FFFFFF009595
+        950046464600B5B5B500FDFDFD00414141003535350033333300FEFEFE003434
+        340065656500F4F4F40036363600F5F5F50038383800E0E0E000B1B1B1003D3D
+        3D00CFCFCF00A0A0A000FAFAFA008D8D8D007D7D7D00FCFCFC00F9F9F9006969
+        69004A4A4A00ABABAB004D4D4D00C5C5C500E9E9E900BCBCBC0045454500D2D2
+        D200B6B6B600F1F1F10039393900C1C1C100CACACA0051515100C7C7C700D6D6
+        D60078787800CBCBCB0077777700C2C2C20082828200DBDBDB006A6A6A008888
+        8800818181008989890093939300CDCDCD008E8E8E0099999900F6F6F6008C8C
+        8C00636363004848480073737300A5A5A5006D6D6D00F7F7F70072727200ACAC
+        AC006E6E6E00E3E3E300A6A6A600D7D7D7003B3B3B00EFEFEF00D3D3D300F8F8
+        F8005C5C5C005555550060606000595959004B4B4B0061616100E2E2E2005B5B
+        5B00545454004747470064646400F3F3F300EDEDED00EEEEEE00E7E7E700D1D1
+        D10037373700ECECEC00E6E6E600585858005E5E5E005F5F5F00606060006161
+        6100626262006363630064646400656565006666660067676700686868006969
+        69006A6A6A006B6B6B006C6C6C006D6D6D006E6E6E006F6F6F00707070007171
+        7100727272007373730074747400757575007676760077777700787878007979
+        79007A7A7A007B7B7B007C7C7C007D7D7D007E7E7E007F7F7F00808080008181
+        8100828282008383830084848400858585008686860087878700888888008989
+        89008A8A8A008B8B8B008C8C8C008D8D8D008E8E8E008F8F8F00909090009191
+        9100929292009393930094949400959595009696960097979700989898009999
+        99009A9A9A009B9B9B009C9C9C009D9D9D009E9E9E009F9F9F00A0A0A000A1A1
+        A100A2A2A200A3A3A300A4A4A400A5A5A500A6A6A600A7A7A700A8A8A800A9A9
+        A900AAAAAA00ABABAB00ACACAC00ADADAD00AEAEAE00AFAFAF00B0B0B000B1B1
+        B100B2B2B200B3B3B300B4B4B400B5B5B500B6B6B600B7B7B700B8B8B800B9B9
+        B900BABABA00BBBBBB00BCBCBC00BDBDBD00BEBEBE00BFBFBF00C0C0C000C1C1
+        C100C2C2C200C3C3C300C4C4C400C5C5C500C6C6C600C7C7C700C8C8C800C9C9
+        C900CACACA00CBCBCB00CCCCCC00CDCDCD00CECECE00CFCFCF00D0D0D000D1D1
+        D100D2D2D200D3D3D300D4D4D400D5D5D500D6D6D600D7D7D700D8D8D800D9D9
+        D900DADADA00DBDBDB00DCDCDC00DDDDDD00DEDEDE00DFDFDF00E0E0E000E1E1
+        E100E2E2E200E3E3E300E4E4E400E5E5E500E6E6E600E7E7E700E8E8E800E9E9
+        E900EAEAEA00EBEBEB00ECECEC00EDEDED00EEEEEE00EFEFEF00F0F0F000F1F1
+        F100F2F2F200F3F3F300F4F4F400F5F5F500F6F6F600F7F7F700F8F8F800F9F9
+        F900FAFAFA00FBFBFB00FCFCFC00FDFDFD00FEFEFE0007070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707000007070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070700000707
+        07070707070707070707070707070707070707070707070707070A2928070707
+        0707070707070707070707070707070700000707070707070707070707070707
+        0707070707070707070707070203080000070707070707070707070707070707
+        0707070700000707070707070707070707070707070707070707070707070C15
+        0B000D0000070707070707070707070707070707070707070000070707070707
+        07070707070707070707070707070707070A2F00002D1A000007070707070707
+        0707070707070707070707070000070707070707070707070707070707070707
+        070707020308000F300707000007070707070707070707070707070707070707
+        0000070707070707070707070707070707070707070C390B0038370E07070700
+        0007070707070707070707070707070707070707000007070707070707070707
+        0707070707070707073500080302070707070700000707070707070707070707
+        070707070707070700000707070707070707070707070707070707070700003A
+        0707070707070700000707070707070707070707070707070707070700000707
+        0707070707070707070707070707070707000007070707070707070000070707
+        0707070707070707070707070707070700000707070707070707070707070707
+        0707070707000007070707070707070000070707070707070707070707070707
+        0707070700000707070707070707070707070707070707070700000707070707
+        0707070000070707070707070707070707070707070707070000070707070707
+        0707070707070707070707070700000707070707070707000007070707070707
+        0707070707070707070707070000070707070707070707070707070707070707
+        0700000707070707070707000007070707070707070707070707070707070707
+        0000070707070707070707070707070707070707070000070707070707070700
+        0007070707070707070707070707070707070707000007070707070707070707
+        0707070707070707070000070707070707070700000707070707070707070707
+        0707070707070707000007070707070707070707070707070707070707000007
+        0707070707070700000707070707070707070707070707070707070700000707
+        0707070707070707070707070707070707000007070707070707070000070707
+        0707070707070707070707070707070700000707070707070707070707070707
+        0707070707000007070707070707070000070707070707070707070707070707
+        0707070700000707070707070707070707070707070707070700000707070707
+        0707070000070707070707070707070707070707070707070000070707070707
+        0707070707070707070707070700000707070707070707000007070707070707
+        0707070707070707070707070000070707070707070707070707070707070707
+        0700000707070707070707000007070707070707070707070707070707070707
+        0000070707070707070707070707070707070707070000070707070707070700
+        0007070707070707070707070707070707070707000007070707070707070707
+        0707070707070707070000070707070707070700000707070707070707070707
+        0707070707070707000007070707070707070707070707070707070707000007
+        0707070707070700000707070707070707070707070707070707070700000707
+        0707070707070707070707070707070705000000000000000000000000050707
+        0707070707070707070707070707070700000707070707070707070707070707
+        0707074612000000000000000000000000481107070707070707070707070707
+        070707070000070707070707070707070707070707070E1D00433B0707070707
+        070707200F002624070707070707070707070707070707070000070707070707
+        070707070707070707061F001E1C070707070707070707074E5800250C070707
+        0707070707070707070707070000070707070707070707070707070709100047
+        4B07070707070707070707070727560022060707070707070707070707070707
+        000007070707070707070707070707091B000B4A070707070707070707070707
+        07074D23001B0707070707070707070707070707000007070707070707070707
+        0707071300490A070707070707070707070707070707074F0D003D0707070707
+        0707070707070707000007070707070707070707070701001442070707070707
+        0707070707070707070707071918003407070707070707070707070700000707
+        0707070707070707073100042A07070707070707070707070707070707070707
+        073C17001507070707070707070707070000070707070707070707071604082E
+        0707070707070707070707070707070707070707070716040832070707070707
+        0707070700000707070707070707074017003607070707070707070707070707
+        07070707070707070707073300042C0707070707070707070000070707070707
+        0707191800010707070707070707070707070707070707070707070707070707
+        0100143E07070707070707070000070707070707074C0D004407070707070707
+        07070707070707070707070707070707070707070713003F5407070707070707
+        00000707070707075D2300100907070707070707070707070707070707070707
+        070707070707070707094100555107070707070700000707070707275B002206
+        0707070707070707070707070707070707070707070707070707070707070910
+        00575207070707070000070707071A5C00255A07070707070707070707070707
+        07070707070707070707070707070707070707061F001E1C0707070700000707
+        07200F0026240707070707070707070707070707070707070707070707070707
+        07070707070707070E1D00505307070700000707075900211107070707070707
+        0707070707070707070707070707070707070707070707070707070707112100
+        4507070700000707070000050707070707070707070707070707070707070707
+        0707070707070707070707070707070707070500000707070000070707000007
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070700000707070000070707000000000000000000000000000000
+        0000000000000000000000000000000000000000000000000000000000070707
+        00000707072B0000000000000000000000000000000000000000000000000000
+        0000000000000000000000000000000012070707000007070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707000007070707070707070707070707070707070707070707
+        070707070707070707070707070707070707070707070707070707070000}
+      Layout = blGlyphTop
+      ParentFont = False
+      StyleElements = []
+      OnClick = SpeedButton2Click
+    end
+    object SpeedButton5: TSpeedButton
+      Left = 1
+      Top = 477
+      Width = 77
+      Height = 121
+      GroupIndex = 1
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Glyph.Data = {
+        36140000424D3614000000000000360400002800000040000000400000000100
+        08000000000000100000120B0000120B00000001000000000000CCCCCC003535
+        3500C5C5C5005C5C5C00CACACA0043434300C8C8C80033333300CBCBCB00C7C7
+        C70036363600ACACAC009E9E9E00BCBCBC00383838006B6B6B00595959003D3D
+        3D00616161008C8C8C0045454500A9A9A9008686860071717100AAAAAA006363
+        6300727272006C6C6C0065656500C9C9C90042424200ADADAD006D6D6D005F5F
+        5F00C3C3C300C4C4C400444444008D8D8D007A7A7A00C2C2C20082828200B4B4
+        B4007C7C7C00A7A7A7006767670092929200525252004B4B4B0084848400BDBD
+        BD007D7D7D00B6B6B600AFAFAF004C4C4C007E7E7E0077777700373737007070
+        7000A2A2A2009B9B9B0094949400BFBFBF00464646007F7F7F00555555008E8E
+        8E00C0C0C00047474700B9B9B900A4A4A400646464009D9D9D005D5D5D008888
+        8800414141003A3A3A00737373005E5E5E0090909000BBBBBB0074747400A6A6
+        A600666666009F9F9F00585858003C3C3C0075757500AEAEAE005A5A5A00C6C6
+        C60078787800B2B2B20057575700838383005E5E5E005F5F5F00606060006161
+        6100626262006363630064646400656565006666660067676700686868006969
+        69006A6A6A006B6B6B006C6C6C006D6D6D006E6E6E006F6F6F00707070007171
+        7100727272007373730074747400757575007676760077777700787878007979
+        79007A7A7A007B7B7B007C7C7C007D7D7D007E7E7E007F7F7F00808080008181
+        8100828282008383830084848400858585008686860087878700888888008989
+        89008A8A8A008B8B8B008C8C8C008D8D8D008E8E8E008F8F8F00909090009191
+        9100929292009393930094949400959595009696960097979700989898009999
+        99009A9A9A009B9B9B009C9C9C009D9D9D009E9E9E009F9F9F00A0A0A000A1A1
+        A100A2A2A200A3A3A300A4A4A400A5A5A500A6A6A600A7A7A700A8A8A800A9A9
+        A900AAAAAA00ABABAB00ACACAC00ADADAD00AEAEAE00AFAFAF00B0B0B000B1B1
+        B100B2B2B200B3B3B300B4B4B400B5B5B500B6B6B600B7B7B700B8B8B800B9B9
+        B900BABABA00BBBBBB00BCBCBC00BDBDBD00BEBEBE00BFBFBF00C0C0C000C1C1
+        C100C2C2C200C3C3C300C4C4C400C5C5C500C6C6C600C7C7C700C8C8C800C9C9
+        C900CACACA00CBCBCB00CCCCCC00CDCDCD00CECECE00CFCFCF00D0D0D000D1D1
+        D100D2D2D200D3D3D300D4D4D400D5D5D500D6D6D600D7D7D700D8D8D800D9D9
+        D900DADADA00DBDBDB00DCDCDC00DDDDDD00DEDEDE00DFDFDF00E0E0E000E1E1
+        E100E2E2E200E3E3E300E4E4E400E5E5E500E6E6E600E7E7E700E8E8E800E9E9
+        E900EAEAEA00EBEBEB00ECECEC00EDEDED00EEEEEE00EFEFEF00F0F0F000F1F1
+        F100F2F2F200F3F3F300F4F4F400F5F5F500F6F6F600F7F7F700F8F8F800F9F9
+        F900FAFAFA00FBFBFB00FCFCFC00FDFDFD00FEFEFE00FFFFFF00070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        3D47030707070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000001301070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000028070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000004430707070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070701
+        2E440000002A0707070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070F0000003A0707070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0714000000270107070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707310000002F07070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070C0000001B07070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707320000002507070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707480000003407070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070711080000084B070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707073300000010070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707073C00000026070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707560000003B070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707400000000D070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070E09000000050707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707070B0000001C0707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070713000000160707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707200000002B0707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707073500000000000000000000002318170A070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707070122000000000000000000000000000B1E0707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707074500000000000000000000000000001F0A07070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707073F0000000000000000000000000000001707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070707070707070707070707070705530000001507070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070707070707070707070707070707050000000207070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070707070707070707070707070707050000000207070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707070707070707070707070707240C0000001507070707070707070000
+        0000000000000000000000000707070707070707074900000000000000000000
+        0000000000000000000000000000000000000000001A07070707070707070000
+        0000000000000000000000005207070707070707071900000000000000000000
+        00000000000000000000000000000000000000001F0A07070707070707070000
+        000000000000000000000000042C070707070707071104000000000000000000
+        00000000000000000000000000000000000000571E0707070707070707070000
+        00000000000000000000000000080F070707070707070B000000000000000000
+        0000000000000000000000000000000002185038070707070707070707070707
+        070707070707070707461D000000081B070707070707160000002D0707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707071C1D00000004200707070707030000000D0507070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070719060000000439070707070E060000002955070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707071206000000081A070707070C0000000041070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707071209000000084C0707070A2500000004140707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070721090000000837070707015B000000360707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707072106000000005A0707070F000000510707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707074D0900000000260707240000004F0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070309000000002A070E000000090707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707070707035900000000285D0000000D0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070707580200000000000000004E0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070707071002000000000000223E0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707071023000000004254070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707070707070707075C270629304A07070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707}
+      Layout = blGlyphTop
+      ParentFont = False
+      Visible = False
+      StyleElements = []
+      OnClick = SpeedButton5Click
+    end
+    object SpeedButton6: TSpeedButton
+      Left = 1
+      Top = 597
+      Width = 77
+      Height = 121
+      GroupIndex = 1
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clSilver
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = [fsBold]
+      Glyph.Data = {
+        36140000424D3614000000000000360400002800000040000000400000000100
+        08000000000000100000120B0000120B00000001000000000000CCCCCC003535
+        3500C5C5C5005C5C5C00CACACA0043434300C8C8C80033333300CBCBCB00C7C7
+        C70036363600ACACAC009E9E9E00BCBCBC00383838006B6B6B00595959003D3D
+        3D00616161008C8C8C0045454500A9A9A9008686860071717100AAAAAA006363
+        6300727272006C6C6C0065656500C9C9C90042424200ADADAD006D6D6D005F5F
+        5F00C3C3C300C4C4C400444444008D8D8D007A7A7A00C2C2C20082828200B4B4
+        B4007C7C7C00A7A7A7006767670092929200525252004B4B4B0084848400BDBD
+        BD007D7D7D00B6B6B600AFAFAF004C4C4C007E7E7E0077777700373737007070
+        7000A2A2A2009B9B9B0094949400BFBFBF00464646007F7F7F00555555008E8E
+        8E00C0C0C00047474700B9B9B900A4A4A400646464009D9D9D005D5D5D008888
+        8800414141003A3A3A00737373005E5E5E0090909000BBBBBB0074747400A6A6
+        A600666666009F9F9F00585858003C3C3C0075757500AEAEAE005A5A5A00C6C6
+        C60078787800B2B2B20057575700838383005E5E5E005F5F5F00606060006161
+        6100626262006363630064646400656565006666660067676700686868006969
+        69006A6A6A006B6B6B006C6C6C006D6D6D006E6E6E006F6F6F00707070007171
+        7100727272007373730074747400757575007676760077777700787878007979
+        79007A7A7A007B7B7B007C7C7C007D7D7D007E7E7E007F7F7F00808080008181
+        8100828282008383830084848400858585008686860087878700888888008989
+        89008A8A8A008B8B8B008C8C8C008D8D8D008E8E8E008F8F8F00909090009191
+        9100929292009393930094949400959595009696960097979700989898009999
+        99009A9A9A009B9B9B009C9C9C009D9D9D009E9E9E009F9F9F00A0A0A000A1A1
+        A100A2A2A200A3A3A300A4A4A400A5A5A500A6A6A600A7A7A700A8A8A800A9A9
+        A900AAAAAA00ABABAB00ACACAC00ADADAD00AEAEAE00AFAFAF00B0B0B000B1B1
+        B100B2B2B200B3B3B300B4B4B400B5B5B500B6B6B600B7B7B700B8B8B800B9B9
+        B900BABABA00BBBBBB00BCBCBC00BDBDBD00BEBEBE00BFBFBF00C0C0C000C1C1
+        C100C2C2C200C3C3C300C4C4C400C5C5C500C6C6C600C7C7C700C8C8C800C9C9
+        C900CACACA00CBCBCB00CCCCCC00CDCDCD00CECECE00CFCFCF00D0D0D000D1D1
+        D100D2D2D200D3D3D300D4D4D400D5D5D500D6D6D600D7D7D700D8D8D800D9D9
+        D900DADADA00DBDBDB00DCDCDC00DDDDDD00DEDEDE00DFDFDF00E0E0E000E1E1
+        E100E2E2E200E3E3E300E4E4E400E5E5E500E6E6E600E7E7E700E8E8E800E9E9
+        E900EAEAEA00EBEBEB00ECECEC00EDEDED00EEEEEE00EFEFEF00F0F0F000F1F1
+        F100F2F2F200F3F3F300F4F4F400F5F5F500F6F6F600F7F7F700F8F8F800F9F9
+        F900FAFAFA00FBFBFB00FCFCFC00FDFDFD00FEFEFE00FFFFFF00070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        3D47030707070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000001301070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000028070707070707070707070707070707070707070707070707070000
+        0000000000000000000000000000000000000000000000000000000000000000
+        0000000004430707070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070701
+        2E440000002A0707070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070F0000003A0707070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0714000000270107070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707310000002F07070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070C0000001B07070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707320000002507070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707480000003407070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070711080000084B070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707073300000010070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707073C00000026070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707560000003B070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707400000000D070707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070E09000000050707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707070B0000001C0707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070713000000160707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707200000002B0707070707070707070707070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707073500000000000000000000002318170A070707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        070707070122000000000000000000000000000B1E0707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707074500000000000000000000000000001F0A07070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707073F0000000000000000000000000000001707070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070707070707070707070707070705530000001507070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070707070707070707070707070707050000000207070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        0707070707070707070707070707070707050000000207070707070707070000
+        0000070707070707000000000707070707070707070707070707070707070707
+        07070707070707070707070707070707240C0000001507070707070707070000
+        0000000000000000000000000707070707070707074900000000000000000000
+        0000000000000000000000000000000000000000001A07070707070707070000
+        0000000000000000000000005207070707070707071900000000000000000000
+        00000000000000000000000000000000000000001F0A07070707070707070000
+        000000000000000000000000042C070707070707071104000000000000000000
+        00000000000000000000000000000000000000571E0707070707070707070000
+        00000000000000000000000000080F070707070707070B000000000000000000
+        0000000000000000000000000000000002185038070707070707070707070707
+        070707070707070707461D000000081B070707070707160000002D0707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707071C1D00000004200707070707030000000D0507070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070719060000000439070707070E060000002955070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707071206000000081A070707070C0000000041070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707071209000000084C0707070A2500000004140707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070721090000000837070707015B000000360707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707072106000000005A0707070F000000510707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707074D0900000000260707240000004F0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070309000000002A070E000000090707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707070707035900000000285D0000000D0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070707580200000000000000004E0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        07070707070707070707070707070707070707071002000000000000223E0707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707071023000000004254070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        070707070707070707070707070707070707070707075C270629304A07070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707070707070707
+        0707070707070707070707070707070707070707070707070707}
+      Layout = blGlyphTop
+      ParentFont = False
+      Visible = False
+      StyleElements = []
+      OnClick = SpeedButton6Click
+    end
   end
   object ApplicationEvents1: TApplicationEvents
     OnModalBegin = ApplicationEvents1ModalBegin
     OnModalEnd = ApplicationEvents1ModalEnd
-    Left = 538
+    Left = 466
     Top = 38
   end
   object StartTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = StartTimerTimer
-    Left = 580
+    Left = 556
     Top = 36
+  end
+  object updateTimer: TTimer
+    Enabled = False
+    Interval = 6000000
+    OnTimer = updateTimerTimer
+    Left = 628
+    Top = 36
+  end
+  object infoTimer: TTimer
+    OnTimer = infoTimerTimer
+    Left = 700
+    Top = 40
   end
 end

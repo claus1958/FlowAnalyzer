@@ -43,6 +43,7 @@ object DynGrid: TDynGrid
       Width = 735
       Height = 587
       Align = alClient
+      Color = 3881787
       DoubleBuffered = True
       FixedCols = 0
       RowCount = 2
@@ -50,6 +51,7 @@ object DynGrid: TDynGrid
       ParentDoubleBuffered = False
       ScrollBars = ssHorizontal
       TabOrder = 0
+      StyleElements = [seFont, seBorder]
       OnDrawCell = SGDrawCell
       OnMouseDown = SGMouseDown
       OnMouseUp = SGMouseUp

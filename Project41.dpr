@@ -7,14 +7,16 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   Unit5b in 'Unit5b.pas' {Frame5: TFrame},
-  Unit7 in 'Unit7.pas' {Frame7: TFrame};
+  Unit7 in 'Unit7.pas' {Frame7: TFrame},
+  Unit9 in 'Unit9.pas' {Form9};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Cyan Dusk');
+  TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TForm45, Form45);
+  Application.CreateForm(TForm9, Form9);
   Application.Run;
 end.

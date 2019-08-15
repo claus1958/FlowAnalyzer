@@ -29,6 +29,22 @@ type
     created when the program loads - if it is declared "locally"
     it is not created until the procedure requests it. }
 
+  tInfo=record
+    usersOnline: integer;
+    openActions:integer;
+    newUsers1w:integer;
+    newUsers1m:integer;
+    logUsers1d:integer;
+    logUsers1w:integer;
+    logUsers1m:integer;
+    newActions1d:integer;
+    newActions1w:integer;
+    newActions1m:integer;
+    profit1d:double;
+    profit1w:double;
+    profit1m:double;
+  end;
+
   TPieParameters = Packed record
     // diverse Einstellparameter
     header: string;
@@ -275,15 +291,14 @@ procedure FillCharArray(var a: TStr12; const s: String);
 procedure SwapRowField(rf: array of integer; fr: array of integer; von, nach: integer);
 procedure generateMinutes(var ticks: array of TKurs; var mBars: DAKursOCHL; minutes: integer);
 procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
-  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream;
-  append: Boolean);
+  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream; append: Boolean);
 procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
 
 function getCwComment(id: integer): string;
 function getCwSymbol(id: integer): string;
 function OrderTypes(cmd: integer): string;
 procedure saveCacheFileCw(fname: string; typ: string; lb: TListBox);
-function loadCacheFileCw(fname: string; typ: string; lb: TListBox):integer;
+function loadCacheFileCw(fname: string; typ: string; lb: TListBox): integer;
 // A=Alpha V=Value U=Up D=Down
 procedure QuicksortAU(low, high: integer; var Ordliste: StringArray); // StringArray ist Array of String
 procedure QuicksortAD(low, high: integer; var Ordliste: StringArray);
@@ -368,6 +383,7 @@ procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymb
 
 function RandomRange(const AFrom, ATo: integer): integer;
 function RGB2TColor(const R, G, b: byte): integer;
+procedure showMemory(lb:TListbox);
 
 var
 
@@ -421,11 +437,14 @@ var
   lboxInfo: TListBox;
   cwFilterParameter: array of TFilterParameter;
   brokerShort: array [1 .. 2] of string;
-  accountShort:array [1..7] of string;
+  accountShort: array [1 .. 7] of string;
 
 implementation
 
 uses FlowAnalyzer;
+const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
+{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
 
 function cwRating.getJSON(): string;
 // wird aber nicht gebraucht
@@ -903,9 +922,8 @@ end;
 // ParseDelimited('symbols', lbDebug2, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms);
 
 procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
-  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream;
-  append: Boolean);
-  //von TMemoryStream auf TStream abgeändert ,damit auch TFileStream gelesen werden kann !
+  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream; append: Boolean);
+// von TMemoryStream auf TStream abgeändert ,damit auch TFileStream gelesen werden kann !
 var
   ns: string;
   s: string;
@@ -1532,8 +1550,10 @@ begin
       SG.cells[SGFieldCol[2], row] := users[sort[k]].name;
       SG.cells[SGFieldCol[3], row] := users[sort[k]].group;
       SG.cells[SGFieldCol[4], row] := inttostr(users[sort[k]].enable);
-      SG.cells[SGFieldCol[5], row] :=DateTimeToStr(UnixToDateTime(users[sort[k]].registrationTime));//      inttostr(users[sort[k]].registrationTime);
-      SG.cells[SGFieldCol[6], row] := DateTimeToStr(UnixToDateTime(users[sort[k]].lastloginTime));//inttostr(users[sort[k]].lastLoginTime);
+      SG.cells[SGFieldCol[5], row] := DateTimeToStr(UnixToDateTime(users[sort[k]].registrationTime));
+      // inttostr(users[sort[k]].registrationTime);
+      SG.cells[SGFieldCol[6], row] := DateTimeToStr(UnixToDateTime(users[sort[k]].lastLoginTime));
+      // inttostr(users[sort[k]].lastLoginTime);
       SG.cells[SGFieldCol[7], row] := inttostr(users[sort[k]].leverage);
       SG.cells[SGFieldCol[8], row] := floattostr(users[sort[k]].balance);
       SG.cells[SGFieldCol[9], row] := floattostr(users[sort[k]].balancePreviousMonth);
@@ -1749,7 +1769,7 @@ begin
 
         SG.cells[SGFieldCol[0], row] := inttostr(actions[k].actionId);
         SG.cells[SGFieldCol[1], row] := inttostr(actions[k].userId);
-        SG.cells[SGFieldCol[2], row] := accountshort[actions[k].accountId];
+        SG.cells[SGFieldCol[2], row] := accountShort[actions[k].accountId];
         SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[k].symbolId);
         SG.cells[SGFieldCol[4], row] := inttostr(actions[k].symbolId);
         SG.cells[SGFieldCol[5], row] := getCwComment(actions[k].commentId);
@@ -1938,7 +1958,7 @@ begin
       if (row < (total + 1)) then
       begin
         SG.cells[SGFieldCol[0], row] := inttostr(users[k].userId);
-        SG.cells[SGFieldCol[1], row] := accountshort[users[k].accountId];
+        SG.cells[SGFieldCol[1], row] := accountShort[users[k].accountId];
         SG.cells[SGFieldCol[2], row] := users[k].group;
         SG.cells[SGFieldCol[3], row] := inttostr(users[k].enable);
         SG.cells[SGFieldCol[4], row] := inttostr(users[k].registrationTime);
@@ -2215,7 +2235,7 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-function loadCacheFileCw(fname: string; typ: string; lb: TListBox):integer;
+function loadCacheFileCw(fname: string; typ: string; lb: TListBox): integer;
 var
   folder: string;
   fileName: string;
@@ -2253,7 +2273,7 @@ begin
             SetLength(cwUsersSortIndex, 0); // zurücksetzen
             SetLength(cwUsersSortIndex2, 0); // zurücksetzen
             fstream.ReadBuffer(cwUsers[0], ct * SizeOf(cwu)); // nicht die ganze stream.size !
-           // showmessage(inttostr(fstream.Size) + ' ' + inttostr(ct * SizeOf(cwu)));
+            // showmessage(inttostr(fstream.Size) + ' ' + inttostr(ct * SizeOf(cwu)));
           end;
         2:
           begin
@@ -2274,12 +2294,12 @@ begin
           end;
 
       End;
-      result:=1;
+      result := 1;
     end
     else
     begin
-      //showmessage('Die Datei existiert nicht');
-      result:=0;
+      // showmessage('Die Datei existiert nicht');
+      result := 0;
     end;
   finally
     if fileexists(fileName) then
@@ -3127,11 +3147,11 @@ const
   ColWidthMin = 10;
 var
   c, R, w, ColWidthMax: integer;
-  header:string;
-  begin
+  header: string;
+begin
   for c := 0 to Grid.ColCount - 1 do
   begin
-    header:=grid.Cells[c,0];
+    header := Grid.cells[c, 0];
     ColWidthMax := ColWidthMin;
     for R := 0 to (Grid.RowCount - 1) do
     begin
@@ -3140,9 +3160,8 @@ var
         ColWidthMax := w;
     end;
     Grid.ColWidths[c] := ColWidthMax + 12;
-    if (header='unused') then
-      Grid.ColWidths[c] := -  1;
-
+    if (header = 'unused') then
+      Grid.ColWidths[c] := -1;
 
   end;
 end;
@@ -3735,5 +3754,23 @@ begin
     end;
   end;
 end;
+
+procedure showMemory(lb:TListbox);
+var
+  GMS: TMemoryStatusEx;
+begin
+  GMS.dwLength := SizeOf(TMemoryStatusEx);
+  GlobalMemoryStatusEx(GMS);
+  lb.items.add('used (system):               '+inttostr( GMS.dwMemoryLoad)+ ' %');
+  lb.items.add('physical memory - total:     '+inttostr(trunc( GMS.ullTotalPhys     / 1048576))+ ' MB');
+  lb.items.add(' (system)       - available: '+inttostr(trunc( GMS.ullAvailPhys     / 1048576 ))+ ' MB');
+  lb.items.add('page file       - total:     '+inttostr( trunc(GMS.ullTotalPageFile / 1048576 ))+ ' MB');
+  lb.items.add('                - available: '+inttostr( trunc(GMS.ullAvailPageFile / 1048576 ))+ ' MB');
+  lb.items.add('virtual memory  - total:     '+inttostr( trunc(GMS.ullTotalVirtual  / 1048576 ))+ ' MB');
+  lb.items.add(' (this program) - available: '+inttostr(trunc( GMS.ullAvailVirtual  / 1048576 ))+ ' MB');
+
+
+end;
+
 
 end.

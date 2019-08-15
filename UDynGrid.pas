@@ -73,7 +73,7 @@ uses FlowAnalyzer;
 constructor TDynGrid.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-  initialized := true;
+  initialized := false;
   maxDataRows := 0;
   setlength(dSort, 0); // warum nur die ?
   setlength(sSort, 0);
@@ -106,7 +106,7 @@ var
   rc: integer;
   grau: integer;
 begin
-  grau := 39;
+  grau := 59;
   rc := (Sender as Tstringgrid).rowcount;
   if ARow >= (Sender as Tstringgrid).rowcount then
   begin
@@ -281,6 +281,8 @@ begin
     exit;
 
 
+  if(initialized=false) then
+  begin
   setlength(SGFieldCol, cols);
   setlength(SGColField, cols);
   for i := 0 to cols - 1 do
@@ -288,6 +290,9 @@ begin
     SGFieldCol[i] := i;
     SGColField[i] := i;
   end;
+  initialized:=true;
+  end;
+
   maxDataRows := rows;
   // source   cwactions
   // sortcol  ActionId
@@ -623,13 +628,13 @@ begin
       scol := 22;
     If sortcol = 'comment' then
       scol := 23;
-    If sortcol = 'totalSymbols' then
+    If sortcol = 'totalSymbols' then //nicht drin
       scol := 24;
-    If sortcol = 'totalTrades' then
+    If sortcol = 'trades' then
       scol := 25;
-    If sortcol = 'totalProfit' then
+    If sortcol = 'profit' then
       scol := 26;
-    If sortcol = 'totalBalance' then
+    If sortcol = 'totalbalance' then
       scol := 27;
 
     if ((scol = 3) or ((scol >= 14) and (scol <= 23))) then

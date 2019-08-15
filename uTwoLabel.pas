@@ -8,8 +8,8 @@ uses
 
 type
   TTwoLabel = class(TFrame)
-    Label1: TLabel;
-    Label2: TLabel;
+    l1: TLabel;
+    l2: TLabel;
   private
     { Private-Deklarationen }
   public
