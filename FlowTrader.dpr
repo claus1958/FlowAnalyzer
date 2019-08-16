@@ -1,4 +1,4 @@
-program FTAnalyzer;
+program FlowTrader;
 
 uses
   Forms,
@@ -27,6 +27,6 @@ begin
   Application.Initialize;
   TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TForm2, Form2);
-  Application.CreateForm(TDialog2,FDialog2);
+  Application.CreateForm(TDialog2, FDialog2);
   Application.Run;
 end.

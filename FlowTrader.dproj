@@ -1,7 +1,7 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
         <ProjectGuid>{8B0D8096-A087-4336-BFCA-DAFDF3924E06}</ProjectGuid>
-        <MainSource>FTAnalyzer.dpr</MainSource>
+        <MainSource>FlowTrader.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
         <TargetedPlatforms>1</TargetedPlatforms>
@@ -49,7 +49,7 @@
         <DCC_ImageBase>00400000</DCC_ImageBase>
         <DCC_DebugInformation>1</DCC_DebugInformation>
         <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
-        <SanitizedProjectName>FTAnalyzer</SanitizedProjectName>
+        <SanitizedProjectName>FlowTrader</SanitizedProjectName>
         <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;$(DCC_Namespace)</DCC_Namespace>
         <VerInfo_Locale>1049</VerInfo_Locale>
         <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
@@ -152,7 +152,7 @@
         <BorlandProject>
             <Delphi.Personality>
                 <Source>
-                    <Source Name="MainSource">FTAnalyzer.dpr</Source>
+                    <Source Name="MainSource">FlowTrader.dpr</Source>
                 </Source>
                 <Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSVclCommonD260.6.0.bpl">RiverSoftAVG Common Classes Library (VCL)</Excluded_Packages>
@@ -172,9 +172,9 @@
             </Platforms>
             <ModelSupport>False</ModelSupport>
             <Deployment Version="3">
-                <DeployFile LocalName="..\FTCollector\Programm\FTAnalyzer.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="..\FTCollector\Programm\FlowTrader.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>FTAnalyzer.exe</RemoteName>
+                        <RemoteName>FlowTrader.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

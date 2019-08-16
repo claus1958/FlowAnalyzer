@@ -37,26 +37,6 @@ object DynGrid: TDynGrid
     Height = 589
     TabOrder = 1
     OnResize = Panel2Resize
-    object SG: TStringGridSorted
-      Left = 1
-      Top = 1
-      Width = 735
-      Height = 587
-      Align = alClient
-      Color = 3881787
-      DoubleBuffered = True
-      FixedCols = 0
-      RowCount = 2
-      Options = [goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
-      ParentDoubleBuffered = False
-      ScrollBars = ssHorizontal
-      TabOrder = 0
-      StyleElements = [seFont, seBorder]
-      OnDrawCell = SGDrawCell
-      OnMouseDown = SGMouseDown
-      OnMouseUp = SGMouseUp
-      OnRowMoved = SGRowMoved
-    end
     object ScrollBar1: TScrollBar
       Left = 736
       Top = 1
@@ -66,9 +46,67 @@ object DynGrid: TDynGrid
       Kind = sbVertical
       LargeChange = 100
       PageSize = 0
-      TabOrder = 1
+      TabOrder = 0
       OnChange = ScrollBar1Change
       OnScroll = ScrollBar1Scroll
+      ExplicitHeight = 584
+    end
+    object Panel3: TPanel
+      Left = 1
+      Top = 1
+      Width = 735
+      Height = 587
+      Align = alClient
+      TabOrder = 1
+      ExplicitLeft = 4
+      ExplicitTop = 4
+      ExplicitWidth = 729
+      ExplicitHeight = 581
+      object SG: TStringGridSorted
+        Left = 1
+        Top = 1
+        Width = 733
+        Height = 555
+        Align = alClient
+        Color = 3881787
+        DoubleBuffered = True
+        FixedCols = 0
+        RowCount = 2
+        Options = [goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
+        ParentDoubleBuffered = False
+        ScrollBars = ssHorizontal
+        TabOrder = 0
+        StyleElements = [seFont, seBorder]
+        OnDrawCell = SGDrawCell
+        OnMouseDown = SGMouseDown
+        OnMouseUp = SGMouseUp
+        OnRowMoved = SGRowMoved
+        OnTopLeftChanged = SGTopLeftChanged
+        ExplicitLeft = 0
+        ExplicitWidth = 735
+        ExplicitHeight = 560
+      end
+      object SGSum: TStringGridSorted
+        Left = 1
+        Top = 556
+        Width = 733
+        Height = 30
+        Align = alBottom
+        Color = 3881787
+        DoubleBuffered = True
+        FixedCols = 0
+        RowCount = 1
+        FixedRows = 0
+        Options = [goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
+        ParentDoubleBuffered = False
+        ScrollBars = ssNone
+        TabOrder = 1
+        StyleElements = [seFont, seBorder]
+        OnDrawCell = SGDrawCell
+        OnMouseDown = SGSumMouseDown
+        OnRowMoved = SGRowMoved
+        ExplicitTop = 544
+      end
     end
   end
 end

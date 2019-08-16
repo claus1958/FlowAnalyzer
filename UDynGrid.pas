@@ -12,10 +12,12 @@ type
   TDynGrid = class(TFrame)
     Panel1: TPanel;
     Panel2: TPanel;
-    SG: FTCommons.TStringGridSorted;
     ScrollBar1: TScrollBar;
     lblHeader: TLabel;
     lblTime: TLabel;
+    Panel3: TPanel;
+    SG: TStringGridSorted;
+    SGSum: TStringGridSorted;
     constructor Create(AOwner: TComponent); override;
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
@@ -38,6 +40,8 @@ type
     procedure SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
     procedure ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: integer);
+    procedure SGSumMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+    procedure SGTopLeftChanged(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -61,7 +65,7 @@ type
     mucol, murow: integer;
     autosized: boolean;
     scrollBar1RepeatCount: integer;
-    topic:string;
+    topic: string;
   end;
 
 implementation
@@ -93,7 +97,132 @@ begin
   for i := 0 to SG.Colcount - 1 do
   begin
     // sgcolfield(sg.Cols[i,0].Text
+
   end;
+end;
+
+procedure TDynGrid.SGSumMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+var
+  i: integer;
+  grid: FTCommons.TStringGridSorted;
+  col, row: integer;
+  fixedCol, fixedRow: boolean;
+  gt: cardinal;
+  Cursor: TCursor;
+  header, summe: string;
+  sumd: double;
+  sumi: integer;
+  sume:extended;
+  typ: integer;
+begin
+  gt := timegettime();
+  grid := Sender as FTCommons.TStringGridSorted;
+  // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
+  if Button = mbright then
+  begin
+    grid.MouseToCell(X, Y, col, row);
+    mdcol := col;
+    mdrow := row;
+    summe := '';
+    header := SG.Cells[mdcol, 0];
+
+    //SGSum.Cells[mdcol, mdrow] := header;
+    //SGSum.Cells[mdcol, mdrow] := source;
+
+    if (source = 'cwsummaries') then
+    begin
+      if (ansiindextext(header, ['tradesCount','tradesVolumeTotal','tradesProfitTotal']) > -1) then
+      begin
+        sumi := 0;
+        sumd := 0;
+        sume:=0;
+        // Wert berechnen
+        if (header = 'tradesCount') then
+          typ := 0;
+        if (header = 'tradesVolumeTotal') then
+          typ := 1;
+        if (header = 'tradesProfitTotal') then
+          typ := 2;
+        for i := 0 to length(ixSorted) - 1 do
+        begin
+          case typ of
+            0:
+              begin
+                sumd := sumd + cwsummaries[ixSorted[i]].TradesCount;
+              end;
+            1:
+              begin
+                sumi := sumi + cwsummaries[ixSorted[i]].TradesVolumeTotal;
+              end;
+            2:
+              begin
+                sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal;
+              end;
+          end;
+        end;
+        case typ of
+          0:
+            begin
+              summe := FormatFloat('#0.00', sumd);
+            end;
+          1:
+            begin
+              summe := inttostr(sumi);
+            end;
+          2:
+            begin
+              summe :=FormatFloat('#0.', sume);
+            end;
+        end;
+        SGSum.Cells[mdcol, mdrow] := summe;
+
+
+      end;
+    end;
+    if (source = 'cwfilteredactions') then
+    begin
+      if (ansiindextext(header, ['profit', 'volume']) > -1) then
+      begin
+        sumi := 0;
+        sumd := 0;
+        // Wert berechnen
+        if (header = 'profit') then
+          typ := 0;
+        if (header = 'volume') then
+          typ := 1;
+        for i := 0 to length(ixSorted) - 1 do
+        begin
+          case typ of
+            0:
+              begin
+                sumd := sumd + cwfilteredactions[ixSorted[i]].profit;
+              end;
+            1:
+              begin
+                sumi := sumi + cwfilteredactions[ixSorted[i]].volume;
+              end;
+          end;
+        end;
+        case typ of
+          0:
+            begin
+              summe := FormatFloat('#0.00', sumd);
+            end;
+          1:
+            begin
+              summe := inttostr(sumi);
+            end;
+        end;
+        SGSum.Cells[mdcol, mdrow] := summe;
+      end;
+    end;
+  end;
+end;
+
+procedure TDynGrid.SGTopLeftChanged(Sender: TObject);
+begin
+  //
+  SGSum.LeftCol := SG.LeftCol;
 end;
 
 procedure TDynGrid.SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
@@ -128,11 +257,11 @@ begin
     else
       Canvas.Brush.Color := RGB2TColor(grau, grau, grau);
 
-    s := cells[ACol, ARow];
+    s := Cells[ACol, ARow];
     if (ARow > 1) then
     begin
-      if (s = cells[ACol, ARow - 1]) then
-        s := '"';
+      if (s = Cells[ACol, ARow - 1]) then
+        s := '^';
 
     end;
 
@@ -141,16 +270,16 @@ begin
     Canvas.FillRect(r);
     // den Text am alten Rect ausrichten sonstzu weit links
     Canvas.Pen.Color := clBlue;
-    if s='"' then
+    if s = '^' then
     begin
-    r.left := trunc((r.left + r.Right)/2)-3;
-    r.Top := r.Top + 4;
+      r.left := trunc((r.left + r.Right) / 2) - 3;
+      r.Top := r.Top + 4;
     end
     else
-        begin
-    r.left := r.left + 6;
-    r.Top := r.Top + 4;
-        end;
+    begin
+      r.left := r.left + 6;
+      r.Top := r.Top + 4;
+    end;
     DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
   end;
 
@@ -184,7 +313,7 @@ begin
     gridHandler(self);
     if autosized = false then
     begin
-      autosizegrid(SG);
+      autosizegrid(SG, SGSum);
       autosized := true; // nur einmal bei der ersten Darstellung nach dem Init und Sort
     end;
   end;
@@ -255,7 +384,7 @@ begin
 
     for j := rows to mrows do
       for k := 0 to SG.Colcount - 1 do
-        SG.cells[k, j] := '*';
+        SG.Cells[k, j] := ' ';
 
     mrows := rows;
   end;
@@ -263,34 +392,38 @@ begin
   SG.rowcount := mrows;
   SG.Colcount := cols;
 
-  if (mrows+cols)=0 then
+  SGSum.rowcount := 1;
+  SGSum.Colcount := cols;
+
+  if (mrows + cols) = 0 then
   begin
-    sg.Visible:=false;
+    SG.Visible := false;
     exit;
   end
   else
-    sg.Visible:=true;
-
-
+    SG.Visible := true;
 
   for j := 0 to SG.rowcount - 1 do
     for k := 0 to SG.Colcount - 1 do
-      SG.cells[k, j] := '*';
+      SG.Cells[k, j] := ' ';
 
-  if(sg.rowcount=0) then
+  for j := 0 to SGSum.rowcount - 1 do
+    for k := 0 to SGSum.Colcount - 1 do
+      SGSum.Cells[k, j] := ' ';
+
+  if (SG.rowcount = 0) then
     exit;
 
-
-  if(initialized=false) then
+  if (initialized = false) then
   begin
-  setlength(SGFieldCol, cols);
-  setlength(SGColField, cols);
-  for i := 0 to cols - 1 do
-  begin
-    SGFieldCol[i] := i;
-    SGColField[i] := i;
-  end;
-  initialized:=true;
+    setlength(SGFieldCol, cols);
+    setlength(SGColField, cols);
+    for i := 0 to cols - 1 do
+    begin
+      SGFieldCol[i] := i;
+      SGColField[i] := i;
+    end;
+    initialized := true;
   end;
 
   maxDataRows := rows;
@@ -301,7 +434,7 @@ begin
   if source = 'cwactions' then
     sortGridCwactions(source, sortcol, sortdir, cwactions);
   if source = 'cwfilteredactions' then
-    sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
+    sortGridCwactions(source, sortcol, sortdir, cwfilteredactions);
   if source = 'cwsingleuseractions' then
     sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
   if source = 'cwsymbols' then
@@ -628,7 +761,7 @@ begin
       scol := 22;
     If sortcol = 'comment' then
       scol := 23;
-    If sortcol = 'totalSymbols' then //nicht drin
+    If sortcol = 'totalSymbols' then // nicht drin
       scol := 24;
     If sortcol = 'trades' then
       scol := 25;
@@ -1409,7 +1542,7 @@ begin
   if source = 'cwactions' then
     maxDataRows := length(cwactions);
   if source = 'cwfilteredactions' then
-    maxDataRows := length(cwFilteredActions);
+    maxDataRows := length(cwfilteredactions);
   if source = 'cwsingleuseractions' then
     maxDataRows := length(cwSingleUserActions);
   if source = 'cwsymbols' then
@@ -1435,7 +1568,7 @@ begin
   if source = 'cwactions' then
     doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, vScrollvon, vscrollbis - 1);
   if source = 'cwfilteredactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwFilteredActions, vScrollvon, vscrollbis - 1);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwfilteredactions, vScrollvon, vscrollbis - 1);
   if source = 'cwsingleuseractions' then
     doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, vScrollvon, vscrollbis - 1);
 
@@ -1479,9 +1612,10 @@ begin
       // Dragmodus der Col einleiten - Mauscursor umschalten
       Screen.Cursor := crDrag;
 
-    ClipBoard.AsText := grid.cells[col, row];
+    ClipBoard.AsText := grid.Cells[col, row];
     // hier kann dann individuell gehandelt werden !
-    form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row],button,shift,source);
+    form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row], Button,
+      Shift, source);
 
   end;
   if Button = mbright then
@@ -1500,13 +1634,13 @@ begin
         // Rechtsclick in den Header -> Sortieren
         // Das Sortieren erfolgt spezifisch zum Thema des Grids
         begin
-          sortcol := grid.cells[col, 0];
+          sortcol := grid.Cells[col, 0];
           sortdir := -sortdir;
           grid.Selection := NoSelection;
           if source = 'cwactions' then
             sortGridCwactions(source, sortcol, sortdir, cwactions);
           if source = 'cwfilteredactions' then
-            sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
+            sortGridCwactions(source, sortcol, sortdir, cwfilteredactions);
           if source = 'cwsingleuseractions' then
             sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
           if source = 'cwsymbols' then
@@ -1528,198 +1662,211 @@ begin
           // Right-click in a "row header"
         else
           // Right-click in a non-fixed cell
-           form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row],button,shift,source);
+          form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row],
+            Button, Shift, source);
 
-        finally
-          Screen.Cursor := Cursor;
-        end;
-      except
-        LbDebug('Fehler:');
+      finally
+        Screen.Cursor := Cursor;
       end;
-      LbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
+    except
+      LbDebug('Fehler:');
     end;
+    LbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
   end;
+end;
 
-  procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
-  var
-    col, row, merk, i, nr, anr, fall, seltop, selbottom: integer;
-    grid: FTCommons.TStringGridSorted;
-    Cursor: TCursor;
-    such, vgl: string;
-    suchlength: integer;
-    suchfound: boolean;
-    gt: cardinal;
-    found: integer;
+procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
+var
+  col, row, merk, i, nr, anr, fall, seltop, selbottom: integer;
+  grid: FTCommons.TStringGridSorted;
+  Cursor: TCursor;
+  such, vgl: string;
+  suchlength: integer;
+  suchfound: boolean;
+  gt: cardinal;
+  found: integer;
+begin
+
+  //
+  if Button = mbleft then
   begin
-    //
-    if Button = mbleft then
+    Cursor := Screen.Cursor;
+    Screen.Cursor := crDefault;
+    grid := Sender as FTCommons.TStringGridSorted;
+    grid.MouseToCell(X, Y, col, row);
+    mucol := col;
+    murow := row;
+    // showmessage(inttostr(mdcol)+'/'+inttostr(mucol));
+    // dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
+    if Cursor = crDrag then
+    // im Verschiebemodus der Cols wurde die Maus losgelassen
     begin
-      Cursor := Screen.Cursor;
-      Screen.Cursor := crDefault;
-      grid := Sender as FTCommons.TStringGridSorted;
-      grid.MouseToCell(X, Y, col, row);
-      mucol := col;
-      murow := row;
-      // showmessage(inttostr(mdcol)+'/'+inttostr(mucol));
-      // dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
-      if Cursor = crDrag then
-      // im Verschiebemodus der Cols wurde die Maus losgelassen
+      if ((murow = 0) and (mdrow = 0)) then
       begin
-        if (murow = 0) and (mdrow = 0) then
+        if (mucol <> mdcol) then
         begin
-          if (mucol <> mdcol) then
-          begin
-            // col wurde verschoben
-            setlength(SGColField, length(SGFieldCol));
-            for i := 0 to length(SGFieldCol) - 1 do
-              SGColField[SGFieldCol[i]] := i;
+          // col wurde verschoben
+          setlength(SGColField, length(SGFieldCol));
+          for i := 0 to length(SGFieldCol) - 1 do
+            SGColField[SGFieldCol[i]] := i;
 
-            if (mucol > mdcol) then
-            begin
-              // nach rechts verschoben
-              merk := SGColField[mdcol];
-              for i := mdcol to mucol - 1 do
-                SGColField[i] := SGColField[i + 1];
-              SGColField[mucol] := merk;
-            end
-            else
-            begin
-              // nach links verschoben
-              merk := SGColField[mdcol];
-              for i := mdcol downto mucol + 1 do
-                SGColField[i] := SGColField[i - 1];
-              SGColField[mucol] := merk;
-            end
+          if (mucol > mdcol) then
+          begin
+            // nach rechts verschoben
+            merk := SGColField[mdcol];
+            for i := mdcol to mucol - 1 do
+              SGColField[i] := SGColField[i + 1];
+            SGColField[mucol] := merk;
           end
           else
-          // autosizegrid(SG)
           begin
-            if ssshift in Shift then
-            begin
-              such := InputBox('Search in column', 'Search expression:', '');
-              such := uppercase(such);
-              suchlength := such.length;
-              if such <> '' then
-              begin
-                suchfound := false;
-                gt := gettickcount;
-                i := scrollPosition;
-
-                if source = 'cwactions' then
-                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, mucol, such)
-                else if source = 'cwfilteredactions' then
-                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, mucol, such)
-                else if source = 'cwsingleuseractions' then
-                  found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such)
-                else if source = 'cwsymbols' then
-                  found := -1
-                else if source = 'cwusers' then
-                  found := -1
-                else if source = 'cwcomments' then
-                  found := -1
-                else if source = 'cwsymbolsgroups' then
-                  found := -1
-                else if source = 'cwfilteredsymbolsgroups' then
-                  found := -1;
-                if found > -1 then
-                  ScrollBar1.Position := found;
-                showmessage('z:' + inttostr(gettickcount - gt));
-
-              end;
-            end;
-          end;
-
-          ;
-          for i := 0 to length(SGFieldCol) - 1 do
-            SGFieldCol[SGColField[i]] := i;
-
-        end;
-      end
-      else
-      begin
-        // Selektion bearbeiten
-        // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
-        nr := scrollPosition + murow - 1;
-        anr := ixSorted[nr];
-        // showmessage(inttostr(scrollPosition) + '/' + inttostr(murow) + ' ' + inttostr(cwactions[anr].actionId));
-        if (murow = 0) then
-          fall := 0 // shift links oben
+            // nach links verschoben
+            merk := SGColField[mdcol];
+            for i := mdcol downto mucol + 1 do
+              SGColField[i] := SGColField[i - 1];
+            SGColField[mucol] := merk;
+          end
+        end
         else
+        // autosizegrid(SG,SGsum)
         begin
-          fall := 1;
           if ssshift in Shift then
           begin
-            fall := 2;
-          end;
-          if ssCtrl in Shift then
-          begin
-            fall := 3;
+            such := InputBox('Search in column', 'Search expression:', '');
+            such := uppercase(such);
+            suchlength := such.length;
+            if such <> '' then
+            begin
+              suchfound := false;
+              gt := gettickcount;
+              i := scrollPosition;
+
+              if source = 'cwactions' then
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, mucol, such)
+              else if source = 'cwfilteredactions' then
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwfilteredactions, i, mucol, such)
+              else if source = 'cwsingleuseractions' then
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such)
+              else if source = 'cwsymbols' then
+                found := -1
+              else if source = 'cwusers' then
+                found := -1
+              else if source = 'cwcomments' then
+                found := -1
+              else if source = 'cwsymbolsgroups' then
+                found := -1
+              else if source = 'cwfilteredsymbolsgroups' then
+                found := -1;
+              if found > -1 then
+                ScrollBar1.Position := found;
+              showmessage('z:' + inttostr(gettickcount - gt));
+
+            end;
           end;
         end;
+
+        ;
+        for i := 0 to length(SGFieldCol) - 1 do
+          SGFieldCol[SGColField[i]] := i;
+
       end;
-      case fall of
-        1:
-          begin
-            for i := 0 to length(selSorted) - 1 do
-              selSorted[i] := 0;
+    end
+    else
+    begin
+      // Selektion bearbeiten
+      // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
 
-            selSorted[anr] := selSorted[anr] xor 1;
-          end;
-        2:
-          begin
-            // der kompliziertere Fall
-            seltop := -1;
-            selbottom := -1;
-            for i := 0 to length(selSorted) - 1 do
-            begin
-              if selSorted[ixSorted[i]] = 1 then
-              begin
-                if seltop = -1 then
-                  seltop := i;
-                selbottom := i;
-              end;
-            end;
-            if nr < seltop then
-            begin
-              for i := nr to seltop - 1 do
-              begin
-                selSorted[ixSorted[i]] := 1;
-              end;
-            end;
-            if nr > selbottom then
-            begin
-              for i := selbottom + 1 to nr do
-              begin
-                selSorted[ixSorted[i]] := 1;
-              end;
+      nr := scrollPosition + murow - 1;
+      anr := ixSorted[nr];
+      // showmessage(inttostr(scrollPosition) + '/' + inttostr(murow) + ' ' + inttostr(cwactions[anr].actionId));
+      if ((murow = 0) or (mdrow = 0)) then
+        fall := 0 // shift links oben
+      else
+      begin
+        fall := 1;
+        if ssshift in Shift then
+        begin
+          fall := 2;
+        end;
+        if ssCtrl in Shift then
+        begin
+          fall := 3;
+        end;
+      end;
+    end;
+    case fall of
+      1:
+        begin
+          for i := 0 to length(selSorted) - 1 do
+            selSorted[i] := 0;
 
-            end;
-            if (nr >= seltop) and (nr <= selbottom) then
-            begin
-              selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
-              for i := nr + 1 to length(selSorted) - 1 do
-              begin
-                selSorted[ixSorted[i]] := 0;
-              end;
-
-            end;
-
-          end;
-        3:
           selSorted[anr] := selSorted[anr] xor 1;
-      end;
+        end;
+      2:
+        begin
+          // der kompliziertere Fall
+          seltop := -1;
+          selbottom := -1;
+          for i := 0 to length(selSorted) - 1 do
+          begin
+            if selSorted[ixSorted[i]] = 1 then
+            begin
+              if seltop = -1 then
+                seltop := i;
+              selbottom := i;
+            end;
+          end;
+          if nr < seltop then
+          begin
+            for i := nr to seltop - 1 do
+            begin
+              selSorted[ixSorted[i]] := 1;
+            end;
+          end;
+          if nr > selbottom then
+          begin
+            for i := selbottom + 1 to nr do
+            begin
+              selSorted[ixSorted[i]] := 1;
+            end;
 
-      // das ist die Tauschvariante
-      // i := SGFieldCol[mucol];
-      // SGFieldCol[mucol] := SGFieldCol[mdcol];
-      // SGFieldCol[mdcol] := i;
-      gridHandler(nil);
+          end;
+          if (nr >= seltop) and (nr <= selbottom) then
+          begin
+            selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
+            for i := nr + 1 to length(selSorted) - 1 do
+            begin
+              selSorted[ixSorted[i]] := 0;
+            end;
+
+          end;
+
+        end;
+      3:
+        selSorted[anr] := selSorted[anr] xor 1;
+      0:
+        // könnte einfach Linksclick oder auch Size-Änderung der Colwidth sein
+        // col kann aber auch links oder rechts vom Col-Trenner liegen je nachdem wo halt die Maus losgelassen wurde
+        begin
+          // showmessage('col:'+inttostr(mucol)+' row:'+inttostr(murow)+' ='+inttostr(sg.colwidths[mucol]));
+          // am besten die COlWidts nun nach SGsum kopieren
+          for i := 0 to SG.Colcount - 1 do
+            SGSum.ColWidths[i] := SG.ColWidths[i];
+          exit; // nicht gridhandler aufrufen !
+        end;
     end;
 
-    // ClipBoard.AsText := grid.Cells[col, row];
-    // hier kann dann individuell gehandelt werden !
-    // gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
-
+    // das ist die Tauschvariante
+    // i := SGFieldCol[mucol];
+    // SGFieldCol[mucol] := SGFieldCol[mdcol];
+    // SGFieldCol[mdcol] := i;
+    gridHandler(nil);
   end;
+
+  // ClipBoard.AsText := grid.Cells[col, row];
+  // hier kann dann individuell gehandelt werden !
+  // gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
+
+end;
 
 end.

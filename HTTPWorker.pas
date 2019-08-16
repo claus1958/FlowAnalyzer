@@ -27,7 +27,7 @@ type
     ResultList: TStringList;
     Caption: String;
     machfehler: Boolean;
-    bArray: Bytearray;//NEU: zum empfangen
+    bArray: Bytearray;//NEU: zum empfangen einer binären Datei
   end;
 
 implementation

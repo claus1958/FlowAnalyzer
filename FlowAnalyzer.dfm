@@ -27,7 +27,7 @@ object Form2: TForm2
     Top = 0
     Width = 1527
     Height = 937
-    ActivePage = TabSheet1
+    ActivePage = TabSheet10
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -160,19 +160,32 @@ object Form2: TForm2
               ExplicitTop = 5
               ExplicitWidth = 1515
               ExplicitHeight = 214
-              inherited SG: TStringGridSorted
-                Tag = 3
-                Width = 1497
-                Height = 212
-                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1497
-                ExplicitHeight = 212
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 212
                 ExplicitLeft = 1498
                 ExplicitHeight = 212
+              end
+              inherited Panel3: TPanel
+                Width = 1497
+                Height = 212
+                ExplicitLeft = 1
+                ExplicitTop = 1
+                ExplicitWidth = 1497
+                ExplicitHeight = 212
+                inherited SG: TStringGridSorted
+                  Width = 1495
+                  Height = 180
+                  ExplicitLeft = 1
+                  ExplicitWidth = 1495
+                  ExplicitHeight = 180
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 181
+                  Width = 1495
+                  ExplicitTop = 181
+                  ExplicitWidth = 1495
+                end
               end
             end
           end
@@ -216,19 +229,32 @@ object Form2: TForm2
               ExplicitTop = 5
               ExplicitWidth = 1515
               ExplicitHeight = 169
-              inherited SG: TStringGridSorted
-                Tag = 3
-                Width = 1497
-                Height = 167
-                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1497
-                ExplicitHeight = 167
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 167
                 ExplicitLeft = 1498
                 ExplicitHeight = 167
+              end
+              inherited Panel3: TPanel
+                Width = 1497
+                Height = 167
+                ExplicitLeft = 1
+                ExplicitTop = 1
+                ExplicitWidth = 1497
+                ExplicitHeight = 167
+                inherited SG: TStringGridSorted
+                  Width = 1495
+                  Height = 135
+                  ExplicitLeft = 1
+                  ExplicitWidth = 1495
+                  ExplicitHeight = 135
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 136
+                  Width = 1495
+                  ExplicitTop = 136
+                  ExplicitWidth = 1495
+                end
               end
             end
           end
@@ -272,19 +298,32 @@ object Form2: TForm2
               ExplicitTop = 5
               ExplicitWidth = 1515
               ExplicitHeight = 169
-              inherited SG: TStringGridSorted
-                Tag = 3
-                Width = 1497
-                Height = 167
-                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1497
-                ExplicitHeight = 167
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 167
                 ExplicitLeft = 1498
                 ExplicitHeight = 167
+              end
+              inherited Panel3: TPanel
+                Width = 1497
+                Height = 167
+                ExplicitLeft = 1
+                ExplicitTop = 1
+                ExplicitWidth = 1497
+                ExplicitHeight = 167
+                inherited SG: TStringGridSorted
+                  Width = 1495
+                  Height = 135
+                  ExplicitLeft = 1
+                  ExplicitWidth = 1495
+                  ExplicitHeight = 135
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 136
+                  Width = 1495
+                  ExplicitTop = 136
+                  ExplicitWidth = 1495
+                end
               end
             end
           end
@@ -335,19 +374,32 @@ object Form2: TForm2
               ExplicitTop = 5
               ExplicitWidth = 1515
               ExplicitHeight = 169
-              inherited SG: TStringGridSorted
-                Tag = 3
-                Width = 1497
-                Height = 167
-                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 1497
-                ExplicitHeight = 167
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 167
                 ExplicitLeft = 1498
                 ExplicitHeight = 167
+              end
+              inherited Panel3: TPanel
+                Width = 1497
+                Height = 167
+                ExplicitLeft = 1
+                ExplicitTop = 1
+                ExplicitWidth = 1497
+                ExplicitHeight = 167
+                inherited SG: TStringGridSorted
+                  Width = 1495
+                  Height = 135
+                  ExplicitLeft = 1
+                  ExplicitWidth = 1495
+                  ExplicitHeight = 135
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 136
+                  Width = 1495
+                  ExplicitTop = 136
+                  ExplicitWidth = 1495
+                end
               end
             end
           end
@@ -505,18 +557,32 @@ object Form2: TForm2
               ExplicitTop = 0
               ExplicitWidth = 498
               ExplicitHeight = 898
-              inherited SG: TStringGridSorted
-                Width = 480
-                Height = 896
-                OnMouseDown = DynGrid10SGMouseDown
-                ExplicitWidth = 480
-                ExplicitHeight = 896
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 481
                 Height = 896
                 ExplicitLeft = 481
                 ExplicitHeight = 896
+              end
+              inherited Panel3: TPanel
+                Width = 480
+                Height = 896
+                ExplicitLeft = 1
+                ExplicitTop = 1
+                ExplicitWidth = 480
+                ExplicitHeight = 896
+                inherited SG: TStringGridSorted
+                  Width = 478
+                  Height = 864
+                  ExplicitLeft = 1
+                  ExplicitWidth = 478
+                  ExplicitHeight = 864
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 865
+                  Width = 478
+                  ExplicitTop = 865
+                  ExplicitWidth = 478
+                end
               end
             end
           end
@@ -572,18 +638,32 @@ object Form2: TForm2
               ExplicitTop = 0
               ExplicitWidth = 1012
               ExplicitHeight = 691
-              inherited SG: TStringGridSorted
-                Tag = 4
-                Width = 994
-                Height = 689
-                ExplicitWidth = 994
-                ExplicitHeight = 689
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 995
                 Height = 689
                 ExplicitLeft = 995
                 ExplicitHeight = 689
+              end
+              inherited Panel3: TPanel
+                Width = 994
+                Height = 689
+                ExplicitLeft = 1
+                ExplicitTop = 1
+                ExplicitWidth = 994
+                ExplicitHeight = 689
+                inherited SG: TStringGridSorted
+                  Width = 992
+                  Height = 657
+                  ExplicitLeft = 1
+                  ExplicitWidth = 992
+                  ExplicitHeight = 657
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 658
+                  Width = 992
+                  ExplicitTop = 658
+                  ExplicitWidth = 992
+                end
               end
             end
           end
@@ -1047,19 +1127,29 @@ object Form2: TForm2
               ExplicitTop = 0
               ExplicitWidth = 991
               ExplicitHeight = 413
-              inherited SG: TStringGridSorted
-                Tag = 2
-                Width = 973
-                Height = 411
-                Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                ExplicitWidth = 973
-                ExplicitHeight = 411
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 974
                 Height = 411
                 ExplicitLeft = 974
                 ExplicitHeight = 411
+              end
+              inherited Panel3: TPanel
+                Width = 973
+                Height = 411
+                ExplicitWidth = 973
+                ExplicitHeight = 411
+                inherited SG: TStringGridSorted
+                  Width = 971
+                  Height = 379
+                  ExplicitWidth = 971
+                  ExplicitHeight = 379
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 380
+                  Width = 971
+                  ExplicitTop = 380
+                  ExplicitWidth = 971
+                end
               end
             end
           end
@@ -1097,17 +1187,29 @@ object Form2: TForm2
               ExplicitTop = 41
               ExplicitWidth = 991
               ExplicitHeight = 394
-              inherited SG: TStringGridSorted
-                Width = 973
-                Height = 392
-                ExplicitWidth = 973
-                ExplicitHeight = 392
-              end
               inherited ScrollBar1: TScrollBar
                 Left = 974
                 Height = 392
                 ExplicitLeft = 974
                 ExplicitHeight = 392
+              end
+              inherited Panel3: TPanel
+                Width = 973
+                Height = 392
+                ExplicitWidth = 973
+                ExplicitHeight = 392
+                inherited SG: TStringGridSorted
+                  Width = 971
+                  Height = 360
+                  ExplicitWidth = 971
+                  ExplicitHeight = 360
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 361
+                  Width = 971
+                  ExplicitTop = 361
+                  ExplicitWidth = 971
+                end
               end
             end
           end
@@ -1381,19 +1483,32 @@ object Form2: TForm2
             ExplicitTop = 41
             ExplicitWidth = 1517
             ExplicitHeight = 860
-            inherited SG: TStringGridSorted
-              Tag = 1
-              Width = 1499
-              Height = 858
-              Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goColSizing, goFixedColClick]
-              ExplicitWidth = 1499
-              ExplicitHeight = 858
-            end
             inherited ScrollBar1: TScrollBar
               Left = 1500
               Height = 858
               ExplicitLeft = 1500
               ExplicitHeight = 858
+            end
+            inherited Panel3: TPanel
+              Width = 1499
+              Height = 858
+              ExplicitLeft = 1
+              ExplicitTop = 1
+              ExplicitWidth = 1499
+              ExplicitHeight = 858
+              inherited SG: TStringGridSorted
+                Width = 1497
+                Height = 826
+                ExplicitLeft = 1
+                ExplicitWidth = 1497
+                ExplicitHeight = 826
+              end
+              inherited SGSum: TStringGridSorted
+                Top = 827
+                Width = 1497
+                ExplicitTop = 827
+                ExplicitWidth = 1497
+              end
             end
           end
         end
@@ -1554,19 +1669,32 @@ object Form2: TForm2
                   ExplicitTop = 5
                   ExplicitWidth = 1233
                   ExplicitHeight = 269
-                  inherited SG: TStringGridSorted
-                    Tag = 3
-                    Width = 1215
-                    Height = 267
-                    Options = [goVertLine, goHorzLine, goColSizing, goFixedColClick, goFixedRowClick]
-                    ExplicitWidth = 1215
-                    ExplicitHeight = 267
-                  end
                   inherited ScrollBar1: TScrollBar
                     Left = 1216
                     Height = 267
                     ExplicitLeft = 1216
                     ExplicitHeight = 267
+                  end
+                  inherited Panel3: TPanel
+                    Width = 1215
+                    Height = 267
+                    ExplicitLeft = 1
+                    ExplicitTop = 1
+                    ExplicitWidth = 1215
+                    ExplicitHeight = 267
+                    inherited SG: TStringGridSorted
+                      Width = 1213
+                      Height = 235
+                      ExplicitLeft = 1
+                      ExplicitWidth = 1213
+                      ExplicitHeight = 235
+                    end
+                    inherited SGSum: TStringGridSorted
+                      Top = 236
+                      Width = 1213
+                      ExplicitTop = 236
+                      ExplicitWidth = 1213
+                    end
                   end
                 end
               end
@@ -2851,14 +2979,14 @@ object Form2: TForm2
   end
   object updateTimer: TTimer
     Enabled = False
-    Interval = 6000000
+    Interval = 120000
     OnTimer = updateTimerTimer
     Left = 628
     Top = 36
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer
-    Left = 700
-    Top = 40
+    Left = 676
+    Top = 36
   end
 end

@@ -302,6 +302,7 @@ begin
     chkLB1.Items.Add('BUY STOP');
     chkLB1.Items.Add('SELL STOP');
     chkLB1.Items.Add('BALANCE');
+    chkLB1.Items.Add('CREDIT');
     lb1flag := true;
     btnMore.Visible := true;
   end;
@@ -530,12 +531,12 @@ begin
   begin
     for i := 0 to length(strArray) - 1 do
     begin
-      j := IndexStr(strArray[i], ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'BALANCE']);
+      j := IndexStr(strArray[i], ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'BALANCE','CREDIT']);
       if (j > -1) then
       begin
         vglICt := vglICt + 1;
         setlength(vglI, vglICt);
-        vglI[vglICt - 1] := j + 1; // index hier 1..7 !!
+        vglI[vglICt - 1] := j + 1; // index hier 1..8 !!
       end;
     end;
   end;
@@ -565,8 +566,14 @@ begin
     vString := edValue.Text;
     if(vString='') then
       vString:='0';
-    if pos('.', vString) = 0 then
-      vInteger := strtoint(vString)
+    if pos('.', vString) = 0 then  //keine Angabe wie 12.01.2019
+    begin
+      if (vstring='') then
+        vInteger:=0
+      else
+
+        vInteger := strtoint(vString)
+    end
     else
       vInteger := datetimetounix(strtodatetime(vString));
   end;
@@ -961,6 +968,7 @@ begin
   end;
 
   if vglICt > 1 then
+  //wenn mit mehreren Elementen verglichen wird
   begin
     if ctopic = fltTopicBrokerId then
     begin
@@ -993,6 +1001,7 @@ begin
     end;
   end
   else
+  //wenn nur mit einem Element verglichen wird
   begin
     if ctopic = fltTopicBrokerId then
     begin

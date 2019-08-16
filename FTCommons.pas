@@ -335,7 +335,7 @@ function GetPIndex(lo, hi: integer): integer;
 function strGleichToFloat(s: string): double;
 procedure ClearStringGridSorted(const Grid: FTCommons.TStringGridSorted);
 procedure lbDebug(s: string);
-procedure AutoSizeGrid(Grid: FTCommons.TStringGridSorted);
+procedure AutoSizeGrid(Grid,Grid2: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
@@ -1315,7 +1315,7 @@ begin
       SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
       SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
       SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
-      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1); // cw statt 0..6 ist 1..7
+      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1)+' '+inttostr(actions[sort[k]].typeId);// cw statt 0..7ist 1..8
       SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
       SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
       SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
@@ -1864,6 +1864,8 @@ begin
       result := 'SELL Stop';
     6:
       result := 'BALANCE';
+    7:
+      result := 'CREDIT';
 
   else
     result := inttostr(cmd);
@@ -3142,7 +3144,7 @@ begin
   // lbDebug3.Items.Add('ClearSG:' + inttostr(GetTickCount - gt));
 end;
 
-procedure AutoSizeGrid(Grid: FTCommons.TStringGridSorted);
+procedure AutoSizeGrid(Grid,Grid2: FTCommons.TStringGridSorted);
 const
   ColWidthMin = 10;
 var
@@ -3160,8 +3162,14 @@ begin
         ColWidthMax := w;
     end;
     Grid.ColWidths[c] := ColWidthMax + 12;
+    if(grid2<>nil) then
+        Grid2.ColWidths[c] := ColWidthMax + 12;
+
     if (header = 'unused') then
+    begin
       Grid.ColWidths[c] := -1;
+      if(grid2<>nil) then Grid2.ColWidths[c] := -1;
+    end;
 
   end;
 end;
