@@ -12,6 +12,7 @@ object Form45: TForm45
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
@@ -136,7 +137,7 @@ object Form45: TForm45
     Left = 500
     Top = 407
     Width = 113
-    Height = 65
+    Height = 26
     Caption = 'Button6'
     TabOrder = 10
     OnClick = Button6Click
@@ -309,5 +310,14 @@ object Form45: TForm45
     Caption = 'Button7'
     TabOrder = 22
     OnClick = Button7Click
+  end
+  object Button8: TButton
+    Left = 496
+    Top = 468
+    Width = 93
+    Height = 29
+    Caption = 'Button8'
+    TabOrder = 23
+    OnClick = Button8Click
   end
 end

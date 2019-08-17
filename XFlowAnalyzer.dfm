@@ -27,7 +27,7 @@ object Form2: TForm2
     Top = 0
     Width = 1527
     Height = 937
-    ActivePage = TabSheet10
+    ActivePage = TabSheet1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -169,14 +169,11 @@ object Form2: TForm2
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 212
-                ExplicitLeft = 1
-                ExplicitTop = 1
                 ExplicitWidth = 1497
                 ExplicitHeight = 212
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 180
-                  ExplicitLeft = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 180
                 end
@@ -238,14 +235,11 @@ object Form2: TForm2
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 167
-                ExplicitLeft = 1
-                ExplicitTop = 1
                 ExplicitWidth = 1497
                 ExplicitHeight = 167
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 135
-                  ExplicitLeft = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 135
                 end
@@ -307,14 +301,11 @@ object Form2: TForm2
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 167
-                ExplicitLeft = 1
-                ExplicitTop = 1
                 ExplicitWidth = 1497
                 ExplicitHeight = 167
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 135
-                  ExplicitLeft = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 135
                 end
@@ -383,14 +374,11 @@ object Form2: TForm2
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 167
-                ExplicitLeft = 1
-                ExplicitTop = 1
                 ExplicitWidth = 1497
                 ExplicitHeight = 167
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 135
-                  ExplicitLeft = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 135
                 end
@@ -566,14 +554,11 @@ object Form2: TForm2
               inherited Panel3: TPanel
                 Width = 480
                 Height = 896
-                ExplicitLeft = 1
-                ExplicitTop = 1
                 ExplicitWidth = 480
                 ExplicitHeight = 896
                 inherited SG: TStringGridSorted
                   Width = 478
                   Height = 864
-                  ExplicitLeft = 1
                   ExplicitWidth = 478
                   ExplicitHeight = 864
                 end
@@ -647,14 +632,11 @@ object Form2: TForm2
               inherited Panel3: TPanel
                 Width = 994
                 Height = 689
-                ExplicitLeft = 1
-                ExplicitTop = 1
                 ExplicitWidth = 994
                 ExplicitHeight = 689
                 inherited SG: TStringGridSorted
                   Width = 992
                   Height = 657
-                  ExplicitLeft = 1
                   ExplicitWidth = 992
                   ExplicitHeight = 657
                 end
@@ -1492,14 +1474,11 @@ object Form2: TForm2
             inherited Panel3: TPanel
               Width = 1499
               Height = 858
-              ExplicitLeft = 1
-              ExplicitTop = 1
               ExplicitWidth = 1499
               ExplicitHeight = 858
               inherited SG: TStringGridSorted
                 Width = 1497
                 Height = 826
-                ExplicitLeft = 1
                 ExplicitWidth = 1497
                 ExplicitHeight = 826
               end
@@ -1678,14 +1657,11 @@ object Form2: TForm2
                   inherited Panel3: TPanel
                     Width = 1215
                     Height = 267
-                    ExplicitLeft = 1
-                    ExplicitTop = 1
                     ExplicitWidth = 1215
                     ExplicitHeight = 267
                     inherited SG: TStringGridSorted
                       Width = 1213
                       Height = 235
-                      ExplicitLeft = 1
                       ExplicitWidth = 1213
                       ExplicitHeight = 235
                     end

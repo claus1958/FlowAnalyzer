@@ -1,11 +1,11 @@
-program FlowTrader;
+program FlowAnalyzer;
 
 uses
   Forms,
   ManagerAPI in 'ManagerAPI.pas',
   Vcl.Themes,
   Vcl.Styles,
-  FlowAnalyzer in 'FlowAnalyzer.pas' {Form2},
+  XFlowAnalyzer in 'XFlowAnalyzer.pas' {Form2},
   csCSV in 'csCSV.pas',
   doHTTP in 'doHTTP.pas',
   FTCommons in 'FTCommons.pas',

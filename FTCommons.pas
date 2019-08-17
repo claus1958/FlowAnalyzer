@@ -29,20 +29,20 @@ type
     created when the program loads - if it is declared "locally"
     it is not created until the procedure requests it. }
 
-  tInfo=record
+  tInfo = record
     usersOnline: integer;
-    openActions:integer;
-    newUsers1w:integer;
-    newUsers1m:integer;
-    logUsers1d:integer;
-    logUsers1w:integer;
-    logUsers1m:integer;
-    newActions1d:integer;
-    newActions1w:integer;
-    newActions1m:integer;
-    profit1d:double;
-    profit1w:double;
-    profit1m:double;
+    openActions: integer;
+    newUsers1w: integer;
+    newUsers1m: integer;
+    logUsers1d: integer;
+    logUsers1w: integer;
+    logUsers1m: integer;
+    newActions1d: integer;
+    newActions1w: integer;
+    newActions1m: integer;
+    profit1d: double;
+    profit1w: double;
+    profit1m: double;
   end;
 
   TPieParameters = Packed record
@@ -335,7 +335,7 @@ function GetPIndex(lo, hi: integer): integer;
 function strGleichToFloat(s: string): double;
 procedure ClearStringGridSorted(const Grid: FTCommons.TStringGridSorted);
 procedure lbDebug(s: string);
-procedure AutoSizeGrid(Grid,Grid2: FTCommons.TStringGridSorted);
+procedure AutoSizeGrid(Grid, Grid2: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
@@ -383,7 +383,7 @@ procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymb
 
 function RandomRange(const AFrom, ATo: integer): integer;
 function RGB2TColor(const R, G, b: byte): integer;
-procedure showMemory(lb:TListbox);
+procedure showMemory(lb: TListBox);
 
 var
 
@@ -441,10 +441,11 @@ var
 
 implementation
 
-uses FlowAnalyzer;
-const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
-{$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
+uses XFlowAnalyzer;
 
+const
+  IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
+{$SETPEFLAGS IMAGE_FILE_LARGE_ADDRESS_AWARE}
 
 function cwRating.getJSON(): string;
 // wird aber nicht gebraucht
@@ -1315,7 +1316,8 @@ begin
       SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
       SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
       SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
-      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1)+' '+inttostr(actions[sort[k]].typeId);// cw statt 0..7ist 1..8
+      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1) + ' ' + inttostr(actions[sort[k]].typeId);
+      // cw statt 0..7ist 1..8
       SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
       SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
       SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
@@ -1328,7 +1330,7 @@ begin
       SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
       SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
       SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
-      SG.cells[SGFieldCol[19], row] := inttostr(actions[sort[k]].volume);
+      SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
       SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
       SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
       SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
@@ -1429,7 +1431,7 @@ begin
       SG.cells[SGFieldCol[2], row] := summaries[i1][i2][i3].par2;
 
       SG.cells[SGFieldCol[3], row] := inttostr(summaries[i1][i2][i3].TradesCount);
-      SG.cells[SGFieldCol[4], row] := inttostr(summaries[i1][i2][i3].TradesVolumeTotal);
+      SG.cells[SGFieldCol[4], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[i1][i2][i3].TradesUsers);
 
@@ -1484,7 +1486,7 @@ begin
       SG.cells[SGFieldCol[2], row] := summaries[sort[k]].par2;
 
       SG.cells[SGFieldCol[3], row] := inttostr(summaries[sort[k]].TradesCount);
-      SG.cells[SGFieldCol[4], row] := inttostr(summaries[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[4], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[sort[k]].TradesUsers);
 
@@ -1638,7 +1640,7 @@ begin
       SG.cells[SGFieldCol[11], row] := floattostr(symbols[sort[k]].tickSize);
       SG.cells[SGFieldCol[12], row] := inttostr(symbols[sort[k]].type_);
       SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[sort[k]].TradesCount);
-      SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[14], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesProfitTotal);
       if cwSymbolsGroupsCt > 0 then
       begin
@@ -1688,7 +1690,7 @@ begin
       SG.cells[SGFieldCol[0], row] := inttostr(symbolsGroups[sort[k]].groupId);
       SG.cells[SGFieldCol[1], row] := symbolsGroups[sort[k]].name;
       SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[sort[k]].TradesCount);
-      SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[sort[k]].TradesVolumeTotal);
+      SG.cells[SGFieldCol[3], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := symbolsGroups[sort[k]].sourceNames;
@@ -1786,7 +1788,7 @@ begin
         SG.cells[SGFieldCol[16], row] := floattostr(actions[k].takeProfit);
         SG.cells[SGFieldCol[17], row] := floattostr(actions[k].swap);
         SG.cells[SGFieldCol[18], row] := floattostr(actions[k].profit);
-        SG.cells[SGFieldCol[19], row] := inttostr(actions[k].volume);
+        SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[k].volume / 100);
         SG.cells[SGFieldCol[20], row] := inttostr(actions[k].precision);
         SG.cells[SGFieldCol[21], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[22], row] := floattostr(actions[k].conversionRate0);
@@ -2146,7 +2148,7 @@ begin
         SG.cells[SGFieldCol[11], row] := floattostr(symbols[k].tickSize);
         SG.cells[SGFieldCol[12], row] := inttostr(symbols[k].type_);
         SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[k].TradesCount);
-        SG.cells[SGFieldCol[14], row] := floattostr(symbolsPlus[k].TradesVolumeTotal);
+        SG.cells[SGFieldCol[14], row] := FormatFloat(',#0.00', symbolsPlus[k].TradesVolumeTotal / 100);
         SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[k].TradesProfitTotal);
         if cwSymbolsGroupsCt > 0 then
           SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[k].groupId].name;
@@ -2213,7 +2215,7 @@ begin
         SG.cells[SGFieldCol[0], row] := inttostr(symbolsGroups[k].groupId);
         SG.cells[SGFieldCol[1], row] := symbolsGroups[k].name;
         SG.cells[SGFieldCol[2], row] := inttostr(symbolsGroups[k].TradesCount);
-        SG.cells[SGFieldCol[3], row] := inttostr(symbolsGroups[k].TradesVolumeTotal);
+        SG.cells[SGFieldCol[3], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesVolumeTotal / 100);
         SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
         SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
         SG.cells[SGFieldCol[6], row] := symbolsGroups[k].sourceNames;
@@ -2939,9 +2941,12 @@ var
   i, j: integer;
 begin
   // Cast Stringlist to an array
+  if (Stlist.Count = 0) then
+    exit;
+
   gtc := 0;
-  SetLength(SortArray, Stlist.count);
-  for i := 0 to Stlist.count - 1 do
+  SetLength(SortArray, Stlist.Count);
+  for i := 0 to Stlist.Count - 1 do
     SortArray[i] := Trim(Stlist.Strings[i]);
 
   // Now sort
@@ -2971,6 +2976,8 @@ procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; sTyp: s
 
 begin
   // Cast Stringlist to an array
+  if ((low(inta) + high(inta)) = 0) then
+    exit;
 
   if (sTyp = 'VUA') then
     QuicksortVUAIntegerString(Low(inta), High(inta), inta, stra);
@@ -2984,7 +2991,8 @@ procedure FastSort2ArrayDouble(dbla: doubleArray; inta: intArray; sTyp: string);
 
 begin
   // Cast Stringlist to an array
-
+  if ((low(dbla) + high(dbla)) = 0) then
+    exit;
   if (sTyp = 'VUA') then
     QuicksortVUA(Low(dbla), High(dbla), dbla, inta);
   if (sTyp = 'VDA') then
@@ -2997,6 +3005,8 @@ procedure FastSort2ArrayIntInt(dbla: intArray; inta: intArray; sTyp: string);
 begin
   // Cast Stringlist to an array
 
+  if ((low(dbla) + high(dbla)) = 0) then
+    exit;
   if (sTyp = 'VUI') then
     QuicksortVUI(Low(dbla), High(dbla), dbla, inta);
   if (sTyp = 'VDI') then
@@ -3009,6 +3019,8 @@ procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; sTyp: string)
 begin
   // Cast Stringlist to an array
 
+  if ((low(dbla) + high(dbla)) = 0) then
+    exit;
   if (sTyp = 'VUI') then
     QuicksortVUI64(Low(dbla), High(dbla), dbla, inta);
   if (sTyp = 'VDI') then
@@ -3021,6 +3033,8 @@ procedure FastSort2ArrayString(stra: StringArray; inta: intArray; sTyp: string);
 begin
   // Cast Stringlist to an array
 
+  if ((low(stra) + high(stra)) = 0) then
+    exit;
   if (sTyp = 'VUAS') then
     QuicksortVUAS(Low(stra), High(stra), stra, inta);
   if (sTyp = 'VDAS') then
@@ -3144,7 +3158,7 @@ begin
   // lbDebug3.Items.Add('ClearSG:' + inttostr(GetTickCount - gt));
 end;
 
-procedure AutoSizeGrid(Grid,Grid2: FTCommons.TStringGridSorted);
+procedure AutoSizeGrid(Grid, Grid2: FTCommons.TStringGridSorted);
 const
   ColWidthMin = 10;
 var
@@ -3162,13 +3176,14 @@ begin
         ColWidthMax := w;
     end;
     Grid.ColWidths[c] := ColWidthMax + 12;
-    if(grid2<>nil) then
-        Grid2.ColWidths[c] := ColWidthMax + 12;
+    if (Grid2 <> nil) then
+      Grid2.ColWidths[c] := ColWidthMax + 12;
 
     if (header = 'unused') then
     begin
       Grid.ColWidths[c] := -1;
-      if(grid2<>nil) then Grid2.ColWidths[c] := -1;
+      if (Grid2 <> nil) then
+        Grid2.ColWidths[c] := -1;
     end;
 
   end;
@@ -3319,7 +3334,7 @@ begin
       end;
       if (col = 19) then
       begin
-        res := inttostr(actions[sort[l]].volume);
+        res := FormatFloat(',#0.00', actions[sort[l]].volume / 100);
         goto weiter;
       end;
       if (col = 20) then
@@ -3763,22 +3778,20 @@ begin
   end;
 end;
 
-procedure showMemory(lb:TListbox);
+procedure showMemory(lb: TListBox);
 var
   GMS: TMemoryStatusEx;
 begin
   GMS.dwLength := SizeOf(TMemoryStatusEx);
   GlobalMemoryStatusEx(GMS);
-  lb.items.add('used (system):               '+inttostr( GMS.dwMemoryLoad)+ ' %');
-  lb.items.add('physical memory - total:     '+inttostr(trunc( GMS.ullTotalPhys     / 1048576))+ ' MB');
-  lb.items.add(' (system)       - available: '+inttostr(trunc( GMS.ullAvailPhys     / 1048576 ))+ ' MB');
-  lb.items.add('page file       - total:     '+inttostr( trunc(GMS.ullTotalPageFile / 1048576 ))+ ' MB');
-  lb.items.add('                - available: '+inttostr( trunc(GMS.ullAvailPageFile / 1048576 ))+ ' MB');
-  lb.items.add('virtual memory  - total:     '+inttostr( trunc(GMS.ullTotalVirtual  / 1048576 ))+ ' MB');
-  lb.items.add(' (this program) - available: '+inttostr(trunc( GMS.ullAvailVirtual  / 1048576 ))+ ' MB');
-
+  lb.items.add('used (system):               ' + inttostr(GMS.dwMemoryLoad) + ' %');
+  lb.items.add('physical memory - total:     ' + inttostr(trunc(GMS.ullTotalPhys / 1048576)) + ' MB');
+  lb.items.add(' (system)       - available: ' + inttostr(trunc(GMS.ullAvailPhys / 1048576)) + ' MB');
+  lb.items.add('page file       - total:     ' + inttostr(trunc(GMS.ullTotalPageFile / 1048576)) + ' MB');
+  lb.items.add('                - available: ' + inttostr(trunc(GMS.ullAvailPageFile / 1048576)) + ' MB');
+  lb.items.add('virtual memory  - total:     ' + inttostr(trunc(GMS.ullTotalVirtual / 1048576)) + ' MB');
+  lb.items.add(' (this program) - available: ' + inttostr(trunc(GMS.ullAvailVirtual / 1048576)) + ' MB');
 
 end;
-
 
 end.

@@ -72,7 +72,7 @@ implementation
 
 {$R *.dfm}
 
-uses FlowAnalyzer;
+uses XFlowAnalyzer;
 
 constructor TDynGrid.Create(AOwner: TComponent);
 begin
@@ -112,7 +112,7 @@ var
   header, summe: string;
   sumd: double;
   sumi: integer;
-  sume:extended;
+  sume: extended;
   typ: integer;
 begin
   gt := timegettime();
@@ -126,16 +126,16 @@ begin
     summe := '';
     header := SG.Cells[mdcol, 0];
 
-    //SGSum.Cells[mdcol, mdrow] := header;
-    //SGSum.Cells[mdcol, mdrow] := source;
+    // SGSum.Cells[mdcol, mdrow] := header;
+    // SGSum.Cells[mdcol, mdrow] := source;
 
     if (source = 'cwsummaries') then
     begin
-      if (ansiindextext(header, ['tradesCount','tradesVolumeTotal','tradesProfitTotal']) > -1) then
+      if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal']) > -1) then
       begin
         sumi := 0;
         sumd := 0;
-        sume:=0;
+        sume := 0;
         // Wert berechnen
         if (header = 'tradesCount') then
           typ := 0;
@@ -148,7 +148,7 @@ begin
           case typ of
             0:
               begin
-                sumd := sumd + cwsummaries[ixSorted[i]].TradesCount;
+                sumi := sumi + cwsummaries[ixSorted[i]].TradesCount;
               end;
             1:
               begin
@@ -163,25 +163,24 @@ begin
         case typ of
           0:
             begin
-              summe := FormatFloat('#0.00', sumd);
+              summe := inttostr( sumi);
             end;
           1:
             begin
-              summe := inttostr(sumi);
+              summe := FormatFloat('#0.00',sumi/100);//!! nur bei TradesVolumeTotal ist das so !!
             end;
           2:
             begin
-              summe :=FormatFloat('#0.', sume);
+              summe := FormatFloat('#0.00', sume);
             end;
         end;
         SGSum.Cells[mdcol, mdrow] := summe;
-
 
       end;
     end;
     if (source = 'cwfilteredactions') then
     begin
-      if (ansiindextext(header, ['profit', 'volume']) > -1) then
+      if (ansiindextext(header, ['profit', 'volume','swap']) > -1) then
       begin
         sumi := 0;
         sumd := 0;
@@ -190,6 +189,8 @@ begin
           typ := 0;
         if (header = 'volume') then
           typ := 1;
+        if (header = 'swap') then
+          typ := 2;
         for i := 0 to length(ixSorted) - 1 do
         begin
           case typ of
@@ -201,6 +202,10 @@ begin
               begin
                 sumi := sumi + cwfilteredactions[ixSorted[i]].volume;
               end;
+            2:
+              begin
+                sumd := sumd + cwfilteredactions[ixSorted[i]].swap;
+              end;
           end;
         end;
         case typ of
@@ -211,6 +216,10 @@ begin
           1:
             begin
               summe := inttostr(sumi);
+            end;
+          2:
+            begin
+              summe := FormatFloat('#0.00', sumd);
             end;
         end;
         SGSum.Cells[mdcol, mdrow] := summe;
@@ -411,7 +420,7 @@ begin
     for k := 0 to SGSum.Colcount - 1 do
       SGSum.Cells[k, j] := ' ';
 
-  if (SG.rowcount = 0) then
+  if (SG.rowcount < 1) then
     exit;
 
   if (initialized = false) then
@@ -431,6 +440,7 @@ begin
   // sortcol  ActionId
   // sortdir  1  und -1
   // und das array
+
   if source = 'cwactions' then
     sortGridCwactions(source, sortcol, sortdir, cwactions);
   if source = 'cwfilteredactions' then
@@ -471,6 +481,8 @@ begin
   gt := gettickcount;
 
   dl := length(actions);
+  if (dl = 0) then
+    exit;
 
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
@@ -952,6 +964,8 @@ begin
   gt := gettickcount;
 
   dl := length(comments);
+  if (dl = 0) then
+    exit;
 
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
@@ -1019,6 +1033,8 @@ begin
   gt := gettickcount;
 
   dl := length(symbols);
+  if (dl = 0) then
+    exit;
 
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
@@ -1193,6 +1209,8 @@ begin
   gt := gettickcount;
 
   dl := length(symbolsGroups);
+  if (dl = 0) then
+    exit;
 
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
@@ -1306,6 +1324,9 @@ begin
   dl2 := length(summaries[0]);
   dl3 := length(summaries[0][0]);
   dls := dl1 * dl2 * dl3;
+  if (dls = 0) then
+    exit;
+
   setlength(ixSorted, dls);
   smethode := 1; // double  2=String
   scol := 1;
@@ -1412,6 +1433,9 @@ begin
   gt := gettickcount;
 
   dls := length(summaries);
+  if (dls = 0) then
+    exit;
+
   setlength(ixSorted, dls);
   smethode := 1; // double  2=String
   scol := 1;

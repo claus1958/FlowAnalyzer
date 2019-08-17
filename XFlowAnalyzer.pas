@@ -1,5 +1,5 @@
 {$RANGECHECKS ON}
-unit FlowAnalyzer;
+unit XFlowAnalyzer;
 
 interface
 
@@ -294,6 +294,7 @@ type
     procedure CategoryPanel1Click(Sender: TObject);
     procedure SpeedButton6Click(Sender: TObject);
     procedure infoTimerTimer(Sender: TObject);
+    procedure OnMove(var Msg: TWMMove); message WM_MOVE;
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -324,7 +325,8 @@ var
   claus: boolean;
   CSleep: integer;
   pw: string;
-  updateGoing:boolean;
+  updateGoing: boolean;
+
 implementation
 
 {$R *.dfm}
@@ -334,6 +336,17 @@ uses doHTTP, Dialog1, Dialog2;
 const
   IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SETPEFLAGS IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
+procedure TForm2.OnMove(var Msg: TWMMove);
+begin
+  inherited;
+  // label1.Caption:='l:'+inttostr(form45.Left)+' t:'+inttostr(form45.Top)+'w:'+inttostr(form45.width)+' h:'+inttostr(form45.height);
+  if assigned(Dialog2.fdialog2) then
+  begin
+    Dialog2.fdialog2.Left := Form2.Left + Form2.Width - Dialog2.fdialog2.Width;
+    Dialog2.fdialog2.Top := Form2.Top + Form2.Height -  Dialog2.fdialog2.Height;
+  end;
+end;
 
 procedure TForm2.btnGetBinDataClick(Sender: TObject);
 var
@@ -1120,8 +1133,8 @@ begin
   whichAccounts := '';
   Panel10.enabled := false;
   lbLoadInfo.Items.clear;
-  Dialog2.FDialog2.lbLoadInfo.Items.clear;
-  Dialog2.FDialog2.info('');
+  Dialog2.fdialog2.lbLoadInfo.Items.clear;
+  Dialog2.fdialog2.info('');
   all := true;
   for i := 0 to clbBrokers.Count - 1 do
   begin
@@ -1218,7 +1231,7 @@ begin
 
   Panel10.enabled := true;
   LoadInfo('Finished');
-  Dialog2.FDialog2.info2('');
+  Dialog2.fdialog2.info2('');
 
   PageControl1.TabIndex := 0; // START
 
@@ -1228,7 +1241,7 @@ begin
   pnlStart.Visible := true;
   pnlStart.Refresh;
   lbCSVError.Items.Add('Ladezeit komplett:' + inttostr(GetTickCount - gt));
-  Dialog2.FDialog2.Button1click(nil);
+  Dialog2.fdialog2.Button1click(nil);
 
   updateTimer.enabled := true;
   // nextUpdateTicks:=gettickcount+updateTimer.interval;
@@ -1238,13 +1251,13 @@ procedure TForm2.LoadInfo(s: string);
 begin
   // lblLoadInfo.Caption := s;
   lbLoadInfo.Items.Add(s);
-  Dialog2.FDialog2.lbLoadInfo.Items.Add(s);
-  Dialog2.FDialog2.info(s);
+  Dialog2.fdialog2.lbLoadInfo.Items.Add(s);
+  Dialog2.fdialog2.info(s);
   Memo1.lines.clear;
   Memo1.lines.Add(s);
   // lblLoadInfo.Repaint;
   lbLoadInfo.Repaint;
-  Dialog2.FDialog2.lbLoadInfo.Repaint;
+  Dialog2.fdialog2.lbLoadInfo.Repaint;
 
 end;
 
@@ -1402,7 +1415,7 @@ end;
 procedure TForm2.pnlStartBackResize(Sender: TObject);
 begin
   pnlStart.Left := pnlStartBack.Left + trunc(pnlStartBack.Width / 2 - pnlStart.Width / 2);
-  pnlStart.top := pnlStartBack.top + trunc(pnlStartBack.height / 2 - pnlStart.height / 2);
+  pnlStart.Top := pnlStartBack.Top + trunc(pnlStartBack.Height / 2 - pnlStart.Height / 2);
 end;
 
 procedure TForm2.btnLoadCacheFileCwClick(Sender: TObject);
@@ -1584,10 +1597,14 @@ var
 begin
   gt := GetTickCount;
   setlength(u, cwusersct);
+  try
   for i := 0 to cwFilteredActionCt - 1 do
   begin
     ix := finduserindex(cwFilteredActions[i].userId);
     u[ix] := u[ix] + 1;
+  end;
+  except
+    p:=p;
   end;
   ct := 0;
   setlength(cwusersselection, cwusersct);
@@ -1659,7 +1676,7 @@ begin
     begin
       // cwusersplus[index].totalSymbols:=0;
       inc(cwUsersPlus[index].totaltrades);
-      if (cwactions[i].typeId = 7)or(cwactions[i].typeId = 8) then
+      if (cwactions[i].typeId = 7) or (cwactions[i].typeId = 8) then
       begin
         cwUsersPlus[index].totalbalance := cwUsersPlus[index].totalbalance + cwactions[i].profit;
       end
@@ -1936,7 +1953,7 @@ end;
 procedure TForm2.updateTimerTimer(Sender: TObject);
 begin
   // Update timer
-  if (updategoing=false) then
+  if (updateGoing = false) then
     btnUpdateDataClick(nil);
 end;
 
@@ -1998,6 +2015,11 @@ begin
   for i := 1 to FilterCt do
   begin
     Filter[i].getValues(cwfilterParameter[i]);
+
+ // machVergleichArrays
+ // am Ende werden je nach cTopic und edValue.text verschiedene Variablen von Filter[] gefüllt
+ // mal vglI[] und vglICt oder  vglS[] mit vglSCt, vDouble oder vInteger
+
     Filter[i].machVergleichArrays;
     chk[i] := Filter[i].chkActive.Checked;
     Filter[i].counter := 0;
@@ -2015,20 +2037,16 @@ begin
     if (chk[i] = true) and (Filter[i].edValue.text = '') then
       chk[i] := false
     else
-
   end;
 
-//  for i := 1 to FilterCt do
-//  begin
-//    if (chk[i] = true) then
-//     Filter[i].machVergleichArrays; // verlegt      War aber dann ein Fehler in der Berechnung ???
-//  end;
+  // for i := 1 to FilterCt do
+  // begin
+  // if (chk[i] = true) then
+  // Filter[i].machVergleichArrays; // verlegt      War aber dann ein Fehler in der Berechnung ???
+  // end;
 
   for i := 0 to length(cwactions) - 1 do
   begin
-    if(i=12689) then
-      j:=0;
-
     for j := 1 to FilterCt do
     begin
       if chk[j] = true then
@@ -2228,12 +2246,12 @@ var
 label rest;
 begin
   // update data
-  updategoing:=true;
-  Dialog2.FDialog2.Show; // Modal;
-  Dialog2.FDialog2.top := Form2.top + Form2.height - FDialog2.height - 4;
-  Dialog2.FDialog2.Left := Form2.Left + Form2.Width - FDialog2.Width - 4;
+  updateGoing := true;
+  Dialog2.fdialog2.Show; // Modal;
+  Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height;
+  Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width;
 
-  Dialog2.FDialog2.info('Update data ...');
+  Dialog2.fdialog2.info('Update data ...');
   gtall := GetTickCount;
   gt := GetTickCount;
   merkOpenTime := 0;
@@ -2283,16 +2301,16 @@ begin
 
   cnew := lnew - lold;
 
-  //if (claus = false) then
-  //begin
-    if (cnew = 0) then
-    begin
-      lbCSVError.Items.Add('[Abbruch - keine Änderungen]' + inttostr(GetTickCount - gt));
-      Dialog2.FDialog2.Close;
-      goto rest; //exit
-    end;
+  // if (claus = false) then
+  // begin
+  if (cnew = 0) then
+  begin
+    lbCSVError.Items.Add('[Abbruch - keine Änderungen]' + inttostr(GetTickCount - gt));
+    Dialog2.fdialog2.Close;
+    goto rest; // exit
+  end;
 
-  //end;
+  // end;
   setlength(na2, cnew);
   setlength(na, cnew);
   p := -1;
@@ -2386,19 +2404,19 @@ begin
   lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
 rest:
   dosleep(CSleep);
-//  gt:=gettickcount;
-//  computeStartScreen;
-//  lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // gt:=gettickcount;
+  // computeStartScreen;
+  // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
   getSymbolsUsersComments(false); // vom Server damit die Werte aktuell sind
   dosleep(CSleep);
-  gt:=gettickcount;
+  gt := GetTickCount;
   computeStartScreen;
   lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
 
-  Dialog2.FDialog2.Close;
-  updategoing:=false;
+  Dialog2.fdialog2.Close;
+  updateGoing := false;
 end;
 
 procedure TForm2.Button9Click(Sender: TObject);
@@ -2730,11 +2748,11 @@ begin
         inc(coll);
   if coll < c1.ControlCount then
   begin
-    SplitHeight := (c1.height - coll * 30) div (c1.ControlCount - coll);
+    SplitHeight := (c1.Height - coll * 30) div (c1.ControlCount - coll);
     for i := 0 to c1.ControlCount - 1 do
       if c1.Controls[i] is TCategoryPanel then
         if not TCategoryPanel(c1.Controls[i]).collapsed then
-          TCategoryPanel(c1.Controls[i]).height := SplitHeight;
+          TCategoryPanel(c1.Controls[i]).Height := SplitHeight;
   end;
 end;
 
@@ -2748,7 +2766,7 @@ var
 
 begin
   pwct := 0;
-  updateGoing:=false;
+  updateGoing := false;
   pwok := false;
   claus := false;
   if (claus = false) then
@@ -2821,7 +2839,7 @@ begin
   begin
     Filter[i] := TFilterElemente.Create(self);
     Filter[i].name := 'Filter_' + inttostr(i); // muss sein
-    Filter[i].SetBounds(0, (i - 1 + 2) * Filter[i].height, Filter[i].Width, Filter[i].height);
+    Filter[i].SetBounds(0, (i - 1 + 2) * Filter[i].Height, Filter[i].Width, Filter[i].Height);
     Filter[i].Parent := pnlFilter;
   end;
 
@@ -2831,7 +2849,7 @@ begin
   begin
     Grouping[i] := TGroupControl.Create(self);
     Grouping[i].name := 'Grouping_' + inttostr(i); // muss sein
-    Grouping[i].SetBounds(0, (i - 1 + 2) * Grouping[i].height, Grouping[i].Width, Grouping[i].height);
+    Grouping[i].SetBounds(0, (i - 1 + 2) * Grouping[i].Height, Grouping[i].Width, Grouping[i].Height);
     Grouping[i].Parent := pnlGrouping;
   end;
 
@@ -2887,11 +2905,11 @@ begin
     twoLblStart[i] := TTwoLabel.Create(self);
     twoLblStart[i].name := 'twoLblStart_' + inttostr(i); // muss sein
     if (i <= trunc(twoLblStartCt / 2)) then
-      twoLblStart[i].SetBounds(98, 35 + (i - 1 + 0) * twoLblStart[i].height, twoLblStart[i].Width,
-        twoLblStart[i].height)
+      twoLblStart[i].SetBounds(98, 35 + (i - 1 + 0) * twoLblStart[i].Height, twoLblStart[i].Width,
+        twoLblStart[i].Height)
     else
-      twoLblStart[i].SetBounds(500, 35 + (i - 1 + 0 - trunc(twoLblStartCt / 2)) * twoLblStart[i].height,
-        twoLblStart[i].Width, twoLblStart[i].height);
+      twoLblStart[i].SetBounds(500, 35 + (i - 1 + 0 - trunc(twoLblStartCt / 2)) * twoLblStart[i].Height,
+        twoLblStart[i].Width, twoLblStart[i].Height);
 
     twoLblStart[i].Parent := pnlStart;
 
@@ -3170,7 +3188,7 @@ begin
       Canvas.FillRect(r);
       // Canvas.Pen.Color := clBlue;
       r.Left := r.Left + 6;
-      r.top := r.top + 4;
+      r.Top := r.Top + 4;
       DrawText(Canvas.Handle, PChar(s), length(s), r, DT_LEFT);
 
       Canvas.Brush.Color := merkColor;
@@ -3472,9 +3490,9 @@ begin
     // Starttimer
     StartTimer.enabled := false;
 
-    Dialog2.FDialog2.Show; // Modal;
-    Dialog2.FDialog2.top := Form2.top + Form2.height - FDialog2.height - 4;
-    Dialog2.FDialog2.Left := Form2.Left + Form2.Width - FDialog2.Width - 4;
+    Dialog2.fdialog2.Show; // Modal;
+    Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height - 4;
+    Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
     Form2.Repaint;
     btnLoadDataClick(nil);
 
@@ -3656,7 +3674,7 @@ begin
             li := 1;
           Memo1.lines.clear;
           Memo1.lines.Add(liText[li]);
-          Dialog2.FDialog2.info2(liText[li]);
+          Dialog2.fdialog2.info2(liText[li]);
         end;
         ngt := gt + 8000;
 
@@ -3697,13 +3715,18 @@ begin
   end;
 
   procedure TForm2.FormResize(Sender: TObject);
+  var
+    Msg: TWMMove;
   begin
-    PageControl1.height := Form2.height;
+    PageControl1.Height := Form2.Height;
     PageControl1.Width := Form2.Width - pnlIcons.Width;
-    PageControl1.top := -30;
+    PageControl1.Top := -30;
     if (claus = true) then
-      PageControl1.top := -20;
+      PageControl1.Top := -20;
+    if form2.Width<200 then form2.width:=200;
+    if form2.height<100 then form2.height:=100;
 
+    OnMove(Msg);//damit Dialog richtig platziert wird
   end;
 
   procedure TForm2.Button4Click(Sender: TObject);
@@ -3762,17 +3785,17 @@ begin
   var
     i: integer;
     t: tdatetime;
-    ut:integer;
-    dt:integer;
-    gt:cardinal;
+    ut: integer;
+    dt: integer;
+    gt: Cardinal;
   const
-    c1=86400;
-    c7=86400*7;
-    c30=86400*30;
+    c1 = 86400;
+    c7 = 86400 * 7;
+    c30 = 86400 * 30;
   begin
-    gt:=gettickcount;
+    gt := GetTickCount;
     t := now;
-    ut:=datetimetounix(t);
+    ut := datetimetounix(t);
     info.newUsers1w := 0;
     info.newUsers1m := 0;
     info.logUsers1d := 0;
@@ -3841,7 +3864,7 @@ begin
 
     end;
     fillStartScreen;
-    lbcsverror.items.add('ComputeStartScreen:'+inttostr(gettickcount-gt));
+    lbCSVError.Items.Add('ComputeStartScreen:' + inttostr(GetTickCount - gt));
   end;
 
 end.

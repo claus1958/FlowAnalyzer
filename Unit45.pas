@@ -46,6 +46,7 @@ type
     Label1: TLabel;
     ListBox2: TListBox;
     Button7: TButton;
+    Button8: TButton;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     function vergleichInteger(was, mit: integer; op: string): boolean;
@@ -62,8 +63,11 @@ type
     procedure Panel2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure initest;
-    procedure Button7Click(Sender: TObject);
 
+    procedure Button7Click(Sender: TObject);
+    procedure OnMove(var Msg: TWMMove); message WM_MOVE;
+    procedure FormResize(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -81,6 +85,17 @@ uses Unit9;
 const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
 
+procedure TForm45.OnMove(var Msg: TWMMove);
+begin
+  inherited;
+  try
+  label1.Caption:='l:'+inttostr(form45.Left)+' t:'+inttostr(form45.Top)+'w:'+inttostr(form45.width)+' h:'+inttostr(form45.height);
+  form9.Left:=form45.Left;
+  form9.Top:=form45.Top+form45.Height-form9.Height;
+  except
+
+  end;
+end;
 
 procedure TForm45.Button1Click(Sender: TObject);
 var
@@ -270,12 +285,42 @@ procedure TForm45.Button7Click(Sender: TObject);
 var a:array of integer;
 p,q:pinteger;
 begin
-setlength(a,10);
-p:=@a;
-setlength(a,102);
-q:=@a;
-showmessage(getaddressof(p)+' ' +getaddressof(q));
+//setlength(a,10);
+//p:=@a;
+//setlength(a,102);
+//q:=@a;
+//showmessage(getaddressof(p)+' ' +getaddressof(q));
+//makefullyvisible(monitor);
+self.Left:=0;
+self.Top:=0;
+self.Width:=monitor.WorkAreaRect.Right;
+self.height:=monitor.WorkareaRect.Bottom-monitor.WorkAreaRect.top;
 
+end;
+
+procedure TForm45.Button8Click(Sender: TObject);
+var gt:cardinal;
+f,i,j:integer;
+s:integer;
+begin
+gt:=gettickcount;
+for i := 0 to 100000000 do
+  begin
+    s:=s+i;
+  end;
+showmessage(inttostr(gettickcount-gt));
+
+gt:=gettickcount;
+for i := 0 to 100000000 do
+  begin
+  try
+    s:=s+i;
+  except
+    f:=f+1;
+
+  end;
+  end;
+showmessage(inttostr(gettickcount-gt));
 end;
 
 procedure TForm45.Initest();
@@ -328,6 +373,12 @@ begin
   listbox1.items.add('virtual memory  - total:     '+inttostr( trunc(GMS.ullTotalVirtual  / 1048576 ))+ ' MB');
   listbox1.items.add(' (this program) - available: '+inttostr(trunc( GMS.ullAvailVirtual  / 1048576 ))+ ' MB');
 
+end;
+
+procedure TForm45.FormResize(Sender: TObject);
+var Msg: TWMMove;
+begin
+  Onmove(msg);
 end;
 
 procedure TForm45.Panel2Click(Sender: TObject);

@@ -433,6 +433,9 @@ var
   s: string;
   i, j, ict, p: Integer;
 begin
+ // etwas eigenartig
+ // am Ende werden je nach cTopic und edValue.text verschiedene Variablen gefüllt
+ // mal vglI[] und vglICt oder  vglS[] mit vglSCt, vDouble oder vInteger
 
   vglICt := 0;
   charArray[0] := ',';
@@ -457,6 +460,13 @@ begin
       end;
 
     end;
+    if (vglICt=0) then
+    begin
+      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := 0
+    end;
   end;
 
   if ctopic = fltTopicAccountId then
@@ -472,6 +482,13 @@ begin
         vglI[vglICt - 1] := j + 1; // index hier 1..7 !!
       end;
     end;
+    if (vglICt=0) then
+    begin
+      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := 0
+    end;
   end;
 
   if ctopic = fltTopicUserId then
@@ -484,6 +501,13 @@ begin
         setlength(vglI, vglICt);
         vglI[vglICt - 1] := strtoint(strArray[i]);
       end;
+    end;
+    if (vglICt=0) then
+    begin
+      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := 0
     end;
   end;
 
@@ -507,7 +531,14 @@ begin
         end;
       end;
     end;
-  end;
+      if (vglICt=0) then
+    begin
+      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := 0
+    end;
+end;
 
 //  //bei Symbol und gleich werden die Namen zu symbolIds gewandelt
 //  if (ctopic = fltTopicSymbol) and (coperator = fltOpGleich) then
@@ -538,6 +569,13 @@ begin
         setlength(vglI, vglICt);
         vglI[vglICt - 1] := j + 1; // index hier 1..8 !!
       end;
+    end;
+    if (vglICt=0) then
+    begin
+      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := 0
     end;
   end;
 
@@ -947,7 +985,7 @@ begin
 
   // result:=true;   //so nur 31 statt 3136
   // exit;
-
+ try
   if vglSCt > 1 then
   begin
     if (ctopic = fltTopicSymbol) then
@@ -1082,6 +1120,9 @@ begin
     result := vergleichDouble(vDouble, a.profit, coperator);
     exit;
   end;
+ except
+   result:=false;
+ end;
 end;
 
 procedure TFilterElemente.chkActiveClick(Sender: TObject);

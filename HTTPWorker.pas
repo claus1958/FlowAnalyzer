@@ -32,7 +32,7 @@ type
 
 implementation
 
-uses FTCollector, SysUtils,FlowAnalyzer;    ///!!! ACHTUNG
+uses FTCollector, SysUtils,XFlowAnalyzer;    ///!!! ACHTUNG
 
 procedure THTTPWorker.debug(s: string);
 // die Debugmeldungen werden an das Hauptprogramm weitergereicht

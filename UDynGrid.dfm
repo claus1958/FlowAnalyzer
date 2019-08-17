@@ -49,7 +49,6 @@ object DynGrid: TDynGrid
       TabOrder = 0
       OnChange = ScrollBar1Change
       OnScroll = ScrollBar1Scroll
-      ExplicitHeight = 584
     end
     object Panel3: TPanel
       Left = 1
@@ -58,10 +57,6 @@ object DynGrid: TDynGrid
       Height = 587
       Align = alClient
       TabOrder = 1
-      ExplicitLeft = 4
-      ExplicitTop = 4
-      ExplicitWidth = 729
-      ExplicitHeight = 581
       object SG: TStringGridSorted
         Left = 1
         Top = 1
@@ -82,9 +77,6 @@ object DynGrid: TDynGrid
         OnMouseUp = SGMouseUp
         OnRowMoved = SGRowMoved
         OnTopLeftChanged = SGTopLeftChanged
-        ExplicitLeft = 0
-        ExplicitWidth = 735
-        ExplicitHeight = 560
       end
       object SGSum: TStringGridSorted
         Left = 1
@@ -105,7 +97,6 @@ object DynGrid: TDynGrid
         OnDrawCell = SGDrawCell
         OnMouseDown = SGSumMouseDown
         OnRowMoved = SGRowMoved
-        ExplicitTop = 544
       end
     end
   end
