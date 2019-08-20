@@ -24,6 +24,8 @@ const
   //fltTopicCloseDateTimeUnix = 14;
   fltTopicOpenPrice = 15;
   fltTopicVolume = 16;
+  fltTopicMarginRate = 17;
+  fltTopicAccountCurrency = 18;
 
   fltOpGleich = 1;
   fltOpUnGleich = 2;
@@ -46,7 +48,8 @@ type
     procedure WndProc(var Msg: TMessage); override;
     procedure cbTopicChange(Sender: TObject);
     constructor Create(AOwner: TComponent); override;
-    function checkCwaction(var a: cwaction): boolean;
+    //function checkCwaction(var a: cwaction): boolean;
+    function checkCwaction(var a: cwaction;var aplus:cwActionPlus): boolean;
     procedure btnMoreClick(Sender: TObject);
     procedure chkActiveClick(Sender: TObject);
     procedure chkLB1DrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
@@ -307,6 +310,18 @@ begin
     btnMore.Visible := true;
   end;
 
+  if topic = 'AccountCurrency' then
+  begin
+    typ := 2;
+    chkLB1.Items.Add('EUR');
+    chkLB1.Items.Add('USD');
+    chkLB1.Items.Add('CHF');
+    chkLB1.Items.Add('GBP');
+    lb1flag := true;
+    btnMore.Visible := true;
+  end;
+
+
   if topic = 'Symbol' then
   begin
     typ := 1;
@@ -511,6 +526,8 @@ begin
     end;
   end;
 
+
+
   if (ctopic = fltTopicSymbolId) and (coperator = fltOpGleich) then
   begin
     for i := 0 to length(strArray) - 1 do
@@ -557,6 +574,29 @@ end;
 //      end;
 //    end;
 //  end;
+
+
+  if ctopic = fltTopicAccountCurrency then
+  begin
+    for i := 0 to length(strArray) - 1 do
+    begin
+      j := IndexStr(strArray[i], ['EUR', 'USD', 'CHF', 'GBP']);
+      if (j > -1) then
+      begin
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := j + 1; //1-4
+      end;
+    end;
+    if (vglICt=0) then
+    begin
+      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+        vglICt := vglICt + 1;
+        setlength(vglI, vglICt);
+        vglI[vglICt - 1] := 0
+    end;
+  end;
+
 
   if ctopic = fltTopicActionType then
   begin
@@ -616,7 +656,7 @@ end;
       vInteger := datetimetounix(strtodatetime(vString));
   end;
 
-  if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) then
+  if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) OR (ctopic = fltTopicMarginRate)then
     vDouble := mystringtofloat(edValue.Text);
 
 end;
@@ -916,6 +956,10 @@ begin
     ctopic := fltTopicProfit; // = 16;
   if topic = 'Volume' then
     ctopic := fltTopicVolume; // = 17;
+  if topic = 'MarginRate' then
+    ctopic := fltTopicMarginRate; // = 17;
+  if topic = 'AccountCurrency' then
+    ctopic := fltTopicAccountCurrency; // = 18;
 
   // Rest passiert beim Aufrufer
 end;
@@ -944,7 +988,7 @@ begin
   end;
 end;
 
-function TFilterElemente.checkCwaction(var a: cwaction): boolean;
+function TFilterElemente.checkCwaction(var a: cwaction;var aplus:cwActionPlus): boolean;
 // prüft ob eine CwAction den Filterkriterien entspricht
 
 // BrokerId
@@ -1005,7 +1049,7 @@ begin
 
   end;
 
-  if vglICt > 1 then
+  if vglICt >= 1 then
   //wenn mit mehreren Elementen verglichen wird
   begin
     if ctopic = fltTopicBrokerId then
@@ -1037,6 +1081,13 @@ begin
       result := vergleichIntegerArray(vglI, a.typeId, coperator);
       exit;
     end;
+
+    if ctopic = fltTopicAccountCurrency then
+    begin
+      result := vergleichIntegerArray(vglI, cwusersPlus[aplus.userindex].accountCurrency, coperator);
+      exit;
+  end;
+
   end
   else
   //wenn nur mit einem Element verglichen wird
@@ -1120,6 +1171,18 @@ begin
     result := vergleichDouble(vDouble, a.profit, coperator);
     exit;
   end;
+  if ctopic = fltTopicMarginRate then
+  begin
+    result := vergleichDouble(vDouble, a.marginRate, coperator);
+    exit;
+  end;
+
+  if ctopic = fltTopicAccountCurrency then
+  begin
+    result := vergleichInteger(vInteger, cwusersPlus[aplus.userindex].accountCurrency, coperator);
+    exit;
+  end;
+
  except
    result:=false;
  end;

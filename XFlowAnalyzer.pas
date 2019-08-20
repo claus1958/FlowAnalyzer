@@ -7,7 +7,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.strutils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.ComCtrls, FTCommons, Vcl.StdCtrls, Vcl.Grids,
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
-  Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons;
+  Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons, iniFiles;
 // AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
 // AdvChartPaneEditor, AdvChartSerieEditor, ;
 
@@ -304,6 +304,7 @@ type
 
 var
   Form2: TForm2;
+  faIni: TMemIniFile;
   Filter: array [1 .. 10] of TFilterElemente;
   FilterCt: integer;
   Grouping: array [1 .. 3] of TGroupControl;
@@ -344,7 +345,7 @@ begin
   if assigned(Dialog2.fdialog2) then
   begin
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - Dialog2.fdialog2.Width;
-    Dialog2.fdialog2.Top := Form2.Top + Form2.Height -  Dialog2.fdialog2.Height;
+    Dialog2.fdialog2.Top := Form2.Top + Form2.Height - Dialog2.fdialog2.Height;
   end;
 end;
 
@@ -565,6 +566,8 @@ var
   Stream: TFileStream;
   ok: boolean;
   res: integer;
+  i, j: integer;
+
 begin
   gt := GetTickCount;
 
@@ -584,12 +587,11 @@ begin
         setlength(cwUsersPlus, cwusersct);
       end;
       if (typ = 'symbols') then
-        cwsymbolsct := length(cwSymbols);
-      setlength(cwSymbolsPlus, cwsymbolsct);
-
       begin
-
+        cwsymbolsct := length(cwSymbols);
+        setlength(cwSymbolsPlus, cwsymbolsct);
       end;
+
       if (typ = 'comments') then
       begin
         cwcommentsct := length(cwComments);
@@ -679,8 +681,8 @@ begin
       ParseDelimited('users', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwusersct := length(cwUsers);
       setlength(cwUsersPlus, cwusersct);
-    end;
 
+    end;
     if typ = 'comments' then
     begin
       // die Bytes in eine Datei schreiben
@@ -706,6 +708,70 @@ begin
     end;
     // LoadInfo('from Server');
   end;
+  if typ = 'users' then
+  begin
+    // und hier die accountCurrency setzen !
+    gt := GetTickCount;
+    for i := 0 to cwusersct - 1 do
+    begin
+      cwUsersPlus[i].accountCurrency := 0;
+      if (cwUsers[i].accountId = 1) then
+      begin
+        // LCG Hinten D E P S
+        s := rightstr(cwUsers[i].group, 1);
+        if (s = 'E') then
+          cwUsersPlus[i].accountCurrency := 1;
+        if (s = 'D') then
+          cwUsersPlus[i].accountCurrency := 2;
+        if (s = 'S') then
+          cwUsersPlus[i].accountCurrency := 3;
+        if (s = 'P') then
+          cwUsersPlus[i].accountCurrency := 4;
+        if (cwUsersPlus[i].accountCurrency = 0) then
+        begin
+          // LCG Hinten D E P S
+          s := rightstr(cwUsers[i].group, 2);
+          if (s = 'E_') then
+            cwUsersPlus[i].accountCurrency := 1;
+          if (s = 'D_') then
+            cwUsersPlus[i].accountCurrency := 2;
+          if (s = 'S_') then
+            cwUsersPlus[i].accountCurrency := 3;
+          if (s = 'P_') then
+            cwUsersPlus[i].accountCurrency := 4;
+        end;
+
+      end;
+      if (cwUsers[i].accountId = 2) then
+      begin
+        // LCG Hinten D E P S
+        s := rightstr(cwUsers[i].group, 3);
+        if (s = 'EUR') then
+          cwUsersPlus[i].accountCurrency := 1;
+        if (s = 'USD') then
+          cwUsersPlus[i].accountCurrency := 2;
+        if (s = 'CHF') then
+          cwUsersPlus[i].accountCurrency := 3;
+        if (s = 'GBP') then
+          cwUsersPlus[i].accountCurrency := 4;
+      end;
+
+      if (cwUsers[i].accountId > 2) then
+      begin
+        s := leftstr(cwUsers[i].group, 3);
+        if (s = 'EUR') then
+          cwUsersPlus[i].accountCurrency := 1;
+        if (s = 'USD') then
+          cwUsersPlus[i].accountCurrency := 2;
+        if (s = 'CHF') then
+          cwUsersPlus[i].accountCurrency := 3;
+        if (s = 'GBP') then
+          cwUsersPlus[i].accountCurrency := 4;
+      end;
+    end;
+    // showmessage(inttostr(GetTickCount - gt));
+
+  end;
   ms.free;
 
 end;
@@ -717,14 +783,14 @@ var
   colHeader: string;
   pName: string;
   i: integer;
+  b: boolean;
 begin
   // showmessage('Grid:' + grid.name + ' cell:' + sCell + ' col:' + sCol + ' row:' + sRow);
   colHeader := grid.Cells[col, 0];
   pName := grid.Parent.Parent.name;
   // die dynGrid heissen alle SG
-
   // bei cwusers jeder Click in eine Zeile -> user actions anzeigen
-  if source = 'cwusers' then
+  if ((source = 'cwusers') or (source = 'cwusers2')) then
     if colHeader <> 'userId' then
       for i := 0 to grid.Colcount - 1 do
       begin
@@ -827,7 +893,7 @@ begin
   zeigUserInfo(id, lbUserInfo);
   showmemory(lbUserInfo);
 
-  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 25);
+  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 26);
 
   // max := cwsingleuseractionsCt;
   // if max > maxActionsPerGrid then
@@ -971,6 +1037,7 @@ begin
     groups[i].TradesVolumeTotal := 0;
     groups[i].TradesUsers := 0;
     groups[i].TradesProfitTotal := 0;
+    groups[i].TradesSwapTotal := 0;
   end;
 
   t.free;
@@ -1462,7 +1529,7 @@ begin
   // autosizegrid(SGCwCache);
   //
   // doCacheGridCwInfo;
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwactions), 25);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwactions), 26);
 end;
 
 procedure TForm2.btnPieChartClick(Sender: TObject);
@@ -1598,13 +1665,13 @@ begin
   gt := GetTickCount;
   setlength(u, cwusersct);
   try
-  for i := 0 to cwFilteredActionCt - 1 do
-  begin
-    ix := finduserindex(cwFilteredActions[i].userId);
-    u[ix] := u[ix] + 1;
-  end;
+    for i := 0 to cwFilteredActionCt - 1 do
+    begin
+      ix := finduserindex(cwFilteredActions[i].userId);
+      u[ix] := u[ix] + 1;
+    end;
   except
-    p:=p;
+    p := p;
   end;
   ct := 0;
   setlength(cwusersselection, cwusersct);
@@ -1666,7 +1733,9 @@ begin
       cwactions[i].volume;
 
     cwSymbolsPlus[cwactions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwactions[i].symbolId].TradesProfitTotal +
-      cwactions[i].profit + cwactions[i].swap;
+      cwactions[i].profit;
+    cwSymbolsPlus[cwactions[i].symbolId].TradesSwapTotal := cwSymbolsPlus[cwactions[i].symbolId].TradesSwapTotal +
+      cwactions[i].swap;
 
     // NEU: die schnelle Variante
     // index := finduserindex(cwActions[i].userId);
@@ -1676,14 +1745,15 @@ begin
     begin
       // cwusersplus[index].totalSymbols:=0;
       inc(cwUsersPlus[index].totaltrades);
-      if (cwactions[i].typeId = 7) or (cwactions[i].typeId = 8) then
+      if (cwactions[i].typeId = 7) or (cwactions[i].typeId = 8) then // balance und credit
       begin
         cwUsersPlus[index].totalbalance := cwUsersPlus[index].totalbalance + cwactions[i].profit;
       end
       else
       begin
-        cwUsersPlus[index].totalprofit := cwUsersPlus[index].totalprofit + cwactions[i].profit + cwactions[i].swap;
+        cwUsersPlus[index].totalprofit := cwUsersPlus[index].totalprofit + cwactions[i].profit;
         // evtl auch noch swap aber nicht Balance
+        cwUsersPlus[index].totalSwap := cwUsersPlus[index].totalSwap + cwactions[i].swap;
       end;
     end;
 
@@ -1708,6 +1778,7 @@ var
   TradesCount: integer;
   TradesVolumeTotal: double;
   TradesProfitTotal: double;
+  TradesSwapTotal: double;
   gct: integer;
 begin
   gct := 0;
@@ -1802,6 +1873,7 @@ begin
         cw3summaries[i][j][k].TradesCount := 0;
         cw3summaries[i][j][k].TradesVolumeTotal := 0;
         cw3summaries[i][j][k].TradesProfitTotal := 0;
+        cw3summaries[i][j][k].TradesSwapTotal := 0;
         cw3summaries[i][j][k].TradesUsers := 0;
       end;
   try
@@ -1871,12 +1943,14 @@ begin
       cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal := cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal +
         cwFilteredActions[i].volume;
       cw3summaries[p[0], p[1], p[2]].TradesProfitTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitTotal +
-        cwFilteredActions[i].swap + cwFilteredActions[i].profit;
+        cwFilteredActions[i].profit;
+      cw3summaries[p[0], p[1], p[2]].TradesSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesSwapTotal +
+        cwFilteredActions[i].swap;
 
       TradesCount := TradesCount + 1;
       TradesVolumeTotal := TradesVolumeTotal + cwFilteredActions[i].volume;
-      TradesProfitTotal := TradesProfitTotal + cwFilteredActions[i].swap + cwFilteredActions[i].profit;
-
+      TradesProfitTotal := TradesProfitTotal + cwFilteredActions[i].profit;
+      TradesSwapTotal := TradesSwapTotal + cwFilteredActions[i].swap;
     end;
   except
     on E: Exception do
@@ -1935,7 +2009,7 @@ begin
   setlength(cw3summaries, 0, 0, 0);
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
-  DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 8);
+  DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 9);
   DynGrid9.lblTime.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt);
 end;
 
@@ -2016,9 +2090,9 @@ begin
   begin
     Filter[i].getValues(cwfilterParameter[i]);
 
- // machVergleichArrays
- // am Ende werden je nach cTopic und edValue.text verschiedene Variablen von Filter[] gefüllt
- // mal vglI[] und vglICt oder  vglS[] mit vglSCt, vDouble oder vInteger
+    // machVergleichArrays
+    // am Ende werden je nach cTopic und edValue.text verschiedene Variablen von Filter[] gefüllt
+    // mal vglI[] und vglICt oder  vglS[] mit vglSCt, vDouble oder vInteger
 
     Filter[i].machVergleichArrays;
     chk[i] := Filter[i].chkActive.Checked;
@@ -2051,7 +2125,7 @@ begin
     begin
       if chk[j] = true then
       begin
-        r := Filter[j].checkCwaction(cwactions[i]);
+        r := Filter[j].checkCwaction(cwactions[i], cwActionsPlus[i]);
         if (r = false) then
           // die erste nicht erfüllte Bedingung lässt diese action herausfallen
           goto weiter
@@ -2086,18 +2160,19 @@ weiter1:
   if cwFilteredActionCt < max then
     max := cwFilteredActionCt;
   SGCacheCwSearch.Visible := true;
-  if cwFilteredActionCt > 50 then
-  begin
-    doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
-    SGCacheCwSearch.Repaint;
-    doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
-    autosizegrid(SGCacheCwSearch, nil);
-  end
-  else
-  begin
-    doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
-    autosizegrid(SGCacheCwSearch, nil);
-  end;
+
+  // if cwFilteredActionCt > 50 then
+  // begin
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
+  // SGCacheCwSearch.Repaint;
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
+  // autosizegrid(SGCacheCwSearch, nil);
+  // end
+  // else
+  // begin
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
+  // autosizegrid(SGCacheCwSearch, nil);
+  // end;
   doCacheGridCwInfo;
   Screen.Cursor := Cursor;
   lblFilteredDataInfo.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
@@ -2107,7 +2182,7 @@ weiter1:
     lblFilteredDataInfo.Caption := lblFilteredDataInfo.Caption;
   end;
 
-  DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 25);
+  DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 26);
 end;
 
 procedure TForm2.Button5Click(Sender: TObject);
@@ -2198,18 +2273,18 @@ begin
   if cwFilteredActionCt < max then
     max := cwFilteredActionCt;
 
-  if cwFilteredActionCt > 50 then
-  begin
-    doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
-    SGCacheCwSearch.Repaint;
-    doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
-    autosizegrid(SGCacheCwSearch, nil);
-  end
-  else
-  begin
-    doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
-    autosizegrid(SGCacheCwSearch, nil);
-  end;
+  // if cwFilteredActionCt > 50 then
+  // begin
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
+  // SGCacheCwSearch.Repaint;
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
+  // autosizegrid(SGCacheCwSearch, nil);
+  // end
+  // else
+  // begin
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
+  // autosizegrid(SGCacheCwSearch, nil);
+  // end;
   doCacheGridCwInfo;
   Screen.Cursor := Cursor;
   lblFilteredDataInfo.Caption := 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' +
@@ -2228,7 +2303,7 @@ end;
 
 procedure TForm2.Button7Click(Sender: TObject);
 begin
-  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwactions), 25);
+  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwactions), 26);
 end;
 
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
@@ -2765,10 +2840,11 @@ var
   pwok: boolean;
 
 begin
+  faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, 'FlowAnalyzer.ini'));
   pwct := 0;
   updateGoing := false;
   pwok := false;
-  claus := false;
+  claus := true;
   if (claus = false) then
   begin
     for pwct := 0 to 2 do
@@ -2788,7 +2864,7 @@ begin
     if (pwok = false) then
     begin
       showmessage('Sorry ...');
-      application.Terminate;
+      Application.Terminate;
     end;
 
   end;
@@ -2833,6 +2909,11 @@ begin
   accountShort[5] := 'AT C';
   accountShort[6] := 'AT D';
   accountShort[7] := 'AT E';
+
+  accountCurrency[1] := 'EUR';
+  accountCurrency[2] := 'USD';
+  accountCurrency[3] := 'CHF';
+  accountCurrency[4] := 'GBP';
 
   FilterCt := 10;
   for i := 1 to FilterCt do
@@ -2950,7 +3031,7 @@ procedure TForm2.btnCwactionsToGridClick(Sender: TObject);
 begin
   // doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
   // autosizegrid(SGCwCache);
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwactions), 25);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwactions), 26);
 end;
 
 procedure TForm2.btnCwCommentsToGridClick(Sender: TObject);
@@ -2973,8 +3054,8 @@ procedure TForm2.btnCwusersToGridClick(Sender: TObject);
 begin
   doUsersGridCW(SGCwUsers, SGFieldCol, cwUsers, cwUsersPlus, length(cwUsers), maxActionsPerGrid, 1);
   autosizegrid(SGCwUsers, nil);
-  DynGrid6.initGrid('cwusers', 'userId', 1, length(cwUsers), 26);
-  DynGrid10.initGrid('cwusers', 'userId', 1, length(cwUsers), 26);
+  DynGrid6.initGrid('cwusers', 'userId', 1, length(cwUsers), 28);
+  DynGrid10.initGrid('cwusers2', 'userId', 1, length(cwUsers), 28);
 
 end;
 
@@ -3118,7 +3199,7 @@ begin
   setlength(cwFilteredActions, cwFilteredActionCt);
   setlength(cwFilteredActionsPlus, cwFilteredActionCt);
 
-  doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt, 1);
+  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt, 1);
   // lblCacheCwSearchResult.Caption := inttostr(cwFilteredActionCt);
   sl.clear;
   doCacheGridCwInfo;
@@ -3694,13 +3775,14 @@ begin
   begin
     gt := GetTickCount();
     repeat
-      application.ProcessMessages;
+      Application.ProcessMessages;
     until (GetTickCount - gt) > t;
     // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
   end;
 
   procedure TForm2.FormDestroy(Sender: TObject);
   begin
+    freeandnil(faIni);
     if HTTPWorker1.Finished = false then
     begin
       HTTPWorker1.Terminate;
@@ -3723,10 +3805,12 @@ begin
     PageControl1.Top := -30;
     if (claus = true) then
       PageControl1.Top := -20;
-    if form2.Width<200 then form2.width:=200;
-    if form2.height<100 then form2.height:=100;
+    if Form2.Width < 200 then
+      Form2.Width := 200;
+    if Form2.Height < 100 then
+      Form2.Height := 100;
 
-    OnMove(Msg);//damit Dialog richtig platziert wird
+    OnMove(Msg); // damit Dialog richtig platziert wird
   end;
 
   procedure TForm2.Button4Click(Sender: TObject);
@@ -3788,6 +3872,12 @@ begin
     ut: integer;
     dt: integer;
     gt: Cardinal;
+    startHeute: integer; // jeweils in Unix umgerechnet
+    startMontag: integer;
+    startMonat: integer;
+    startJahr: integer;
+    dow, dom, doy: integer;
+    doffset: integer;
   const
     c1 = 86400;
     c7 = 86400 * 7;
@@ -3796,60 +3886,87 @@ begin
     gt := GetTickCount;
     t := now;
     ut := datetimetounix(t);
+    dow := dayOfWeek(t); // 1=So
+    // Offset auf Montag
+    doffset := dow - 2;
+    if (doffset < 0) then
+      doffset := doffset + 7;
+    dom := DayOfTheMonth(t);
+    doy := DayOfTheYear(t);
+    startHeute := datetimetounix(int(t));
+    startMontag := datetimetounix(int(t) - doffset);
+    startMonat := datetimetounix(int(t) - dom+1);
+    startJahr := datetimetounix(int(t) - doy+1);
+
+    info.newUsers1d := 0;
     info.newUsers1w := 0;
     info.newUsers1m := 0;
+    info.newUsers1y := 0;
     info.logUsers1d := 0;
     info.logUsers1w := 0;
     info.logUsers1m := 0;
+    info.logUsers1y := 0;
     info.newActions1d := 0;
     info.newActions1w := 0;
     info.newActions1m := 0;
+    info.newActions1y := 0;
     info.profit1d := 0;
     info.profit1w := 0;
     info.profit1m := 0;
+    info.profit1y := 0;
     info.openActions := 0;
     for i := 0 to cwusersct - 1 do
     begin
       dt := cwUsers[i].registrationTime;
-      if ((ut - dt) < c7) then
+      if (dt > startHeute) then
+        inc(info.newUsers1d);
+      if (dt > startMontag) then
         inc(info.newUsers1w);
-      if ((ut - dt) < c30) then
+      if (dt > startMonat) then
         inc(info.newUsers1m);
+      if (dt > startJahr) then
+        inc(info.newUsers1y);
+
       dt := cwUsers[i].lastLoginTime;
-      if ((ut - dt) < c1) then
+      if (dt > startHeute) then
         inc(info.logUsers1d);
-      if ((ut - dt) < c7) then
+      if (dt > startMontag) then
         inc(info.logUsers1w);
-      if ((ut - dt) < c30) then
+      if (dt > startMonat) then
         inc(info.logUsers1m);
+      if (dt > startJahr) then
+        inc(info.logUsers1y);
+
     end;
     for i := 0 to cwactionsct - 1 do
     begin
-      dt := cwactions[i].openTime;
-      if ((ut - dt) < c1) then
-        inc(info.newActions1d);
-      if ((ut - dt) < c7) then
-        inc(info.newActions1w);
-      if ((ut - dt) < c30) then
-        inc(info.newActions1m);
 
-      if (cwactions[i].typeId = c7) then // balance
-      begin
-        dt := dt;
-      end;
-      if (cwactions[i].typeId <> c7) then // balance
+      dt := cwactions[i].openTime;
+      if (dt > startHeute) then
+        inc(info.newActions1d);
+      if (dt > startMontag) then
+        inc(info.newActions1w);
+      if (dt > startMonat) then
+        inc(info.newActions1m);
+      if (dt > startJahr) then
+        inc(info.newActions1y);
+
+      if (cwactions[i].typeId <> 7) then // balance
       begin
         dt := cwactions[i].closeTime;
-
         // offene Orders weisen immer einen momentanen Profit aus
         if (cwactions[i].closeTime > 0) then
         begin
-          if ((ut - dt) < c1) then
+
+          if (dt > startHeute) then
             info.profit1d := info.profit1d + cwactions[i].profit;
-          if ((ut - dt) < c7) then
-            info.profit1w := info.profit1d + cwactions[i].profit;
-          if ((ut - dt) < c30) then
-            info.profit1m := info.profit1d + cwactions[i].profit;
+          if (dt > startMontag) then
+            info.profit1w := info.profit1w + cwactions[i].profit;
+          if (dt > startMonat) then
+            info.profit1m := info.profit1m + cwactions[i].profit;
+          if (dt > startJahr) then
+            info.profit1y := info.profit1y + cwactions[i].profit;
+
         end
         else
           inc(info.openActions);

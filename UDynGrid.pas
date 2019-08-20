@@ -42,7 +42,10 @@ type
     procedure ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; var ScrollPos: integer);
     procedure SGSumMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure SGTopLeftChanged(Sender: TObject);
-
+    procedure SGMouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+    procedure SGMouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+    procedure makeSummary(mdcol, mdrow: integer; header: string);
+    procedure makeSummaries();
   private
     { Private-Deklarationen }
   public
@@ -51,7 +54,7 @@ type
 
     SGFieldCol: DAInteger;
     SGColField: DAInteger;
-    initialized: boolean;
+    initialized: Boolean;
     maxDataRows, visibleCols, visibleRows, scrollPosition: integer;
     source: string;
     dSort: doubleArray;
@@ -63,7 +66,7 @@ type
     sortcol: string;
     mdcol, mdrow: integer;
     mucol, murow: integer;
-    autosized: boolean;
+    autosized: Boolean;
     scrollBar1RepeatCount: integer;
     topic: string;
   end;
@@ -76,6 +79,7 @@ uses XFlowAnalyzer;
 
 constructor TDynGrid.Create(AOwner: TComponent);
 begin
+  // hier können eider die Spalten noch nicht initialisert werden sondern erst in init
   inherited Create(AOwner);
   initialized := false;
   maxDataRows := 0;
@@ -90,15 +94,15 @@ var
 begin
   //
   exit;
-
-  i := SGFieldCol[FromIndex];
-  SGFieldCol[FromIndex] := SGFieldCol[ToIndex];
-  SGFieldCol[ToIndex] := i;
-  for i := 0 to SG.Colcount - 1 do
-  begin
-    // sgcolfield(sg.Cols[i,0].Text
-
-  end;
+  //
+  // i := SGFieldCol[FromIndex];
+  // SGFieldCol[FromIndex] := SGFieldCol[ToIndex];
+  // SGFieldCol[ToIndex] := i;
+  // for i := 0 to SG.Colcount - 1 do
+  // begin
+  // // sgcolfield(sg.Cols[i,0].Text
+  //
+  // end;
 end;
 
 procedure TDynGrid.SGSumMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
@@ -106,14 +110,10 @@ var
   i: integer;
   grid: FTCommons.TStringGridSorted;
   col, row: integer;
-  fixedCol, fixedRow: boolean;
+  fixedCol, fixedRow: Boolean;
   gt: cardinal;
   Cursor: TCursor;
-  header, summe: string;
-  sumd: double;
-  sumi: integer;
-  sume: extended;
-  typ: integer;
+  header: string;
 begin
   gt := timegettime();
   grid := Sender as FTCommons.TStringGridSorted;
@@ -123,109 +123,142 @@ begin
     grid.MouseToCell(X, Y, col, row);
     mdcol := col;
     mdrow := row;
-    summe := '';
+
     header := SG.Cells[mdcol, 0];
 
-    // SGSum.Cells[mdcol, mdrow] := header;
-    // SGSum.Cells[mdcol, mdrow] := source;
+    makeSummary(mdcol, mdrow, header);
 
-    if (source = 'cwsummaries') then
+  end;
+end;
+
+procedure TDynGrid.makeSummaries();
+var
+  i: integer;
+begin
+  for i := 0 to SG.colcount - 1 do
+  begin
+    makeSummary(i, 0, SG.Cells[i, 0]);
+  end;
+
+end;
+
+procedure TDynGrid.makeSummary(mdcol, mdrow: integer; header: string);
+var
+  sumd: double;
+  sumi: integer;
+  sume: extended;
+  typ: integer;
+  summe: string;
+  i: integer;
+begin
+  summe := '';
+  if (source = 'cwsummaries') then
+  begin
+    if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal', 'tradesSwapTotal']) > -1) then
     begin
-      if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal']) > -1) then
+      sumi := 0;
+      sumd := 0;
+      sume := 0;
+      // Wert berechnen
+      if (header = 'tradesCount') then
+        typ := 0;
+      if (header = 'tradesVolumeTotal') then
+        typ := 1;
+      if (header = 'tradesProfitTotal') then
+        typ := 2;
+      if (header = 'tradesSwapTotal') then
+        typ := 3;
+      for i := 0 to length(ixSorted) - 1 do
       begin
-        sumi := 0;
-        sumd := 0;
-        sume := 0;
-        // Wert berechnen
-        if (header = 'tradesCount') then
-          typ := 0;
-        if (header = 'tradesVolumeTotal') then
-          typ := 1;
-        if (header = 'tradesProfitTotal') then
-          typ := 2;
-        for i := 0 to length(ixSorted) - 1 do
-        begin
-          case typ of
-            0:
-              begin
-                sumi := sumi + cwsummaries[ixSorted[i]].TradesCount;
-              end;
-            1:
-              begin
-                sumi := sumi + cwsummaries[ixSorted[i]].TradesVolumeTotal;
-              end;
-            2:
-              begin
-                sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal;
-              end;
-          end;
-        end;
         case typ of
           0:
             begin
-              summe := inttostr( sumi);
+              sumi := sumi + cwsummaries[ixSorted[i]].TradesCount;
             end;
           1:
             begin
-              summe := FormatFloat('#0.00',sumi/100);//!! nur bei TradesVolumeTotal ist das so !!
+              sumi := sumi + cwsummaries[ixSorted[i]].TradesVolumeTotal;
             end;
           2:
             begin
-              summe := FormatFloat('#0.00', sume);
+              sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal;
+            end;
+          3:
+            begin
+              sume := sume + cwsummaries[ixSorted[i]].TradesSwapTotal;
             end;
         end;
-        SGSum.Cells[mdcol, mdrow] := summe;
-
       end;
-    end;
-    if (source = 'cwfilteredactions') then
-    begin
-      if (ansiindextext(header, ['profit', 'volume','swap']) > -1) then
-      begin
-        sumi := 0;
-        sumd := 0;
-        // Wert berechnen
-        if (header = 'profit') then
-          typ := 0;
-        if (header = 'volume') then
-          typ := 1;
-        if (header = 'swap') then
-          typ := 2;
-        for i := 0 to length(ixSorted) - 1 do
-        begin
-          case typ of
-            0:
-              begin
-                sumd := sumd + cwfilteredactions[ixSorted[i]].profit;
-              end;
-            1:
-              begin
-                sumi := sumi + cwfilteredactions[ixSorted[i]].volume;
-              end;
-            2:
-              begin
-                sumd := sumd + cwfilteredactions[ixSorted[i]].swap;
-              end;
+      case typ of
+        0:
+          begin
+            summe := inttostr(sumi);
           end;
-        end;
-        case typ of
-          0:
-            begin
-              summe := FormatFloat('#0.00', sumd);
-            end;
-          1:
-            begin
-              summe := inttostr(sumi);
-            end;
-          2:
-            begin
-              summe := FormatFloat('#0.00', sumd);
-            end;
-        end;
-        SGSum.Cells[mdcol, mdrow] := summe;
+        1:
+          begin
+            summe := FormatFloat(',#0.00', sumi / 100); // !! nur bei TradesVolumeTotal ist das so !!
+          end;
+        2:
+          begin
+            summe := FormatFloat(',#0.00', sume);
+          end;
+        3:
+          begin
+            summe := FormatFloat(',#0.00', sume);
+          end;
       end;
+      SGSum.Cells[mdcol, mdrow] := summe;
+
     end;
   end;
+  if (source = 'cwfilteredactions') then
+  begin
+    if (ansiindextext(header, ['profit', 'volume', 'swap']) > -1) then
+    begin
+      sumi := 0;
+      sumd := 0;
+      // Wert berechnen
+      if (header = 'profit') then
+        typ := 0;
+      if (header = 'volume') then
+        typ := 1;
+      if (header = 'swap') then
+        typ := 2;
+      for i := 0 to length(ixSorted) - 1 do
+      begin
+        case typ of
+          0:
+            begin
+              sumd := sumd + cwfilteredactions[ixSorted[i]].profit;
+            end;
+          1:
+            begin
+              sumi := sumi + cwfilteredactions[ixSorted[i]].volume;
+            end;
+          2:
+            begin
+              sumd := sumd + cwfilteredactions[ixSorted[i]].swap;
+            end;
+        end;
+      end;
+      case typ of
+        0:
+          begin
+            summe := FormatFloat(',#0.00', sumd);
+          end;
+        1:
+          begin
+            summe := FormatFloat(',#0.00', sumi / 100);
+          end;
+        2:
+          begin
+            summe := FormatFloat(',#0.00', sumd);
+          end;
+      end;
+      SGSum.Cells[mdcol, mdrow] := summe;
+    end;
+  end;
+
 end;
 
 procedure TDynGrid.SGTopLeftChanged(Sender: TObject);
@@ -243,26 +276,41 @@ var
   sp: integer;
   rc: integer;
   grau: integer;
+  flag: Boolean;
 begin
+
+
+
+
+  flag := false;
   grau := 59;
   rc := (Sender as Tstringgrid).rowcount;
+  if (rc = 1) then
+    if (ARow = 1) then
+      i := 0;
+
   if ARow >= (Sender as Tstringgrid).rowcount then
   begin
     exit;
   end;
 
+  //
   sp := scrollPosition + ARow - 1;
   if sp < 0 then
-    exit;
+    flag := true;
+  // exit;
 
   if length(ixSorted) <= sp then
-    exit;
+    flag := true;
+  // exit;
 
   with Sender as Tstringgrid do
   begin
-
-    if selSorted[ixSorted[sp]] = 1 then
-      Canvas.Brush.Color := clGray // selektiert
+    if (flag = false) then
+      if selSorted[ixSorted[sp]] = 1 then
+        Canvas.Brush.Color := clGray // selektiert
+      else
+        Canvas.Brush.Color := RGB2TColor(grau, grau, grau)
     else
       Canvas.Brush.Color := RGB2TColor(grau, grau, grau);
 
@@ -271,7 +319,6 @@ begin
     begin
       if (s = Cells[ACol, ARow - 1]) then
         s := '^';
-
     end;
 
     r := Rect;
@@ -381,6 +428,7 @@ procedure TDynGrid.initGrid(source: string; sortcol: string; sortdir: integer; r
 var
   mrows, dl, i, scol, smethode: integer;
   j, k: integer;
+  b: Boolean;
 begin
 
   self.source := source;
@@ -392,17 +440,17 @@ begin
   begin
 
     for j := rows to mrows do
-      for k := 0 to SG.Colcount - 1 do
+      for k := 0 to SG.colcount - 1 do
         SG.Cells[k, j] := ' ';
 
     mrows := rows;
   end;
   // Problem: wenn alte Inhalte vorhanden sind werden sie bei Verkleinerung von Rowcount nicht entfernt !
   SG.rowcount := mrows;
-  SG.Colcount := cols;
+  SG.colcount := cols;
 
   SGSum.rowcount := 1;
-  SGSum.Colcount := cols;
+  SGSum.colcount := cols;
 
   if (mrows + cols) = 0 then
   begin
@@ -413,11 +461,11 @@ begin
     SG.Visible := true;
 
   for j := 0 to SG.rowcount - 1 do
-    for k := 0 to SG.Colcount - 1 do
+    for k := 0 to SG.colcount - 1 do
       SG.Cells[k, j] := ' ';
 
   for j := 0 to SGSum.rowcount - 1 do
-    for k := 0 to SGSum.Colcount - 1 do
+    for k := 0 to SGSum.colcount - 1 do
       SGSum.Cells[k, j] := ' ';
 
   if (SG.rowcount < 1) then
@@ -427,11 +475,22 @@ begin
   begin
     setlength(SGFieldCol, cols);
     setlength(SGColField, cols);
-    for i := 0 to cols - 1 do
+    // Einlesen der SGFieldcol... aus der Ini-Datei - es sei denn die Daten fehlen
+    b := faIni.ReadBool('dyngrid:' + source, 'sfcscf', false);
+    if (b = true) then
     begin
-      SGFieldCol[i] := i;
-      SGColField[i] := i;
-    end;
+      for i := 0 to cols - 1 do
+      begin
+        SGFieldCol[i] := faIni.ReadInteger('dyngrid:' + source, 'sfc' + inttostr(i), 0);
+        SGColField[i] := faIni.ReadInteger('dyngrid:' + source, 'scf' + inttostr(i), 0);
+      end;
+    end
+    else
+      for i := 0 to cols - 1 do
+      begin
+        SGFieldCol[i] := i;
+        SGColField[i] := i;
+      end;
     initialized := true;
   end;
 
@@ -449,7 +508,7 @@ begin
     sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
   if source = 'cwsymbols' then
     sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
-  if source = 'cwusers' then
+  if ((source = 'cwusers') or (source = 'cwusers2')) then
     sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwUsersplus);
   if source = 'cwcomments' then
     sortGridCwComments(source, sortcol, sortdir, cwComments);
@@ -724,7 +783,7 @@ begin
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
   scol := 1;
-  if ((source = 'cwusers')) then
+  if ((source = 'cwusers') or (source = 'cwusers2')) then
 
   begin
     If sortcol = 'userId' then
@@ -781,6 +840,10 @@ begin
       scol := 26;
     If sortcol = 'totalbalance' then
       scol := 27;
+    If sortcol = 'totalswap' then
+      scol := 28;
+    If sortcol = 'accountCurrency' then
+      scol := 29;
 
     if ((scol = 3) or ((scol >= 14) and (scol <= 23))) then
     begin
@@ -910,7 +973,7 @@ begin
           sSort[i] := users[i].comment;
           continue;
         end;
-        if scol = 24 then
+        if scol = 24 then //nicht dargestellt
         begin
           dSort[i] := usersplus[i].totalSymbols;
           continue;
@@ -928,6 +991,16 @@ begin
         if scol = 27 then
         begin
           dSort[i] := usersplus[i].totalBalance;
+          continue;
+        end;
+        if scol = 28 then
+        begin
+          dSort[i] := usersplus[i].totalSwap;
+          continue;
+        end;
+        if scol = 29 then
+        begin
+          dSort[i] := usersplus[i].accountCurrency;
           continue;
         end;
 
@@ -1226,16 +1299,18 @@ begin
       scol := 3;
     if sortcol = 'tradesProfitTotal' then
       scol := 4;
-    if sortcol = 'name' then
-      scol := 6;
-    if sortcol = 'sourceNames' then
-      scol := 7;
-    if sortcol = 'sourceIds' then
-      scol := 8;
-    if sortcol = 'groupId' then
+    if sortcol = 'tradesSwapTotal' then
       scol := 5;
+    if sortcol = 'name' then
+      scol := 7;
+    if sortcol = 'sourceNames' then
+      scol := 8;
+    if sortcol = 'sourceIds' then
+      scol := 9;
+    if sortcol = 'groupId' then
+      scol := 6;
 
-    if ((scol > 5)) then
+    if ((scol > 6)) then
     begin
       setlength(sSort, dl);
       smethode := 2;
@@ -1270,20 +1345,25 @@ begin
         end;
         if scol = 5 then
         begin
-          dSort[i] := symbolsGroups[i].groupId;
+          dSort[i] := symbolsGroups[i].TradesSwapTotal;
           continue;
         end;
         if scol = 6 then
         begin
-          sSort[i] := symbolsGroups[i].name;
+          dSort[i] := symbolsGroups[i].groupId;
           continue;
         end;
         if scol = 7 then
         begin
-          sSort[i] := symbolsGroups[i].sourceNames;
+          sSort[i] := symbolsGroups[i].name;
           continue;
         end;
         if scol = 8 then
+        begin
+          sSort[i] := symbolsGroups[i].sourceNames;
+          continue;
+        end;
+        if scol = 9 then
         begin
           sSort[i] := symbolsGroups[i].sourceIds;
           continue;
@@ -1346,6 +1426,8 @@ begin
       scol := 6;
     if sortcol = 'tradesUsers' then
       scol := 7;
+    if sortcol = 'tradesSwapTotal' then
+      scol := 8;
 
     if ((scol < 4)) then
     begin
@@ -1396,6 +1478,11 @@ begin
             if scol = 7 then
             begin
               dSort[l] := summaries[i][j][k].TradesUsers;
+              continue;
+            end;
+            if scol = 8 then
+            begin
+              dSort[l] := summaries[i][j][k].TradesSwapTotal;
               continue;
             end;
           end;
@@ -1463,6 +1550,8 @@ begin
       scol := 6;
     if sortcol = 'tradesUsers' then
       scol := 7;
+    if sortcol = 'tradesSwapTotal' then
+      scol := 8;
 
     if ((scol < 4)) then
     begin
@@ -1520,6 +1609,11 @@ begin
           dSort[l] := summaries[i].TradesUsers;
           continue;
         end;
+        if scol = 8 then
+        begin
+          dSort[l] := summaries[i].TradesSwapTotal;
+          continue;
+        end;
       end;
     end;
 
@@ -1571,7 +1665,7 @@ begin
     maxDataRows := length(cwSingleUserActions);
   if source = 'cwsymbols' then
     maxDataRows := length(cwSymbols);
-  if source = 'cwusers' then
+  if ((source = 'cwusers') or (source = 'cwusers2')) then
     maxDataRows := length(cwUsers);
   if source = 'cwcomments' then
     maxDataRows := length(cwComments);
@@ -1598,7 +1692,7 @@ begin
 
   if source = 'cwsymbols' then
     doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
-  if source = 'cwusers' then
+  if ((source = 'cwusers') or (source = 'cwusers2')) then
     doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwUsersplus, vScrollvon, vscrollbis - 1);
   if source = 'cwcomments' then
     doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, vScrollvon, vscrollbis - 1);
@@ -1610,7 +1704,7 @@ begin
     doSummaries3GridCWDyn(SG, SGFieldCol, ixSorted, cw3summaries, vScrollvon, vscrollbis - 1);
   if source = 'cwsummaries' then
     doSummariesGridCWDyn(SG, SGFieldCol, ixSorted, cwsummaries, vScrollvon, vscrollbis - 1);
-
+  makeSummaries;
   // end;
 end;
 
@@ -1619,7 +1713,7 @@ var
   i: integer;
   grid: FTCommons.TStringGridSorted;
   col, row: integer;
-  fixedCol, fixedRow: boolean;
+  fixedCol, fixedRow: Boolean;
   gt: cardinal;
   Cursor: TCursor;
   header: string;
@@ -1635,11 +1729,14 @@ begin
     if (row = 0) then
       // Dragmodus der Col einleiten - Mauscursor umschalten
       Screen.Cursor := crDrag;
+    if ((col > -1) and (row > -1)) then
+    begin
+      ClipBoard.AsText := grid.Cells[col, row];
+      // hier kann dann individuell gehandelt werden !
+      form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row], Button,
+        Shift, source);
 
-    ClipBoard.AsText := grid.Cells[col, row];
-    // hier kann dann individuell gehandelt werden !
-    form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row], Button,
-      Shift, source);
+    end;
 
   end;
   if Button = mbright then
@@ -1669,7 +1766,7 @@ begin
             sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
           if source = 'cwsymbols' then
             sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
-          if source = 'cwusers' then
+          if ((source = 'cwusers') or (source = 'cwusers2')) then
             sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwUsersplus);
           if source = 'cwcomments' then
             sortGridCwComments(source, sortcol, sortdir, cwComments);
@@ -1706,7 +1803,7 @@ var
   Cursor: TCursor;
   such, vgl: string;
   suchlength: integer;
-  suchfound: boolean;
+  suchfound: Boolean;
   gt: cardinal;
   found: integer;
 begin
@@ -1720,6 +1817,10 @@ begin
     grid.MouseToCell(X, Y, col, row);
     mucol := col;
     murow := row;
+
+    if ((col = -1) or (row = -1)) then
+      exit;
+
     // showmessage(inttostr(mdcol)+'/'+inttostr(mucol));
     // dasselbe sollte im normalen Grid passieren - statt mdcol mucol ist es dann eben from und to
     if Cursor = crDrag then
@@ -1773,7 +1874,7 @@ begin
                 found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such)
               else if source = 'cwsymbols' then
                 found := -1
-              else if source = 'cwusers' then
+              else if ((source = 'cwusers') or (source = 'cwusers2')) then
                 found := -1
               else if source = 'cwcomments' then
                 found := -1
@@ -1793,6 +1894,14 @@ begin
         for i := 0 to length(SGFieldCol) - 1 do
           SGFieldCol[SGColField[i]] := i;
 
+        // hier könnte in INI File gesichert werden
+        faIni.writeBool('dyngrid:' + source, 'sfcscf', true);
+        for i := 0 to length(SGFieldCol) - 1 do
+        begin
+          faIni.writeInteger('dyngrid:' + source, 'sfc' + inttostr(i), SGFieldCol[i]);
+          faIni.writeInteger('dyngrid:' + source, 'scf' + inttostr(i), SGColField[i]);
+        end;
+        faIni.UpdateFile;
       end;
     end
     else
@@ -1801,6 +1910,9 @@ begin
       // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
 
       nr := scrollPosition + murow - 1;
+      if (length(ixSorted) = 0) then
+        exit;
+
       anr := ixSorted[nr];
       // showmessage(inttostr(scrollPosition) + '/' + inttostr(murow) + ' ' + inttostr(cwactions[anr].actionId));
       if ((murow = 0) or (mdrow = 0)) then
@@ -1817,67 +1929,67 @@ begin
           fall := 3;
         end;
       end;
-    end;
-    case fall of
-      1:
-        begin
-          for i := 0 to length(selSorted) - 1 do
-            selSorted[i] := 0;
+      case fall of
+        1:
+          begin
+            for i := 0 to length(selSorted) - 1 do
+              selSorted[i] := 0;
 
+            selSorted[anr] := selSorted[anr] xor 1;
+          end;
+        2:
+          begin
+            // der kompliziertere Fall
+            seltop := -1;
+            selbottom := -1;
+            for i := 0 to length(selSorted) - 1 do
+            begin
+              if selSorted[ixSorted[i]] = 1 then
+              begin
+                if seltop = -1 then
+                  seltop := i;
+                selbottom := i;
+              end;
+            end;
+            if nr < seltop then
+            begin
+              for i := nr to seltop - 1 do
+              begin
+                selSorted[ixSorted[i]] := 1;
+              end;
+            end;
+            if nr > selbottom then
+            begin
+              for i := selbottom + 1 to nr do
+              begin
+                selSorted[ixSorted[i]] := 1;
+              end;
+
+            end;
+            if (nr >= seltop) and (nr <= selbottom) then
+            begin
+              selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
+              for i := nr + 1 to length(selSorted) - 1 do
+              begin
+                selSorted[ixSorted[i]] := 0;
+              end;
+
+            end;
+
+          end;
+        3:
           selSorted[anr] := selSorted[anr] xor 1;
-        end;
-      2:
-        begin
-          // der kompliziertere Fall
-          seltop := -1;
-          selbottom := -1;
-          for i := 0 to length(selSorted) - 1 do
+        0:
+          // könnte einfach Linksclick oder auch Size-Änderung der Colwidth sein
+          // col kann aber auch links oder rechts vom Col-Trenner liegen je nachdem wo halt die Maus losgelassen wurde
           begin
-            if selSorted[ixSorted[i]] = 1 then
-            begin
-              if seltop = -1 then
-                seltop := i;
-              selbottom := i;
-            end;
+            // showmessage('col:'+inttostr(mucol)+' row:'+inttostr(murow)+' ='+inttostr(sg.colwidths[mucol]));
+            // am besten die COlWidts nun nach SGsum kopieren
+            for i := 0 to SG.colcount - 1 do
+              SGSum.ColWidths[i] := SG.ColWidths[i];
+            exit; // nicht gridhandler aufrufen !
           end;
-          if nr < seltop then
-          begin
-            for i := nr to seltop - 1 do
-            begin
-              selSorted[ixSorted[i]] := 1;
-            end;
-          end;
-          if nr > selbottom then
-          begin
-            for i := selbottom + 1 to nr do
-            begin
-              selSorted[ixSorted[i]] := 1;
-            end;
-
-          end;
-          if (nr >= seltop) and (nr <= selbottom) then
-          begin
-            selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
-            for i := nr + 1 to length(selSorted) - 1 do
-            begin
-              selSorted[ixSorted[i]] := 0;
-            end;
-
-          end;
-
-        end;
-      3:
-        selSorted[anr] := selSorted[anr] xor 1;
-      0:
-        // könnte einfach Linksclick oder auch Size-Änderung der Colwidth sein
-        // col kann aber auch links oder rechts vom Col-Trenner liegen je nachdem wo halt die Maus losgelassen wurde
-        begin
-          // showmessage('col:'+inttostr(mucol)+' row:'+inttostr(murow)+' ='+inttostr(sg.colwidths[mucol]));
-          // am besten die COlWidts nun nach SGsum kopieren
-          for i := 0 to SG.Colcount - 1 do
-            SGSum.ColWidths[i] := SG.ColWidths[i];
-          exit; // nicht gridhandler aufrufen !
-        end;
+      end;
     end;
 
     // das ist die Tauschvariante
@@ -1891,6 +2003,27 @@ begin
   // hier kann dann individuell gehandelt werden !
   // gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
 
+end;
+
+procedure TDynGrid.SGMouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+begin
+  with Sender as Tstringgrid do
+  begin
+    // obere Reihe + angezeigte Reihen darf nicht größer sein, als die Gesamtreihen
+    if TopRow + Visiblerowcount < rowcount then
+      TopRow := TopRow + 1
+  end;
+  Handled := true;
+end;
+
+procedure TDynGrid.SGMouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
+begin
+  with Sender as Tstringgrid do
+  begin
+    if TopRow > fixedrows then
+      TopRow := TopRow - 1
+  end;
+  Handled := true;
 end;
 
 end.

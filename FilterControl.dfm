@@ -29,7 +29,9 @@ object FilterElemente: TFilterElemente
       'CloseDateTime'
       'OpenPrice'
       'Profit'
-      'Volume')
+      'Volume'
+      'MarginRate'
+      'AccountCurrency')
   end
   object cbOperator: TComboBox
     Left = 163
@@ -63,7 +65,7 @@ object FilterElemente: TFilterElemente
     Width = 93
     Height = 22
     Date = 43549.000000000000000000
-    Time = 0.412345231481595000
+    Time = 0.412345231481594900
     TabOrder = 3
     Visible = False
     OnChange = dtPicker1Change

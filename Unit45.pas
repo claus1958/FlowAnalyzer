@@ -325,28 +325,37 @@ end;
 
 procedure TForm45.Initest();
 var
-  DataIni : TIniFile;
+  DataIni : TMemIniFile;
   s:string;
   AFileName:string;
 begin
   AFileName:='abcde.ini';
-  DataIni := TIniFile.Create(getcurrentdir+'\'+AFileName);
+  DataIni := TMemIniFile.Create(getcurrentdir+'\'+AFileName);
   try
+  try
+  dataini.WriteInteger('test','test',123);
   DataIni.WriteString('INFO','n1','Claus1');
   DataIni.WriteString('INFO','n2','Claus2');
   DataIni.WriteString('INFO','n3','Claus3');
+  except
+    s:='Fehler';
+  end;
   finally
     FreeAndNil(DataIni);
   end;
 
-  DataIni := TIniFile.Create(getcurrentdir+'\'+AFileName);
-
+  DataIni := TMemIniFile.Create(getcurrentdir+'\'+AFileName);
+try
   try
     s := DataIni.ReadString('INFO','n2', '');
     s := DataIni.ReadString('INFO','n1', '');
     s := DataIni.ReadString('INFO','n3', '');
     s := DataIni.ReadString('INFO','n4', '');
     S:=dataini.readstring('nix','nix','?');
+    S:=dataini.readstring('123nix','n123ix','??');
+  except
+    s:='Fehler';
+  end;
   finally
     FreeAndNil(DataIni);
   end;

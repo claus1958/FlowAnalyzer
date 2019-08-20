@@ -23,7 +23,7 @@ object Form45: TForm45
     Alignment = taCenter
     AutoSize = False
     BiDiMode = bdLeftToRight
-    Caption = 'ydnvdnkjdnfkafdkahsdfkjsahfkjahsfdkajshfjkashfkjahsfakshfd'
+    Caption = 'Initest'
     ParentBiDiMode = False
   end
   inline Frame41: TFrame4
@@ -138,7 +138,7 @@ object Form45: TForm45
     Top = 407
     Width = 113
     Height = 26
-    Caption = 'Button6'
+    Caption = 'INI Test'
     TabOrder = 10
     OnClick = Button6Click
   end

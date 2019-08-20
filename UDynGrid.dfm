@@ -75,8 +75,16 @@ object DynGrid: TDynGrid
         OnDrawCell = SGDrawCell
         OnMouseDown = SGMouseDown
         OnMouseUp = SGMouseUp
+        OnMouseWheelDown = SGMouseWheelDown
+        OnMouseWheelUp = SGMouseWheelUp
         OnRowMoved = SGRowMoved
         OnTopLeftChanged = SGTopLeftChanged
+        ColWidths = (
+          64
+          64
+          64
+          64
+          64)
       end
       object SGSum: TStringGridSorted
         Left = 1
@@ -89,8 +97,14 @@ object DynGrid: TDynGrid
         FixedCols = 0
         RowCount = 1
         FixedRows = 0
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = [fsBold, fsItalic]
         Options = [goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
         ParentDoubleBuffered = False
+        ParentFont = False
         ScrollBars = ssNone
         TabOrder = 1
         StyleElements = [seFont, seBorder]

@@ -32,17 +32,22 @@ type
   tInfo = record
     usersOnline: integer;
     openActions: integer;
+    newUsers1d: integer;
     newUsers1w: integer;
     newUsers1m: integer;
+    newUsers1y: integer;
     logUsers1d: integer;
     logUsers1w: integer;
     logUsers1m: integer;
+    logUsers1y: integer;
     newActions1d: integer;
     newActions1w: integer;
     newActions1m: integer;
+    newActions1y: integer;
     profit1d: double;
     profit1w: double;
     profit1m: double;
+    profit1y: double;
   end;
 
   TPieParameters = Packed record
@@ -160,7 +165,8 @@ type
     totalTrades: integer;
     totalProfit: double;
     totalBalance: double;
-
+    totalSwap: double;
+    accountCurrency:integer;//1=EUR 2=USD 3=CHF 4=GBP ... 0=unbekannt
   End;
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -173,6 +179,7 @@ type
     TradesVolumeTotal: integer;
     TradesUsers: integer; // wieviele User handelten Symbol. Nur bei handlebarer Anzahl berechenbar !
     TradesProfitTotal: double;
+    TradesSwapTotal: double;
   End;
 
   DACwSummary = array of cwSummary;
@@ -197,6 +204,7 @@ type
     TradesVolumeTotal: integer;
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
+    TradesSwapTotal: double;
   End;
 
   DACwSymbolGroup = array of cwSymbolGroup;
@@ -206,6 +214,7 @@ type
     TradesVolumeTotal: double;
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
+    TradesSwapTotal: double;
     groupId: integer; // symbolsgroup
   End;
 
@@ -438,7 +447,7 @@ var
   cwFilterParameter: array of TFilterParameter;
   brokerShort: array [1 .. 2] of string;
   accountShort: array [1 .. 7] of string;
-
+  accountCurrency:array[0..4] of string;
 implementation
 
 uses XFlowAnalyzer;
@@ -1302,6 +1311,14 @@ begin
       SG.cells[SGFieldCol[23], 0] := 'marginRate';
       SG.cells[SGFieldCol[24], 0] := 'symGroupId';
 
+      // Ausblenden was nicht erwünscht ist
+      for k := 0 to 24 do
+      begin
+        if (claus = false) then
+          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
+            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
+            SG.ColWidths[SGFieldCol[k]] := -1;
+      end;
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1403,6 +1420,7 @@ begin
       SG.cells[SGFieldCol[4], 0] := 'tradesVolumeTotal';
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
+      SG.cells[SGFieldCol[7], 0] := 'tradesSwapTotal';
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1434,6 +1452,7 @@ begin
       SG.cells[SGFieldCol[4], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[i1][i2][i3].TradesUsers);
+      SG.cells[SGFieldCol[7], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesSwapTotal);
 
       SG.Rows[row].endUpdate;
     end;
@@ -1466,6 +1485,7 @@ begin
       SG.cells[SGFieldCol[4], 0] := 'tradesVolumeTotal';
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
+      SG.cells[SGFieldCol[7], 0] := 'tradesSwapTotal';
       for i := 0 to 2 do
         if (cwGrouping.element[i].sTyp = 'unused') then
         begin
@@ -1489,6 +1509,7 @@ begin
       SG.cells[SGFieldCol[4], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[sort[k]].TradesUsers);
+      SG.cells[SGFieldCol[7], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesSwapTotal);
 
       SG.Rows[row].endUpdate;
     end;
@@ -1539,6 +1560,8 @@ begin
       SG.cells[SGFieldCol[23], 0] := 'trades';
       SG.cells[SGFieldCol[24], 0] := 'profit';
       SG.cells[SGFieldCol[25], 0] := 'totalbalance';
+      SG.cells[SGFieldCol[26], 0] := 'totalswap';
+      SG.cells[SGFieldCol[27], 0] := 'accountCurrency';
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1575,6 +1598,8 @@ begin
       SG.cells[SGFieldCol[23], row] := inttostr(usersPlus[sort[k]].totalTrades);
       SG.cells[SGFieldCol[24], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalProfit);
       SG.cells[SGFieldCol[25], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalBalance);
+      SG.cells[SGFieldCol[26], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalSwap);
+      SG.cells[SGFieldCol[27], row] := accountCurrency[usersPlus[sort[k]].accountCurrency];
       SG.Rows[row].endUpdate;
     end;
   except
@@ -1632,6 +1657,12 @@ begin
       SG.cells[SGFieldCol[3], row] := symbols[sort[k]].description;
       SG.cells[SGFieldCol[4], row] := symbols[sort[k]].currency;
       SG.cells[SGFieldCol[5], row] := symbols[sort[k]].margin_currency;
+      //sind bis auf 1x test immer gleich !  Es gibt aber viele mit currency=0
+//      if( symbols[sort[k]].currency=symbols[sort[k]].margin_currency) then
+//        SG.cells[SGFieldCol[5], row] :='='+SG.cells[SGFieldCol[5], row]
+//      else
+//        SG.cells[SGFieldCol[5], row] :='!'+SG.cells[SGFieldCol[5], row] ;
+
       SG.cells[SGFieldCol[6], row] := inttostr(symbols[sort[k]].digits);
       SG.cells[SGFieldCol[7], row] := inttostr(symbols[sort[k]].tradeMode);
       SG.cells[SGFieldCol[8], row] := inttostr(symbols[sort[k]].expiration);
@@ -1642,6 +1673,7 @@ begin
       SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[sort[k]].TradesCount);
       SG.cells[SGFieldCol[14], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesProfitTotal);
+      SG.cells[SGFieldCol[16], row] := FormatFloat(',#0.00', symbolsPlus[sort[k]].TradesSwapTotal);
       if cwSymbolsGroupsCt > 0 then
       begin
         SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[sort[k]].groupId].name;
@@ -1676,8 +1708,9 @@ begin
       SG.cells[SGFieldCol[3], 0] := 'tradesVolumeTotal';
       SG.cells[SGFieldCol[4], 0] := 'tradesUsers';
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
-      SG.cells[SGFieldCol[6], 0] := 'sourceNames';
-      SG.cells[SGFieldCol[7], 0] := 'sourceIds';
+      SG.cells[SGFieldCol[6], 0] := 'tradesSwapTotal';
+      SG.cells[SGFieldCol[7], 0] := 'sourceNames';
+      SG.cells[SGFieldCol[8], 0] := 'sourceIds';
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1693,8 +1726,9 @@ begin
       SG.cells[SGFieldCol[3], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesVolumeTotal / 100);
       SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[sort[k]].TradesUsers);
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesProfitTotal);
-      SG.cells[SGFieldCol[6], row] := symbolsGroups[sort[k]].sourceNames;
-      SG.cells[SGFieldCol[7], row] := symbolsGroups[sort[k]].sourceIds;
+      SG.cells[SGFieldCol[6], row] := FormatFloat(',#0.00', symbolsGroups[sort[k]].TradesSwapTotal);
+      SG.cells[SGFieldCol[7], row] := symbolsGroups[sort[k]].sourceNames;
+      SG.cells[SGFieldCol[8], row] := symbolsGroups[sort[k]].sourceIds;
 
       SG.Rows[row].endUpdate;
     end;
@@ -1716,6 +1750,7 @@ var
   row: integer;
   rct: integer;
   rct1: integer;
+  s:string;
 begin
   try
     // sl := TStringList.Create;
@@ -1807,6 +1842,7 @@ begin
 
   except
     // debug('Fehler');
+      s:='Fehler';
   end;
   // {$RANGECHECKS ON}
 end;
@@ -2106,7 +2142,8 @@ begin
     SG.cells[SGFieldCol[13], 0] := 'trades';
     SG.cells[SGFieldCol[14], 0] := 'volume';
     SG.cells[SGFieldCol[15], 0] := 'profit';
-    SG.cells[SGFieldCol[16], 0] := 'symGroup';
+    SG.cells[SGFieldCol[16], 0] := 'swap';
+    SG.cells[SGFieldCol[17], 0] := 'symGroup';
 
     // lbStatistics.Items.Add('z:' + inttostr(GetTickCount() - gt) + ' count:' + inttostr(sl.count));
 
@@ -2150,8 +2187,9 @@ begin
         SG.cells[SGFieldCol[13], row] := inttostr(symbolsPlus[k].TradesCount);
         SG.cells[SGFieldCol[14], row] := FormatFloat(',#0.00', symbolsPlus[k].TradesVolumeTotal / 100);
         SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00', symbolsPlus[k].TradesProfitTotal);
+        SG.cells[SGFieldCol[16], row] := FormatFloat(',#0.00', symbolsPlus[k].TradesSwapTotal);
         if cwSymbolsGroupsCt > 0 then
-          SG.cells[SGFieldCol[16], row] := cwSymbolsGroups[symbolsPlus[k].groupId].name;
+          SG.cells[SGFieldCol[17], row] := cwSymbolsGroups[symbolsPlus[k].groupId].name;
 
       end
       else
@@ -2203,8 +2241,9 @@ begin
     SG.cells[SGFieldCol[3], 0] := 'T.VolumeTotal';
     SG.cells[SGFieldCol[4], 0] := 'T.Users';
     SG.cells[SGFieldCol[5], 0] := 'T.ProfitTotal';
-    SG.cells[SGFieldCol[6], 0] := 'sourceNames';
-    SG.cells[SGFieldCol[7], 0] := 'sourceIds';
+    SG.cells[SGFieldCol[6], 0] := 'T.SwapTotal';
+    SG.cells[SGFieldCol[7], 0] := 'sourceNames';
+    SG.cells[SGFieldCol[8], 0] := 'sourceIds';
     row := 0;
     k := 0;
     while (k < ct) do
@@ -2218,8 +2257,9 @@ begin
         SG.cells[SGFieldCol[3], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesVolumeTotal / 100);
         SG.cells[SGFieldCol[4], row] := inttostr(symbolsGroups[k].TradesUsers);
         SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesProfitTotal);
-        SG.cells[SGFieldCol[6], row] := symbolsGroups[k].sourceNames;
-        SG.cells[SGFieldCol[7], row] := symbolsGroups[k].sourceIds;
+        SG.cells[SGFieldCol[6], row] := FormatFloat(',#0.00', symbolsGroups[k].TradesSwapTotal);
+        SG.cells[SGFieldCol[7], row] := symbolsGroups[k].sourceNames;
+        SG.cells[SGFieldCol[8], row] := symbolsGroups[k].sourceIds;
 
 
         // SG.cells[SGFieldCol[15], row] := FormatFloat(',#0.00',symbolsPlus[k].TradesProfitTotal);
@@ -3167,25 +3207,34 @@ var
 begin
   for c := 0 to Grid.ColCount - 1 do
   begin
-    header := Grid.cells[c, 0];
-    ColWidthMax := ColWidthMin;
-    for R := 0 to (Grid.RowCount - 1) do
+    // bestehende durch -1 unsichtbare Spalten unberührt lassen !
+    if (Grid.ColWidths[c] <> -1) then
     begin
-      w := Grid.Canvas.TextWidth(Grid.cells[c, R]);
-      if w > ColWidthMax then
-        ColWidthMax := w;
-    end;
-    Grid.ColWidths[c] := ColWidthMax + 12;
-    if (Grid2 <> nil) then
-      Grid2.ColWidths[c] := ColWidthMax + 12;
+      header := Grid.cells[c, 0];
+      ColWidthMax := ColWidthMin;
+      for R := 0 to (Grid.RowCount - 1) do
+      begin
+        w := Grid.Canvas.TextWidth(Grid.cells[c, R]);
+        if w > ColWidthMax then
+          ColWidthMax := w;
+      end;
+      Grid.ColWidths[c] := ColWidthMax + 12;
+      if (Grid2 <> nil) then
+        Grid2.ColWidths[c] := ColWidthMax + 12;
 
-    if (header = 'unused') then
+      if (header = 'unused') then
+      begin
+        Grid.ColWidths[c] := -1;
+        if (Grid2 <> nil) then
+          Grid2.ColWidths[c] := -1;
+      end;
+
+    end
+    else
     begin
-      Grid.ColWidths[c] := -1;
       if (Grid2 <> nil) then
         Grid2.ColWidths[c] := -1;
     end;
-
   end;
 end;
 
@@ -3649,18 +3698,21 @@ var
   TradesCount: integer;
   TradesVolumeTotal: integer;
   TradesProfitTotal: double;
+  TradesSwapTotal: double;
   sum: double;
 begin
   // erstmal alles initialisieren
   TradesCount := 0;
   TradesVolumeTotal := 0;
   TradesProfitTotal := 0;
+  TradesSwapTotal := 0;
   for i := 0 to length(groups) - 1 do
   begin
     // die folgenden sind hier aus den actions berechenbar
     groups[i].TradesCount := 0;
     groups[i].TradesVolumeTotal := 0;
     groups[i].TradesProfitTotal := 0;
+    groups[i].TradesSwapTotal := 0;
     // die folgenden Werte sind hier nicht direkt berechenbar
     groups[i].TradesUsers := 0;
     groups[i].sourceNames := '';
@@ -3688,8 +3740,10 @@ begin
     Inc(TradesCount);
     groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
     TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
-    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].swap + actions[i].profit;
-    TradesProfitTotal := TradesProfitTotal + actions[i].swap + actions[i].profit;
+    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].profit;
+    groups[groupId].TradesSwapTotal := groups[groupId].TradesSwapTotal + actions[i].swap;
+    TradesProfitTotal := TradesProfitTotal + actions[i].profit;
+    TradesSwapTotal := TradesSwapTotal + actions[i].swap;
   end;
 
   lb.items.Clear;
@@ -3701,6 +3755,8 @@ begin
     .TradesCount));
   lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
     .TradesProfitTotal));
+  lb.items.add('Swap total:' + #9 + FormatFloat(',#0.00', TradesSwapTotal - groups[cwSymbolsPlus[0].groupId]
+    .TradesSwapTotal));
 
 end;
 

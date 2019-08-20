@@ -27,7 +27,7 @@ object Form2: TForm2
     Top = 0
     Width = 1527
     Height = 937
-    ActivePage = TabSheet1
+    ActivePage = TabSheet10
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -180,6 +180,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 181
                   Width = 1495
+                  Font.Height = -12
                   ExplicitTop = 181
                   ExplicitWidth = 1495
                 end
@@ -246,6 +247,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 136
                   Width = 1495
+                  Font.Height = -12
                   ExplicitTop = 136
                   ExplicitWidth = 1495
                 end
@@ -312,6 +314,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 136
                   Width = 1495
+                  Font.Height = -12
                   ExplicitTop = 136
                   ExplicitWidth = 1495
                 end
@@ -385,6 +388,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 136
                   Width = 1495
+                  Font.Height = -12
                   ExplicitTop = 136
                   ExplicitWidth = 1495
                 end
@@ -565,6 +569,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 865
                   Width = 478
+                  Font.Height = -12
                   ExplicitTop = 865
                   ExplicitWidth = 478
                 end
@@ -643,6 +648,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 658
                   Width = 992
+                  Font.Height = -12
                   ExplicitTop = 658
                   ExplicitWidth = 992
                 end
@@ -1129,6 +1135,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 380
                   Width = 971
+                  Font.Height = -12
                   ExplicitTop = 380
                   ExplicitWidth = 971
                 end
@@ -1189,6 +1196,7 @@ object Form2: TForm2
                 inherited SGSum: TStringGridSorted
                   Top = 361
                   Width = 971
+                  Font.Height = -12
                   ExplicitTop = 361
                   ExplicitWidth = 971
                 end
@@ -1485,6 +1493,7 @@ object Form2: TForm2
               inherited SGSum: TStringGridSorted
                 Top = 827
                 Width = 1497
+                Font.Height = -12
                 ExplicitTop = 827
                 ExplicitWidth = 1497
               end
@@ -1668,6 +1677,7 @@ object Form2: TForm2
                     inherited SGSum: TStringGridSorted
                       Top = 236
                       Width = 1213
+                      Font.Height = -16
                       ExplicitTop = 236
                       ExplicitWidth = 1213
                     end
@@ -2955,7 +2965,7 @@ object Form2: TForm2
   end
   object updateTimer: TTimer
     Enabled = False
-    Interval = 120000
+    Interval = 12000000
     OnTimer = updateTimerTimer
     Left = 628
     Top = 36
