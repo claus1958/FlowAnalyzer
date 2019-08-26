@@ -3,7 +3,7 @@ unit doHTTP;
 interface
 
 uses
-  Classes, Windows, idHTTP,FTTypes;
+  Classes, Windows, idHTTP,FTTypes,IdSSLOpenSSL;
 
 type
    xxx=integer;
@@ -32,6 +32,12 @@ var
 
 begin
   // test HTTP Get
+
+  //INDY SSL
+  //das ist dsie notwendige Ergänzung für die Verwendung von SSL
+  //HTTP.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create;
+
+
   HTTP := TIdHTTP.Create;
   HTTP.ConnectTimeout := 400000;
   HTTP.ReadTimeout := 400000;

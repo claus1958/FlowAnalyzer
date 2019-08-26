@@ -80,6 +80,17 @@ type
     procedure WndProc(var Msg: TMessage); override;
     // procedure MoveColumn(FromIndex, ToIndex: Longint);
     // procedure MoveRow(FromIndex, ToIndex: Longint);
+  private
+  public
+  var
+    test: integer;
+  end;
+
+  TButton = class(Vcl.StdCtrls.TButton)
+  private
+  public
+  var
+    test: integer;
   end;
 
   intArray = array of integer;
@@ -166,7 +177,7 @@ type
     totalProfit: double;
     totalBalance: double;
     totalSwap: double;
-    accountCurrency:integer;//1=EUR 2=USD 3=CHF 4=GBP ... 0=unbekannt
+    accountCurrency: integer; // 1=EUR 2=USD 3=CHF 4=GBP ... 0=unbekannt
   End;
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -393,6 +404,7 @@ procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymb
 function RandomRange(const AFrom, ATo: integer): integer;
 function RGB2TColor(const R, G, b: byte): integer;
 procedure showMemory(lb: TListBox);
+function myStrToInt(AString: string): integer;
 
 var
 
@@ -447,7 +459,8 @@ var
   cwFilterParameter: array of TFilterParameter;
   brokerShort: array [1 .. 2] of string;
   accountShort: array [1 .. 7] of string;
-  accountCurrency:array[0..4] of string;
+  accountCurrency: array [0 .. 4] of string;
+
 implementation
 
 uses XFlowAnalyzer;
@@ -800,6 +813,15 @@ begin
   result := '';
   for i := Low(b) to High(b) do
     result := result + chr(b[i]);
+end;
+
+function myStrToInt(AString: string): integer;
+begin
+  try
+    result := strtoint(AString);
+  except
+    result := 0;
+  end;
 end;
 
 function MyStrToFloat(AString: string): double;
@@ -1279,7 +1301,9 @@ var
   k: integer;
   row: integer;
   fehler: string;
+  v: integer;
 begin
+  v := SG.visiblerowcount;
   try
     if (justone = false) then
     begin
@@ -1357,6 +1381,8 @@ begin
 
       SG.Rows[row].endUpdate;
     end;
+    // evtl noch was löschen ?
+    v := v;
   except
     on E: Exception do
     begin
@@ -1657,11 +1683,11 @@ begin
       SG.cells[SGFieldCol[3], row] := symbols[sort[k]].description;
       SG.cells[SGFieldCol[4], row] := symbols[sort[k]].currency;
       SG.cells[SGFieldCol[5], row] := symbols[sort[k]].margin_currency;
-      //sind bis auf 1x test immer gleich !  Es gibt aber viele mit currency=0
-//      if( symbols[sort[k]].currency=symbols[sort[k]].margin_currency) then
-//        SG.cells[SGFieldCol[5], row] :='='+SG.cells[SGFieldCol[5], row]
-//      else
-//        SG.cells[SGFieldCol[5], row] :='!'+SG.cells[SGFieldCol[5], row] ;
+      // sind bis auf 1x test immer gleich !  Es gibt aber viele mit currency=0
+      // if( symbols[sort[k]].currency=symbols[sort[k]].margin_currency) then
+      // SG.cells[SGFieldCol[5], row] :='='+SG.cells[SGFieldCol[5], row]
+      // else
+      // SG.cells[SGFieldCol[5], row] :='!'+SG.cells[SGFieldCol[5], row] ;
 
       SG.cells[SGFieldCol[6], row] := inttostr(symbols[sort[k]].digits);
       SG.cells[SGFieldCol[7], row] := inttostr(symbols[sort[k]].tradeMode);
@@ -1750,10 +1776,11 @@ var
   row: integer;
   rct: integer;
   rct1: integer;
-  s:string;
+  s: string;
 begin
   try
     // sl := TStringList.Create;
+    SG.test := 1;
     // die Größe gleich festlegen
     rct := trunc(ct / stp) + 1;
     rct1 := total + 1;
@@ -1842,7 +1869,7 @@ begin
 
   except
     // debug('Fehler');
-      s:='Fehler';
+    s := 'Fehler';
   end;
   // {$RANGECHECKS ON}
 end;
@@ -3178,7 +3205,7 @@ begin
 
     if Msg.WParamLo = 5 then // 5=SB_THUMBTRACK  Der Thumb wird bewegt
     begin
-      v := VisibleRowCount;
+      v := visiblerowcount;
       c := RowCount;
       TopRow := trunc(1 + (c - v - 1) / 127 * Msg.WParamHi);
       // bei wenigen mehr als sichtbare Rows springt der Thumb beim Bewegen leider obwohl die Rechnung schon stimmt

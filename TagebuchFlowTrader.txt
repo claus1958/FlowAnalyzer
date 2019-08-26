@@ -1,0 +1,288 @@
+7.1.19	Peter schickt ManagerAPI - Dlls und Beispielordner
+
+10.1.19	Bekomme Links auf die API-Hilfe
+
+21.1.19  Projekt 'macht gute Fortschritte'
+
+22.1. Peter spezifiziert ein wenig was gebraucht wird (zB bidask)
+
+22.1.19	Bekomme Liste wichtiger 14 Instrumente
+
+30.1.19 Zugang zum API-Server eines Account nicht möglich. Rücksprache Ina IP geändert
+
+18.2.19 Will Auskunft wegen Kurshistorie und Änderungen der IP-Adresse
+
+22.2.19 weitere Fragen bezüglich 'Gruppen' , Altdaten, Spread?
+
+22.5.19 Sebastian will nachhaken(s.o)
+
+7.3.19 Peter möchte Oszillator Long/Short--Ratio (der sich später wegen nicht-Interpretierbarkeit in Nichts auflöst)
+
+14.3.19 Neuer Server wird angemeldet: : h2827643.stratoserver.net
+
+21.3.19 Vorschlag -> Peter Formulierung Masterarbeit
+
+29.3.19 Die Auswertung Long/Short ist als Webseite fertig. 
+
+6.5.19 Anforderungsprofil FlowAnalyzer
+
+16.8.19 Neue Anforderungen ach erstem Test
+
+21.8.19 Nochmals neue Anforderungen mit zB Berücksichtigung Offener Positionen (rückwärts), was völlig neue Voraussetzungen erforderlich macht. 
+
+----
+
+Aus meinen Aufzeichnungen
+
+10.1 Zugang zur API-Hilfe
+
+16.1. Sampleprogramm läuft jetzt auf meinem alten Delphi5. Installiere neues Delphi 10.3 / 1 Jahr
+
+17.1 um 21Uhr läuft Beispiel auch auf 10.3. Muss alles in der API umschreiben auf Unicode-Unterstützung
+
+Sa 19.1 Versuche News zu bekommen abgebrochen - vieles in der API geht nicht (falsche Rechte)
+
+20.1 Logfiles 
+
+21.1 weiter
+
+22.1. Daten Daten ...
+
+28.1. Untersuchung Rechte (sind nur 5!) Tradehistory klappt. Neuer Laptop. Programm noch auf Delphi5
+
+(30.1. Landgericht)
+(1.2 Trademanager)
+
+2.2. Datenbanküberlegungen. Sammle alle Ticks aller Instrumente Klar: MT5 völlig anders. API-Abruf Historie geht nicht. nochmal Rechte:Rechte ok:online/logs/reports/user details/see trades/Rest nicht!
+
+7.2. Abruf Historie aus API geht jetzt doch ! (Vergleich mit c++)
+
+8.2. ua neu:Styles
+
+9.2 weiter
+
+11.2 Stringgrid subclass
+
+12.2 symboladd pumping . TicksRequest erneut unter c getestet - geht einfach nicht
+
+14.2. Charts für Kurshistorie eingebaut. (Lücken Wochenende)
+
+17.2 'jeden Tag weitergemacht'
+
+18.2 Gedanken Zuverlässigkeit Kurssammlung. Wie auf unbekannte Fehler/Abbrüche?? reagieren ?
+
+20.2 weiter
+
+21.2 Test mitMemoryleaks. Lang nachts mit Moritz Daten angeschaut...
+
+22.2 Masterarbeit innerlich nicht mehr gewollt. Delphi-Interna bpl usw
+
+23.2 TStringgrid
+
+27.2. alle AT Konten dazu. Großes FTCollector.zip->Moritz
+
+7.3 Peter Termin für Treffen verschoben
+
+(11.3 neue SSD)
+
+12.3. viel an Long/Short Ratio gemacht
+
+15.3. viel mit Delphi/JSON aufgeschrieben
+
+16.3. Übertragen aller Daten an die Datenbank. Moritz gefällt Performance nicht !
+
+17.3 Zweifel an Datenbank nach weiteren Tests verstärkt
+
+25.3 'Täglich an Flowtrader...' . Moritz macht mit Plotly Chartdarstellung auf Website
+
+28.3 BidAskTicks
+
+(1.4.Ärger Peter schaut nix an weil schon wieder urlaub in Sicht. )
+
+1.4 Sortieralgorythmen
+
+2.4 Jetzt geht der Historienexport(Actions) in einstellbaren Intervallen. Automatisch. Ca 5Min Dauer
+
+3.4 weiter closed Orders
+
+4.4.realtime Order->DB klappt
+
+5.4 Überlegung Aufteilung 4 Programme. Kurse AT/KurseLCG/RealOrders/Auswerteprog
+
+(7.4.-16.4. Korsika)
+
+?
+
+2.5 Peter 'Orders trocknen ein'
+
+3.5. Server ist speichertechnisch am Ende. Zweiter Server ist neu eingerichtet mit allen Programmen
+
+(bis 13.5 Mac Versionen neu gemacht)
+
+13.5 weiter FlowAnalyzer
+
+14.5. Auftrennen FlowTrader/FlowAnalyzer
+
+16.5.zwei Forms
+
+17.5.viel Datenbank
+
+18.5 move versus MemoryStream
+
+21.5 Probleme Umlaute UTF8 usw
+
+23.5 Vergleiche Actions mit meinen Sammelticks LCG: passt exakt. MetaTrader-Volumen sind nur Anzahl Ticks. Meine Daten exakt gleich
+
+26.5 Wie geht man mit Symbolen um - was ist notwendig. Vergleiche Minutenkurse AT1 und AT2 exakt gleich. Sendefragen/Threads/Blockierung/Datenverlust
+
+28.5 AntiFreeze wegen Blockaden beim Datenupload eingebaut(später wieder ersetzt durch Threads)
+
+1.6 Upload Ticks wäre jetzt auf Server möglich
+
+2.6 Threadingtests
+
+5.6 weiter Threading Datensenden
+
+6.6 Threading
+
+9.6. stat/dyn-Arrays/Pointer
+
+10.6. TMS Chart ausgetestet 32/64 Bit Überlegungen wegen Speicher für viele Actions
+
+13.6 AutoUpdate klappt nun binär.
+
+14.6 Leaks suchen, Thread Überlegungen
+
+15.6 Threads,Exceptions,Rangecheck...
+
+17.6. Auto läuft gut
+
+(Trademanager)
+
+21.6. nach Pause wegen Mac weiter mit FT. Gedanken bzgl 'Anforderungsprofil FTAnalyzer'
+
+23.6 Fehler Server korrigiert 
+
+25.6 Lücke Kurse Serverudpate
+
+26.6 Serverprobleme 
+
+27.6 Server geht wieder
+
+29.6 Planungen weiteres Programm
+
+1.7. Aufteilung FTCollector / FTAnalyzer ist erfolgt. Tests TMS-Charttool
+
+(Damüls Urlaub)
+
+10.7 Marginlevels Server unendlich lahm
+
+12.7 Delphi Probs
+
+13.7 Riversoft Charts
+
+14.7 präferiere doch TMS Charts. Wirken professioneller. Inbesondere bei Bubble / Piecharts. Ratings/Rankings
+
+16.7. geht wieder Schnelldurchlauf Ändeurngen 1H = 84 sec
+
+21.7 "Die letzten Tage lief es erstaunlich gut". Grid ändern auf dynamisch und nur wenige Anzeige ? offen: wer ist online?
+
+23.7 Umbau auf Eingenbaugrid wegen Ladezeiten bei tausenden Actions
+
+24.7 Spalten verschieben
+
+25.7 Speicherfehler beseitigt
+
+26.7 Grid Sort und Select
+
+27.7 Piecharts Probe
+
+28.7 Erweiterungen der Datenbank-Typen um dynamisch berechnete 'plus' Variablen. Piechart Verteilung Instrumente
+
+2.8 Alle 'alten' Grids auf DynGrid umgebaut. Damit gigantischer Gewschwindigkeitsgewinn sowie Speicherplatzeinsparung
+
+4.8 Planung der Umstrukturierung der Abläufe und Anzeigen. Symbole zu Gruppen zusammenfassen - automatisch!
+
+5.8 Arbeiten am Filtern mit anschliessendem Gruppieren 
+
+(6.8-8.8 Erichsenval Umbau MT5. Sehr viele Probleme..)
+
+9.8 Weiter mit Summary 18:00 erste zweistufige Filter/Gruppierung angezeigt. Schnelligkeit versus Speicherplatz. Abläufe brauchen enorm Speicher sind aber damit gewaltig schnell(wenige Sekunden gegen 5-10 Minuten)
+
+10.8 weiter daran
+
+11.8 Umbau Bedienstruktur von Tabreitern auf Iconleiste. Ausblenden Überflüssiges. Focus auf vollautomatisch.
+
+12.8 Caching bzw Update . Wie geht alles mgl.schnell, da dies ja parallel erfolgen muss. 
+
+13.8 Performanceoptimierung wieder mal
+
+14.8 Durchbruch: Speicher für Programm kann auf bis 4GB erweitert werden, was viele große Probleme beseitigt. (Rechner braucht dafür aber 8GB RAM).
+
+15.8 Spaltenreihenfolge merken. Inifiles. Dreistufige Gruppierung reicht jetzt auch der Speicher. Bei Update  'friert' Programm noch für 10sec ein. Neuer Thread nur für CSV-Datenupdate. Damit deutlich 'flüssigeres' Update
+
+16.8 Summenbildung wird gefordert. Planung. Umsetzung als Minigrid unter dem DynGrid. Eine Zeile für die Summen. Synchronisierung der Spalten schwierig
+
+17.8 Profit und Swap im Prg. getrennt da Swap wichtig als separater Wert
+
+18.8.Versuche mit Checkboxen in Spalten zwecks Ein/Ausschalten von Cols. Kommt später
+
+19.8 Planungen wegen Encryption. Zumindest Paßwort im Programm. Verschiedene Kontowährungen 'undurchsichtig'. Anhand der Gruppen erkennbar - brokerspezifisch. 
+
+20.8 Selektion in den Grids komplett überarbeitet. Auch über Up/Downkey Selektion möglich. 
+
+21.8 Neue Anforderungen hinsichtlich zurückliegender offener Positionen . Lösungsmöglichkeiten durchdenken
+
+22.8 Prüfen inwiefern der Profit anhand der vorliegenden Daten überhaupt berechenbar ist, weil wichtige Symbolkennzahlen fehlen
+Versuch Rekonstruktion der Parameter anhand beispielhafter alter Orders
+
+ToDo
+
+Summenbildung über Spalten abschliessen
+
+Weitere Kriterien beim Filtern/Gruppieren
+
+Planung und Umsetzung grafischer Darstellungen wie PieCharts
+
+An/Ausschalten von Gridspalten
+
+Export der Grids/Selektionen im CSV-Format
+
+Fehlersuche und Korrektur
+
+Beschaffung/Speicherung täglicher "offener Profite". Koordination , Verarbeitung dieser Daten auf Server
+
+Sichere Übertragung der Datenströme (SSL)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

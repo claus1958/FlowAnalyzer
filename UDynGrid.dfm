@@ -13,8 +13,9 @@ object DynGrid: TDynGrid
     object lblHeader: TLabel
       Left = 264
       Top = 12
-      Width = 5
+      Width = 4
       Height = 19
+      Caption = '!'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -25,9 +26,16 @@ object DynGrid: TDynGrid
     object lblTime: TLabel
       Left = 672
       Top = 12
-      Width = 32
+      Width = 4
       Height = 13
-      Caption = 'lblTime'
+      Caption = '!'
+    end
+    object lblSelection: TLabel
+      Left = 24
+      Top = 12
+      Width = 4
+      Height = 13
+      Caption = '!'
     end
   end
   object Panel2: TPanel
@@ -73,11 +81,14 @@ object DynGrid: TDynGrid
         TabOrder = 0
         StyleElements = [seFont, seBorder]
         OnDrawCell = SGDrawCell
+        OnKeyDown = SGKeyDown
+        OnKeyPress = SGKeyPress
         OnMouseDown = SGMouseDown
         OnMouseUp = SGMouseUp
         OnMouseWheelDown = SGMouseWheelDown
         OnMouseWheelUp = SGMouseWheelUp
         OnRowMoved = SGRowMoved
+        OnSelectCell = SGSelectCell
         OnTopLeftChanged = SGTopLeftChanged
         ColWidths = (
           64

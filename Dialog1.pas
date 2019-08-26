@@ -4,24 +4,20 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, XFlowanalyzer, Vcl.ExtCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, XFlowanalyzer, Vcl.ExtCtrls,FTCommons,UDynGrid;
 
 type
   TForm5 = class(TForm)
-    Button1: TButton;
-    btnLoadNow: TButton;
-    Label1: TLabel;
     Timer1: TTimer;
-    lbLoadInfo: TListBox;
-    Memo1: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-  private
-    { Private-Deklarationen }
-  public
-    { Public-Deklarationen }
+    procedure init(DG: TDynGrid);
+    private
+      { Private-Deklarationen }
+    public
+      { Public-Deklarationen }
   end;
 
 var
@@ -57,6 +53,15 @@ procedure TForm5.FormCreate(Sender: TObject);
 var
   i: integer;
 begin
+i:=0;
+end;
+
+procedure TForm5.init(DG: TDynGrid);
+var i:integer;
+begin
+//
+  showmessage('init:'+DG.source);
+  i:=DG.SG.test;
 end;
 
 procedure TForm5.Timer1Timer(Sender: TObject);

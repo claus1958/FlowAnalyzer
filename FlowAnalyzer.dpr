@@ -28,5 +28,6 @@ begin
   TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TForm2, Form2);
   Application.CreateForm(TDialog2, FDialog2);
+  Application.CreateForm(TForm5, Form5);
   Application.Run;
 end.

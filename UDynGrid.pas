@@ -18,6 +18,7 @@ type
     Panel3: TPanel;
     SG: TStringGridSorted;
     SGSum: TStringGridSorted;
+    lblSelection: TLabel;
     constructor Create(AOwner: TComponent); override;
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
@@ -46,6 +47,10 @@ type
     procedure SGMouseWheelUp(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
     procedure makeSummary(mdcol, mdrow: integer; header: string);
     procedure makeSummaries();
+    procedure SGKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure SGKeyPress(Sender: TObject; var Key: Char);
+    procedure SGSelectCell(Sender: TObject; ACol, ARow: integer; var CanSelect: Boolean);
+    procedure workSelection(mdrow, murow: integer; Button: TMouseButton; Shift: TShiftState);
   private
     { Private-Deklarationen }
   public
@@ -61,6 +66,7 @@ type
     sSort: Stringarray;
     ixSorted: intarray; // actionindex(sortindex)
     selSorted: byteArray;
+    selectedCt: integer;
     sorttyp: integer;
     sortdir: integer;
     sortcol: string;
@@ -71,11 +77,18 @@ type
     topic: string;
   end;
 
+procedure Register;
+
 implementation
 
 {$R *.dfm}
 
 uses XFlowAnalyzer;
+
+procedure Register;
+begin
+  RegisterComponents('Samples', [TDynGrid]);
+end;
 
 constructor TDynGrid.Create(AOwner: TComponent);
 begin
@@ -103,6 +116,11 @@ begin
   // // sgcolfield(sg.Cols[i,0].Text
   //
   // end;
+end;
+
+procedure TDynGrid.SGSelectCell(Sender: TObject; ACol, ARow: integer; var CanSelect: Boolean);
+begin
+  //
 end;
 
 procedure TDynGrid.SGSumMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
@@ -279,9 +297,6 @@ var
   flag: Boolean;
 begin
 
-
-
-
   flag := false;
   grau := 59;
   rc := (Sender as Tstringgrid).rowcount;
@@ -297,12 +312,15 @@ begin
   //
   sp := scrollPosition + ARow - 1;
   if sp < 0 then
-    flag := true;
+    flag := true; // als normal behandeln
   // exit;
 
   if length(ixSorted) <= sp then
-    flag := true;
+    flag := true; // als normal behandeln
   // exit;
+
+  if (ARow = 0) then // oberste Zeile=fix nie selektieren
+    flag := true;
 
   with Sender as Tstringgrid do
   begin
@@ -341,12 +359,70 @@ begin
 
 end;
 
+procedure TDynGrid.SGKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+var
+  grid: FTCommons.TStringGridSorted;
+  col, row: integer;
+  btn: TMouseButton;
+begin
+  //
+  grid := Sender as FTCommons.TStringGridSorted;
+  col := grid.col;
+  row := grid.row;
+  visibleRows := trunc(((SG.height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
+  btn := mbleft;
+  // col row ist die Zelle in welcher die Taste gedrückt wurde und nicht die Zielzelle !
+  case Key of
+    VK_DOWN:
+      begin
+        if (row >= visibleRows - 1) then
+        begin
+          ScrollBar1.Position := ScrollBar1.Position + 1;
+        form2.gridMouseClickHandler(grid, col, row + 1, btn, Shift, source);
+        workSelection(row, row , btn, Shift);
+        end
+        else
+        begin
+        form2.gridMouseClickHandler(grid, col, row + 1, btn, Shift, source);
+        workSelection(row, row + 1, btn, Shift);
+        end;
+        gridHandler(nil);
+        form2.repaint;
+      end;
+    VK_UP:
+      begin
+        if (row < 2) then
+        begin
+          ScrollBar1.Position := ScrollBar1.Position - 1;
+          form2.gridMouseClickHandler(grid, col, row - 1, btn, Shift, source);
+          workSelection(row, row , btn, Shift);
+        end
+        else
+        begin
+          form2.gridMouseClickHandler(grid, col, row - 1, btn, Shift, source);
+          workSelection(row, row - 1, btn, Shift);
+        end;
+        gridHandler(nil);
+        form2.repaint;
+      end;
+  end;
+end;
+
+procedure TDynGrid.SGKeyPress(Sender: TObject; var Key: Char);
+begin
+  //
+end;
+
 procedure TDynGrid.Panel2Resize(Sender: TObject);
 var
   max: integer;
 begin
   // neu Einstellen der Grenzen
-  visibleRows := trunc((SG.height / SG.defaultrowheight)) + 1;
+  // ! defaultrowheight=24  - es werden aber 25 dargestellt
+  visibleRows := trunc(((SG.height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
+  // visibleRows := trunc((SG.height / SG.rowheights[0])) + 1;
+
+  // visibleRows := SG.VisibleRowCount + 1; // damit halbe auch mitgenommen werden  FALSCHER WERT - oft nur 2 statt zB 15
   visibleCols := trunc((SG.width / SG.defaultcolwidth)) + 1;
 
   if SG.rowcount < visibleRows then
@@ -360,7 +436,7 @@ begin
   if SG.fixedrows = 0 then
     SG.fixedrows := 1;
   ScrollBar1.Min := 0;
-  max := maxDataRows - visibleRows + 4;
+  max := maxDataRows - visibleRows + 1;
   if max < 0 then
     max := 0;
   ScrollBar1.max := max;
@@ -397,20 +473,20 @@ begin
   // if maxDataRows > 0 then
   // gridHandler(self);
   inc(scrollBar1RepeatCount);
-  if scrollBar1RepeatCount = 10 then
+  if scrollBar1RepeatCount = 20 then
   begin
-    ScrollBar1.smallChange := 10;
-    ScrollBar1.largechange := 200;
+    ScrollBar1.smallChange := 5;
+    ScrollBar1.largechange := 100;
   end;
   if scrollBar1RepeatCount = 50 then
   begin
-    ScrollBar1.smallChange := 100;
-    ScrollBar1.largechange := 1000;
+    ScrollBar1.smallChange := 10;
+    ScrollBar1.largechange := 100;
   end;
   if scrollBar1RepeatCount = 100 then
   begin
-    ScrollBar1.smallChange := 200;
-    ScrollBar1.largechange := 2000;
+    ScrollBar1.smallChange := 50;
+    ScrollBar1.largechange := 500;
   end;
 
   if ScrollCode = scEndScroll then
@@ -430,12 +506,14 @@ var
   j, k: integer;
   b: Boolean;
 begin
-
+  lblSelection.caption := '';
+  selectedCt := 0;
   self.source := source;
   self.sortcol := sortcol;
   self.sortdir := sortdir;
   maxDataRows := 0;
   mrows := visibleRows;
+  SG.test := 1;
   if rows < mrows then
   begin
 
@@ -973,7 +1051,7 @@ begin
           sSort[i] := users[i].comment;
           continue;
         end;
-        if scol = 24 then //nicht dargestellt
+        if scol = 24 then // nicht dargestellt
         begin
           dSort[i] := usersplus[i].totalSymbols;
           continue;
@@ -1733,8 +1811,7 @@ begin
     begin
       ClipBoard.AsText := grid.Cells[col, row];
       // hier kann dann individuell gehandelt werden !
-      form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row], Button,
-        Shift, source);
+      form2.gridMouseClickHandler(grid, col, row, Button, Shift, source);
 
     end;
 
@@ -1747,7 +1824,8 @@ begin
       try
         Screen.Cursor := crHourGlass;
         grid.MouseToCell(X, Y, col, row);
-
+        if ((col = -1) or (row = -1)) then
+//         exit;
         fixedCol := col < grid.FixedCols;
         fixedRow := row < grid.fixedrows;
 
@@ -1783,8 +1861,7 @@ begin
           // Right-click in a "row header"
         else
           // Right-click in a non-fixed cell
-          form2.gridMouseClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row],
-            Button, Shift, source);
+          form2.gridMouseClickHandler(grid, col, row, Button, Shift, source);
 
       finally
         Screen.Cursor := Cursor;
@@ -1906,90 +1983,8 @@ begin
     end
     else
     begin
-      // Selektion bearbeiten
-      // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
 
-      nr := scrollPosition + murow - 1;
-      if (length(ixSorted) = 0) then
-        exit;
-
-      anr := ixSorted[nr];
-      // showmessage(inttostr(scrollPosition) + '/' + inttostr(murow) + ' ' + inttostr(cwactions[anr].actionId));
-      if ((murow = 0) or (mdrow = 0)) then
-        fall := 0 // shift links oben
-      else
-      begin
-        fall := 1;
-        if ssshift in Shift then
-        begin
-          fall := 2;
-        end;
-        if ssCtrl in Shift then
-        begin
-          fall := 3;
-        end;
-      end;
-      case fall of
-        1:
-          begin
-            for i := 0 to length(selSorted) - 1 do
-              selSorted[i] := 0;
-
-            selSorted[anr] := selSorted[anr] xor 1;
-          end;
-        2:
-          begin
-            // der kompliziertere Fall
-            seltop := -1;
-            selbottom := -1;
-            for i := 0 to length(selSorted) - 1 do
-            begin
-              if selSorted[ixSorted[i]] = 1 then
-              begin
-                if seltop = -1 then
-                  seltop := i;
-                selbottom := i;
-              end;
-            end;
-            if nr < seltop then
-            begin
-              for i := nr to seltop - 1 do
-              begin
-                selSorted[ixSorted[i]] := 1;
-              end;
-            end;
-            if nr > selbottom then
-            begin
-              for i := selbottom + 1 to nr do
-              begin
-                selSorted[ixSorted[i]] := 1;
-              end;
-
-            end;
-            if (nr >= seltop) and (nr <= selbottom) then
-            begin
-              selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
-              for i := nr + 1 to length(selSorted) - 1 do
-              begin
-                selSorted[ixSorted[i]] := 0;
-              end;
-
-            end;
-
-          end;
-        3:
-          selSorted[anr] := selSorted[anr] xor 1;
-        0:
-          // könnte einfach Linksclick oder auch Size-Änderung der Colwidth sein
-          // col kann aber auch links oder rechts vom Col-Trenner liegen je nachdem wo halt die Maus losgelassen wurde
-          begin
-            // showmessage('col:'+inttostr(mucol)+' row:'+inttostr(murow)+' ='+inttostr(sg.colwidths[mucol]));
-            // am besten die COlWidts nun nach SGsum kopieren
-            for i := 0 to SG.colcount - 1 do
-              SGSum.ColWidths[i] := SG.ColWidths[i];
-            exit; // nicht gridhandler aufrufen !
-          end;
-      end;
+      workSelection(mdrow, murow, Button, Shift);
     end;
 
     // das ist die Tauschvariante
@@ -2005,12 +2000,117 @@ begin
 
 end;
 
+procedure TDynGrid.workSelection(mdrow, murow: integer; Button: TMouseButton; Shift: TShiftState);
+var
+  nr, anr, fall, i, seltop, selbottom: integer;
+begin
+  // Dieser Bereich gehört in eine eigene Procedure die dannauch über die Key Tasten angesteuert werden kann
+  // Selektion bearbeiten
+  // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
+
+  nr := scrollPosition + murow - 1;
+  if (length(ixSorted) = 0) then
+    exit;
+
+  anr := ixSorted[nr];
+  // showmessage(inttostr(scrollPosition) + '/' + inttostr(murow) + ' ' + inttostr(cwactions[anr].actionId));
+  if ((murow = 0) and (mdrow = 0)) then
+    // damit wird shift up nicht als Fall 0 behandelt weil hier mdrow=1 und murow=0
+    fall := 0 // shift links oben
+  else
+  begin
+    fall := 1;
+    if ssshift in Shift then
+    begin
+      fall := 2;
+    end;
+    if ssCtrl in Shift then
+    begin
+      fall := 3;
+    end;
+  end;
+  case fall of
+    1:
+      begin
+        // alte Selektion abschalten
+        for i := 0 to length(selSorted) - 1 do
+          selSorted[i] := 0;
+        // eine Zeile selektieren
+        selSorted[anr] := selSorted[anr] xor 1;
+      end;
+    2:
+      begin
+        // der kompliziertere Fall
+        seltop := -1;
+        selbottom := -1;
+        for i := 0 to length(selSorted) - 1 do
+        begin
+          if selSorted[ixSorted[i]] = 1 then
+          begin
+            if seltop = -1 then
+              seltop := i;
+            selbottom := i;
+          end;
+        end;
+        if nr < seltop then
+        begin
+          for i := nr to seltop - 1 do
+          begin
+            selSorted[ixSorted[i]] := 1;
+          end;
+        end;
+        if nr > selbottom then
+        begin
+          for i := selbottom + 1 to nr do
+          begin
+            selSorted[ixSorted[i]] := 1;
+          end;
+
+        end;
+        if (nr >= seltop) and (nr <= selbottom) then
+        begin
+          selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
+          for i := nr + 1 to length(selSorted) - 1 do
+          begin
+            selSorted[ixSorted[i]] := 0;
+          end;
+
+        end;
+
+      end;
+    3:
+      selSorted[anr] := selSorted[anr] xor 1;
+    0:
+      // könnte einfach Linksclick oder auch Size-Änderung der Colwidth sein
+      // col kann aber auch links oder rechts vom Col-Trenner liegen je nachdem wo halt die Maus losgelassen wurde
+      begin
+        // showmessage('col:'+inttostr(mucol)+' row:'+inttostr(murow)+' ='+inttostr(sg.colwidths[mucol]));
+        // am besten die COlWidts nun nach SGsum kopieren
+        for i := 0 to SG.colcount - 1 do
+          SGSum.ColWidths[i] := SG.ColWidths[i];
+        exit; // nicht gridhandler aufrufen !
+      end;
+
+  end;
+  selectedCt := 0;
+  if (fall <> 0) then
+    for i := 0 to length(selSorted) - 1 do
+    begin
+      if selSorted[ixSorted[i]] = 1 then
+      begin
+        inc(selectedCt);
+      end;
+    end;
+  lblSelection.caption := inttostr(selectedCt) + ' rows selected';
+
+end;
+
 procedure TDynGrid.SGMouseWheelDown(Sender: TObject; Shift: TShiftState; MousePos: TPoint; var Handled: Boolean);
 begin
   with Sender as Tstringgrid do
   begin
     // obere Reihe + angezeigte Reihen darf nicht größer sein, als die Gesamtreihen
-    if TopRow + Visiblerowcount < rowcount then
+    if TopRow + VisibleRowCount < rowcount then
       TopRow := TopRow + 1
   end;
   Handled := true;
