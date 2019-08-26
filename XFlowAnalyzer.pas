@@ -2851,7 +2851,7 @@ var
   pwok: boolean;
 
 begin
-  faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, 'FlowAnalyzer.ini'));
+  faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, 'ini'));
   pwct := 0;
   updateGoing := false;
   pwok := false;

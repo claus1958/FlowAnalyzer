@@ -1822,6 +1822,7 @@ begin
   begin
     // die sl ist nun bereits erzeugt worden
     sl.SaveToFile(exp.fileName);
+    showmessage(inttostr(vscrollbis-vscrollvon+1)+' lines successfully exported to:'+exp.fileName);
   end;
   // end;
 end;
