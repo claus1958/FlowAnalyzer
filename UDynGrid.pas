@@ -19,6 +19,7 @@ type
     SG: TStringGridSorted;
     SGSum: TStringGridSorted;
     lblSelection: TLabel;
+    Button1: TButton;
     constructor Create(AOwner: TComponent); override;
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
@@ -36,7 +37,7 @@ type
     procedure sortGridCwSummaries(source: string; sortcol: string; sortdir: integer; var summaries: DACwSummary);
 
     procedure SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
-    procedure gridHandler(Sender: TObject);
+    procedure gridHandler(pexp: pExport);
     procedure SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
     procedure SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure SGDrawCell(Sender: TObject; ACol, ARow: integer; Rect: TRect; State: TGridDrawState);
@@ -51,6 +52,7 @@ type
     procedure SGKeyPress(Sender: TObject; var Key: Char);
     procedure SGSelectCell(Sender: TObject; ACol, ARow: integer; var CanSelect: Boolean);
     procedure workSelection(mdrow, murow: integer; Button: TMouseButton; Shift: TShiftState);
+    procedure Button1Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -88,6 +90,16 @@ uses XFlowAnalyzer;
 procedure Register;
 begin
   RegisterComponents('Samples', [TDynGrid]);
+end;
+
+procedure TDynGrid.Button1Click(Sender: TObject);
+var
+  expo: TExport;
+begin
+  // Export test
+  expo.fileName := 'test.csv';
+  expo.separator := ';';
+  gridHandler(@expo);
 end;
 
 constructor TDynGrid.Create(AOwner: TComponent);
@@ -378,13 +390,13 @@ begin
         if (row >= visibleRows - 1) then
         begin
           ScrollBar1.Position := ScrollBar1.Position + 1;
-        form2.gridMouseClickHandler(grid, col, row + 1, btn, Shift, source);
-        workSelection(row, row , btn, Shift);
+          form2.gridMouseClickHandler(grid, col, row + 1, btn, Shift, source);
+          workSelection(row, row, btn, Shift);
         end
         else
         begin
-        form2.gridMouseClickHandler(grid, col, row + 1, btn, Shift, source);
-        workSelection(row, row + 1, btn, Shift);
+          form2.gridMouseClickHandler(grid, col, row + 1, btn, Shift, source);
+          workSelection(row, row + 1, btn, Shift);
         end;
         gridHandler(nil);
         form2.repaint;
@@ -395,7 +407,7 @@ begin
         begin
           ScrollBar1.Position := ScrollBar1.Position - 1;
           form2.gridMouseClickHandler(grid, col, row - 1, btn, Shift, source);
-          workSelection(row, row , btn, Shift);
+          workSelection(row, row, btn, Shift);
         end
         else
         begin
@@ -442,7 +454,7 @@ begin
   ScrollBar1.max := max;
   if maxDataRows > 0 then
   begin
-    gridHandler(self);
+    gridHandler(nil);
     if autosized = false then
     begin
       autosizegrid(SG, SGSum);
@@ -458,7 +470,7 @@ begin
   scrollPosition := ScrollBar1.Position;
 
   if maxDataRows > 0 then
-    gridHandler(self);
+    gridHandler(nil);
 
 end;
 
@@ -1718,18 +1730,31 @@ begin
   Panel2Resize(self);
 end;
 
-procedure TDynGrid.gridHandler(Sender: TObject);
+procedure TDynGrid.gridHandler(pexp: pExport);
+// damit man auch nil übergeben kann muß der Typ ein Zeigertyp sein !
 var
-  // sg: TDynGrid;
+
   i, j, k: integer;
   row: integer;
   vCols, vRows, vScrollvon: integer;
   rc: integer;
   vscrollbis: integer;
+  exp: TExport;
+  doExport: Boolean;
+  sl: TStringList;
 begin
   //
-  // with Sender as TDynGrid do
-  // begin
+
+  doExport := false;
+  if (pexp <> nil) then
+  begin
+    exp := pexp^;
+    sl := TStringList.Create;
+    doExport := true;
+  end
+  else
+    sl := nil;
+
   rc := SG.rowcount;
   vCols := visibleCols; // cols und rows ändert sich dynamisch
   vRows := visibleRows;
@@ -1759,14 +1784,23 @@ begin
   vscrollbis := vScrollvon + vRows;
   if vscrollbis > maxDataRows then
     vscrollbis := maxDataRows;
+
+  if (doExport = true) then
+  begin
+    vScrollvon := 0;
+    vscrollbis := maxDataRows;
+  end;
+
   // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
   // daher wäre es besser das Sortierarray gehört zum Grid
   if source = 'cwactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, vScrollvon, vscrollbis - 1);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, cwactionsplus, vScrollvon, vscrollbis - 1, false, sl);
   if source = 'cwfilteredactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwfilteredactions, vScrollvon, vscrollbis - 1);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwfilteredactions, cwfilteredactionsplus, vScrollvon, vscrollbis - 1,
+      false, sl);
   if source = 'cwsingleuseractions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, vScrollvon, vscrollbis - 1);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, cwSingleUserActionsPlus, vScrollvon,
+      vscrollbis - 1, false, sl);
 
   if source = 'cwsymbols' then
     doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
@@ -1783,6 +1817,12 @@ begin
   if source = 'cwsummaries' then
     doSummariesGridCWDyn(SG, SGFieldCol, ixSorted, cwsummaries, vScrollvon, vscrollbis - 1);
   makeSummaries;
+
+  if (doExport = true) then
+  begin
+    // die sl ist nun bereits erzeugt worden
+    sl.SaveToFile(exp.fileName);
+  end;
   // end;
 end;
 
@@ -1825,8 +1865,8 @@ begin
         Screen.Cursor := crHourGlass;
         grid.MouseToCell(X, Y, col, row);
         if ((col = -1) or (row = -1)) then
-//         exit;
-        fixedCol := col < grid.FixedCols;
+          // exit;
+          fixedCol := col < grid.FixedCols;
         fixedRow := row < grid.fixedrows;
 
         if fixedRow then

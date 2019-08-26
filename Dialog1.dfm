@@ -19,7 +19,7 @@ object Form5: TForm5
     Enabled = False
     Interval = 3000
     OnTimer = Timer1Timer
-    Left = 4
+    Left = 688
     Top = 4
   end
 end

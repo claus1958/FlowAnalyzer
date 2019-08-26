@@ -35,6 +35,7 @@ const
   fltOpKlGleich = 6;
   fltOpContains = 7;
   fltOpBegins = 8;
+  fltOpGroesserOderNull = 9;//bei Datum wichtig
 
 type
   TFilterElemente = class(TFrame)
@@ -437,6 +438,7 @@ begin
     cbOperator.Items.Clear;
     cbOperator.Items.Add('>');
     cbOperator.Items.Add('<');
+    cbOperator.Items.Add('> or 0');
   end;
 
 end;
@@ -709,6 +711,12 @@ begin
       result := true;
     exit;
   end;
+  if op = fltOpGroesserOderNull then
+  begin
+    if ((was > mit)or(was=0)) then
+      result := true;
+    exit;
+  end;
 
 end;
 
@@ -749,6 +757,12 @@ begin
   if op = fltOpUnGleich then
   begin
     if was <> mit then
+      result := true;
+    exit;
+  end;
+  if op = fltOpGroesserOderNull then
+  begin
+    if ((was > mit)or(was=0)) then
       result := true;
     exit;
   end;
@@ -913,6 +927,9 @@ begin
     coperator := fltOpUnGleich;
   if operators = '>' then
     coperator := fltOpGroesser;
+  if operators = '> or 0' then
+    coperator := fltOpGroesserOderNull;
+
   if operators = '<' then
     coperator := fltOpKleiner;
   if operators = '>=' then

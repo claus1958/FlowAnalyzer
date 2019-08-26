@@ -27,7 +27,7 @@ object Form2: TForm2
     Top = 0
     Width = 1527
     Height = 937
-    ActivePage = TabSheet6
+    ActivePage = TabSheet1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -167,31 +167,31 @@ object Form2: TForm2
               Height = 199
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 5
+              ExplicitTop = 20
               ExplicitWidth = 1515
-              ExplicitHeight = 214
+              ExplicitHeight = 199
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 197
                 ExplicitLeft = 1498
-                ExplicitHeight = 212
+                ExplicitHeight = 197
               end
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 197
                 ExplicitWidth = 1497
-                ExplicitHeight = 212
+                ExplicitHeight = 197
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 165
                   ExplicitWidth = 1495
-                  ExplicitHeight = 180
+                  ExplicitHeight = 165
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 166
                   Width = 1495
                   Font.Height = -12
-                  ExplicitTop = 181
+                  ExplicitTop = 166
                   ExplicitWidth = 1495
                 end
               end
@@ -218,7 +218,6 @@ object Form2: TForm2
               Width = 1515
               Height = 20
               Align = alTop
-              ExplicitTop = 2
               ExplicitWidth = 1515
               ExplicitHeight = 20
               inherited lblHeader: TLabel
@@ -245,31 +244,31 @@ object Form2: TForm2
               Height = 154
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 5
+              ExplicitTop = 20
               ExplicitWidth = 1515
-              ExplicitHeight = 169
+              ExplicitHeight = 154
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 152
                 ExplicitLeft = 1498
-                ExplicitHeight = 167
+                ExplicitHeight = 152
               end
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 152
                 ExplicitWidth = 1497
-                ExplicitHeight = 167
+                ExplicitHeight = 152
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 120
                   ExplicitWidth = 1495
-                  ExplicitHeight = 135
+                  ExplicitHeight = 120
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 121
                   Width = 1495
                   Font.Height = -12
-                  ExplicitTop = 136
+                  ExplicitTop = 121
                   ExplicitWidth = 1495
                 end
               end
@@ -322,31 +321,31 @@ object Form2: TForm2
               Height = 154
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 5
+              ExplicitTop = 20
               ExplicitWidth = 1515
-              ExplicitHeight = 169
+              ExplicitHeight = 154
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 152
                 ExplicitLeft = 1498
-                ExplicitHeight = 167
+                ExplicitHeight = 152
               end
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 152
                 ExplicitWidth = 1497
-                ExplicitHeight = 167
+                ExplicitHeight = 152
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 120
                   ExplicitWidth = 1495
-                  ExplicitHeight = 135
+                  ExplicitHeight = 120
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 121
                   Width = 1495
                   Font.Height = -12
-                  ExplicitTop = 136
+                  ExplicitTop = 121
                   ExplicitWidth = 1495
                 end
               end
@@ -406,31 +405,31 @@ object Form2: TForm2
               Height = 154
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 5
+              ExplicitTop = 20
               ExplicitWidth = 1515
-              ExplicitHeight = 169
+              ExplicitHeight = 154
               inherited ScrollBar1: TScrollBar
                 Left = 1498
                 Height = 152
                 ExplicitLeft = 1498
-                ExplicitHeight = 167
+                ExplicitHeight = 152
               end
               inherited Panel3: TPanel
                 Width = 1497
                 Height = 152
                 ExplicitWidth = 1497
-                ExplicitHeight = 167
+                ExplicitHeight = 152
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 120
                   ExplicitWidth = 1495
-                  ExplicitHeight = 135
+                  ExplicitHeight = 120
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 121
                   Width = 1495
                   Font.Height = -12
-                  ExplicitTop = 136
+                  ExplicitTop = 121
                   ExplicitWidth = 1495
                 end
               end
@@ -575,6 +574,7 @@ object Form2: TForm2
             inherited Panel1: TPanel
               Width = 498
               Align = alTop
+              ExplicitWidth = 498
               inherited lblTime: TLabel
                 Height = 14
                 ExplicitHeight = 14
@@ -591,31 +591,31 @@ object Form2: TForm2
               Height = 857
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 0
+              ExplicitTop = 41
               ExplicitWidth = 498
-              ExplicitHeight = 898
+              ExplicitHeight = 857
               inherited ScrollBar1: TScrollBar
                 Left = 481
                 Height = 855
                 ExplicitLeft = 481
-                ExplicitHeight = 896
+                ExplicitHeight = 855
               end
               inherited Panel3: TPanel
                 Width = 480
                 Height = 855
                 ExplicitWidth = 480
-                ExplicitHeight = 896
+                ExplicitHeight = 855
                 inherited SG: TStringGridSorted
                   Width = 478
                   Height = 823
                   ExplicitWidth = 478
-                  ExplicitHeight = 864
+                  ExplicitHeight = 823
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 824
                   Width = 478
                   Font.Height = -12
-                  ExplicitTop = 865
+                  ExplicitTop = 824
                   ExplicitWidth = 478
                 end
               end
@@ -1142,12 +1142,13 @@ object Form2: TForm2
             Align = alTop
             TabOrder = 1
             ExplicitLeft = 1
-            ExplicitTop = 42
+            ExplicitTop = 2
             ExplicitWidth = 991
             ExplicitHeight = 413
             inherited Panel1: TPanel
               Width = 991
               Align = alTop
+              ExplicitWidth = 991
               inherited lblTime: TLabel
                 Height = 14
                 ExplicitHeight = 14
@@ -1164,31 +1165,31 @@ object Form2: TForm2
               Height = 372
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 0
+              ExplicitTop = 41
               ExplicitWidth = 991
-              ExplicitHeight = 413
+              ExplicitHeight = 372
               inherited ScrollBar1: TScrollBar
                 Left = 974
                 Height = 370
                 ExplicitLeft = 974
-                ExplicitHeight = 411
+                ExplicitHeight = 370
               end
               inherited Panel3: TPanel
                 Width = 973
                 Height = 370
                 ExplicitWidth = 973
-                ExplicitHeight = 411
+                ExplicitHeight = 370
                 inherited SG: TStringGridSorted
                   Width = 971
                   Height = 338
                   ExplicitWidth = 971
-                  ExplicitHeight = 379
+                  ExplicitHeight = 338
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 339
                   Width = 971
                   Font.Height = -12
-                  ExplicitTop = 380
+                  ExplicitTop = 339
                   ExplicitWidth = 971
                 end
               end
@@ -1202,9 +1203,9 @@ object Form2: TForm2
             Align = alClient
             TabOrder = 2
             ExplicitLeft = 1
-            ExplicitTop = 465
+            ExplicitTop = 425
             ExplicitWidth = 991
-            ExplicitHeight = 435
+            ExplicitHeight = 475
             inherited Panel1: TPanel
               Width = 991
               Align = alTop
@@ -1229,29 +1230,29 @@ object Form2: TForm2
               ExplicitLeft = 0
               ExplicitTop = 41
               ExplicitWidth = 991
-              ExplicitHeight = 394
+              ExplicitHeight = 434
               inherited ScrollBar1: TScrollBar
                 Left = 974
                 Height = 432
                 ExplicitLeft = 974
-                ExplicitHeight = 392
+                ExplicitHeight = 432
               end
               inherited Panel3: TPanel
                 Width = 973
                 Height = 432
                 ExplicitWidth = 973
-                ExplicitHeight = 392
+                ExplicitHeight = 432
                 inherited SG: TStringGridSorted
                   Width = 971
                   Height = 400
                   ExplicitWidth = 971
-                  ExplicitHeight = 360
+                  ExplicitHeight = 400
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 401
                   Width = 971
                   Font.Height = -12
-                  ExplicitTop = 361
+                  ExplicitTop = 401
                   ExplicitWidth = 971
                 end
               end
@@ -3027,26 +3028,26 @@ object Form2: TForm2
   object ApplicationEvents1: TApplicationEvents
     OnModalBegin = ApplicationEvents1ModalBegin
     OnModalEnd = ApplicationEvents1ModalEnd
-    Left = 466
+    Left = 294
     Top = 38
   end
   object StartTimer: TTimer
     Enabled = False
     Interval = 100
     OnTimer = StartTimerTimer
-    Left = 556
-    Top = 36
+    Left = 328
+    Top = 40
   end
   object updateTimer: TTimer
     Enabled = False
     Interval = 12000000
     OnTimer = updateTimerTimer
-    Left = 628
+    Left = 364
     Top = 36
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer
-    Left = 676
+    Left = 396
     Top = 36
   end
 end

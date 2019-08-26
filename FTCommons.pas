@@ -29,6 +29,15 @@ type
     created when the program loads - if it is declared "locally"
     it is not created until the procedure requests it. }
 
+  tExport= record
+    fileName:string;
+    separator:string;
+    sl:TStringList;
+  end;
+
+  pExport=^tExport;
+
+
   tInfo = record
     usersOnline: integer;
     openActions: integer;
@@ -167,6 +176,8 @@ type
 
   cwActionPlus = packed Record
     userIndex: integer; // für die schnellere Suche !
+    openProfit: double;
+    openSwap: double;
   End;
 
   DACwActionPlus = array of cwActionPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -372,7 +383,8 @@ procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; sy
   ct, total, stp: integer);
 
 procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; datafrom: integer; datato: integer; justone: Boolean = false);
+  var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
+  justone: Boolean = false; sl: TStringList = nil);
 procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var comments: DAcwComment; datafrom: integer; datato: integer; justone: Boolean = false);
 procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
@@ -1295,14 +1307,17 @@ begin
   end;
 end;
 
-procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doActionsGridCWDyn2(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
+  justone: Boolean = false);
 var
   k: integer;
   row: integer;
   fehler: string;
   v: integer;
+  gt: Cardinal;
 begin
+  gt := GetTickCount;
   v := SG.visiblerowcount;
   try
     if (justone = false) then
@@ -1334,9 +1349,11 @@ begin
       SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
       SG.cells[SGFieldCol[23], 0] := 'marginRate';
       SG.cells[SGFieldCol[24], 0] := 'symGroupId';
+      SG.cells[SGFieldCol[25], 0] := 'openProfit';
+      SG.cells[SGFieldCol[26], 0] := 'openSwap';
 
       // Ausblenden was nicht erwünscht ist
-      for k := 0 to 24 do
+      for k := 0 to 26 do
       begin
         if (claus = false) then
           if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
@@ -1378,6 +1395,8 @@ begin
       SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
       if cwSymbolsGroupsCt > 0 then
         SG.cells[SGFieldCol[24], row] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
+      SG.cells[SGFieldCol[25], row] := floattostr(actionsPlus[sort[k]].openProfit);
+      SG.cells[SGFieldCol[26], row] := floattostr(actionsPlus[sort[k]].openSwap);
 
       SG.Rows[row].endUpdate;
     end;
@@ -1390,6 +1409,173 @@ begin
     end;
 
   end;
+  gt := GetTickCount - gt;
+
+end;
+
+procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
+  justone: Boolean = false; sl: TStringList = nil);
+var
+  k, l: integer;
+  row: integer;
+  fehler: string;
+  v: integer;
+  gt: Cardinal;
+  lines: array [0 .. 30] of string;
+  linesHide: array [0 .. 30] of Boolean;
+  toSL: Boolean;
+  line: string;
+  sep: string;
+begin
+  gt := GetTickCount;
+  toSL := false;
+  if (sl <> nil) then
+  begin
+    toSL := true;
+    sep := ';';
+  end;
+  v := SG.visiblerowcount;
+  try
+    if (justone = false) then
+    begin
+      if (toSL = false) then
+      begin
+        SG.Rows[0].BeginUpdate;
+        SG.ColWidths[SGFieldCol[0]] := 140;
+      end;
+      // SG.cells[SGFieldCol[0], 0] := 'actionId';
+
+      lines[SGFieldCol[0]] := 'actionId';
+      lines[SGFieldCol[1]] := 'userId';
+      lines[SGFieldCol[2]] := 'accountId';
+      lines[SGFieldCol[3]] := 'symbol';
+      lines[SGFieldCol[4]] := 'symbolId';
+      lines[SGFieldCol[5]] := 'comment';
+      lines[SGFieldCol[6]] := 'typeId';
+      lines[SGFieldCol[7]] := 'sourceId';
+      lines[SGFieldCol[8]] := 'openTime';
+      lines[SGFieldCol[9]] := 'closeTime';
+      lines[SGFieldCol[10]] := 'openTimeUnix';
+      lines[SGFieldCol[11]] := 'closeTimeUnix';
+      lines[SGFieldCol[12]] := 'expirationTime';
+      lines[SGFieldCol[13]] := 'openPrice';
+      lines[SGFieldCol[14]] := 'closePrice';
+      lines[SGFieldCol[15]] := 'stopLoss';
+      lines[SGFieldCol[16]] := 'takeProfit';
+      lines[SGFieldCol[17]] := 'swap';
+      lines[SGFieldCol[18]] := 'profit';
+      lines[SGFieldCol[19]] := 'volume';
+      lines[SGFieldCol[20]] := 'precision';
+      lines[SGFieldCol[21]] := 'conversionRate0';
+      lines[SGFieldCol[22]] := 'conversionRate1';
+      lines[SGFieldCol[23]] := 'marginRate';
+      lines[SGFieldCol[24]] := 'symGroupId';
+      lines[SGFieldCol[25]] := 'openProfit';
+      lines[SGFieldCol[26]] := 'openSwap';
+
+      for k := 0 to 26 do
+      begin
+        if (claus = false) then
+          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
+            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
+            SG.ColWidths[SGFieldCol[k]] := -1;
+      end;
+
+      if (toSL = false) then
+      begin
+        for k := 0 to 26 do
+          SG.cells[k, 0] := lines[k];
+
+        // Ausblenden was nicht erwünscht ist
+        SG.Rows[0].endUpdate;
+      end
+      else
+      begin
+        sl.clear;
+        line := '';
+        for k := 0 to 26 do
+        begin
+          if (SG.ColWidths[SGFieldCol[k]] = -1) then
+            linesHide[SGFieldCol[k]] := true
+          else
+            linesHide[SGFieldCol[k]] := false
+        end;
+      end;
+
+      if (toSL = true) then
+      begin
+        for k := 0 to 26 do
+        begin
+          if (linesHide[SGFieldCol[k]] = false) then
+            line := line + lines[k] + sep;
+        end;
+        sl.add(leftstr(line, length(line) - 1));
+      end;
+
+      row := 0;
+      for k := datafrom to datato do
+      begin
+        row := row + 1;
+        lines[SGFieldCol[0]] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
+        lines[SGFieldCol[1]] := inttostr(actions[sort[k]].userId);
+        lines[SGFieldCol[2]] := accountShort[actions[sort[k]].accountId];
+        lines[SGFieldCol[3]] := getCwSymbol(actions[sort[k]].symbolId);
+        lines[SGFieldCol[4]] := inttostr(actions[sort[k]].symbolId);
+        lines[SGFieldCol[5]] := getCwComment(actions[sort[k]].commentId);
+        lines[SGFieldCol[6]] := OrderTypes(actions[sort[k]].typeId - 1) + ' ' + inttostr(actions[sort[k]].typeId);
+        // cw statt 0..7ist 1..8
+        lines[SGFieldCol[7]] := inttostr(actions[sort[k]].sourceId);
+        lines[SGFieldCol[8]] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
+        lines[SGFieldCol[9]] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
+        lines[SGFieldCol[10]] := inttostr(actions[sort[k]].openTime);
+        lines[SGFieldCol[11]] := inttostr(actions[sort[k]].closeTime);
+        lines[SGFieldCol[12]] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
+        lines[SGFieldCol[13]] := floattostr(actions[sort[k]].openPrice);
+        lines[SGFieldCol[14]] := floattostr(actions[sort[k]].closePrice);
+        lines[SGFieldCol[15]] := floattostr(actions[sort[k]].stopLoss);
+        lines[SGFieldCol[16]] := floattostr(actions[sort[k]].takeProfit);
+        lines[SGFieldCol[17]] := floattostr(actions[sort[k]].swap);
+        lines[SGFieldCol[18]] := floattostr(actions[sort[k]].profit);
+        lines[SGFieldCol[19]] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
+        lines[SGFieldCol[20]] := inttostr(actions[sort[k]].precision);
+        lines[SGFieldCol[21]] := floattostr(actions[sort[k]].conversionRate0);
+        lines[SGFieldCol[22]] := floattostr(actions[sort[k]].conversionRate0);
+        lines[SGFieldCol[23]] := floattostr(actions[sort[k]].marginRate);
+        if cwSymbolsGroupsCt > 0 then
+          lines[SGFieldCol[24]] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
+        lines[SGFieldCol[25]] := floattostr(actionsPlus[sort[k]].openProfit);
+        lines[SGFieldCol[26]] := floattostr(actionsPlus[sort[k]].openSwap);
+        if (toSL = false) then
+        begin
+          SG.Rows[row].BeginUpdate;
+          for l := 0 to 26 do
+            SG.cells[l, row] := lines[l];
+          SG.Rows[row].endUpdate;
+        end
+        else
+        begin
+          line:='';
+          for l := 0 to 26 do
+          begin
+            if (linesHide[SGFieldCol[l]] = false) then
+              line := line + lines[l] + sep;
+          end;
+          sl.add(leftstr(line, length(line) - 1));
+
+        end;
+      end;
+    end;
+    // evtl noch was löschen ?
+    v := v;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+  gt := GetTickCount - gt;
 end;
 
 procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
@@ -1769,6 +1955,7 @@ end;
 
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
   total: integer; stp: integer = 1);
+// nicht mehr verwendet
 // {$RANGECHECKS OFF}
 var
   k: integer;
@@ -1940,6 +2127,8 @@ end;
 
 procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
   ct: integer; total: integer; stp: integer = 1);
+// nicht mehr verwendet
+
 var
   k: integer;
   row: integer;
@@ -2067,6 +2256,7 @@ end;
 
 procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
   commentsPlus: DACwCommentPlus; ct, total, stp: integer);
+// nicht mehr verwendet
 var
   k: integer;
   // sl: TStringList;
@@ -2133,6 +2323,8 @@ end;
 
 procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
   symbolsPlus: DACwSymbolPlus; ct, total, stp: integer);
+// nicht mehr verwendet
+
 var
   k: integer;
   row: integer;
@@ -3773,7 +3965,7 @@ begin
     TradesSwapTotal := TradesSwapTotal + actions[i].swap;
   end;
 
-  lb.items.Clear;
+  lb.items.clear;
   lb.items.add('Actions:' + #9 + inttostr(length(actions)));
   lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
   lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));

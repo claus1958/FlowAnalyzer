@@ -31,11 +31,20 @@ object DynGrid: TDynGrid
       Caption = '!'
     end
     object lblSelection: TLabel
-      Left = 24
+      Left = 36
       Top = 12
       Width = 4
       Height = 13
       Caption = '!'
+    end
+    object Button1: TButton
+      Left = 8
+      Top = 12
+      Width = 21
+      Height = 17
+      Caption = 'ex'
+      TabOrder = 0
+      OnClick = Button1Click
     end
   end
   object Panel2: TPanel
