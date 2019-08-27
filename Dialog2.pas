@@ -16,12 +16,16 @@ type
     lblInfo: TLabel;
     Timer2: TTimer;
     lblInfo2: TLabel;
+    Button2: TButton;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure info(s:string);
     procedure info2(s:string);
     procedure Timer2Timer(Sender: TObject);
+    procedure askFinish();
+    procedure Button2Click(Sender: TObject);
+
   private
     { Private-Deklarationen }
   public
@@ -36,9 +40,23 @@ implementation
 {$R *.dfm}
 const IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
+procedure TDialog2.askFinish;
+begin
+  button2.Visible:=true;
+  lblinfo2.visible:=false;//will ab jetzt die ständigen Tips nicht mehr sehen
+//
+end;
+
 procedure TDialog2.Button1Click(Sender: TObject);
 begin
   FDialog2.Close;
+
+end;
+
+procedure TDialog2.Button2Click(Sender: TObject);
+begin
+   Button2.Visible:=false;
+   form2.finishUpdate();
 
 end;
 

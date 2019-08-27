@@ -189,8 +189,9 @@ type
     infoTimer: TTimer;
     Button3: FTCommons.TButton;
     SG: TStringGridSorted;
+    lblUpdateRest: TLabel;
     procedure getSymbolsUsersComments(useCache: boolean);
-
+    procedure finishUpdate();
     procedure btnGetCsvClick(Sender: TObject);
     procedure GetCsv(url, typ: string; lb: TListBox; append: boolean; tryCache: boolean);
     procedure btnCwSymbolsToGridClick(Sender: TObject);
@@ -268,6 +269,7 @@ type
     procedure machActionsUserIndex;
     function groupingTyp(styp: string): integer;
     function trimYear(year: integer): integer;
+    function trimMonthYear(Month, year: integer; var s: string): integer;
     procedure machUserSelection();
     procedure DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 
@@ -332,6 +334,10 @@ var
   CSleep: integer;
   pw: string;
   updateGoing: boolean;
+  mynow: integer; // month year *12 (now)
+  updateStatus: integer; // 0=nix zu tun 1=schnell ohne Actions Update 2=mit Actions
+  updateTimerStarted: TDateTime;
+  // (now-updateTimeStarted)*86400=Sekunden seit Start. Rest:  timer.Interval/1000-x in Sekunden
 
 implementation
 
@@ -572,7 +578,7 @@ var
   ok: boolean;
   res: integer;
   i, j: integer;
-
+  sl: TStringList;
 begin
   gt := GetTickCount;
 
@@ -637,6 +643,25 @@ begin
 
     lb.Items.Add('Bytes gelesen:' + inttostr(length(s)));
 
+    if typ = 'usersOnline' then
+    begin
+      // die Bytes in eine Datei schreiben
+      try
+        fileName := ExtractFilePath(paramstr(0)) + 'cachecw\usersOnline.csv';
+        fileMode := fmCreate;
+        Stream := TFileStream.Create(fileName, fileMode);
+        Stream.WriteBuffer(bytes[0], high(bytes) + 1);
+        Stream.free; // Speicher freigeben
+      except
+        lbCSVError.Items.Add('F:writeUsersStream');
+      end;
+      sl := TStringList.Create;
+      sl.Delimiter := ';';
+      sl.DelimitedText := s; // ohne den Delimiter sl[0] = 'total;366;27.08.2019'
+      // so jetzt sl[0]=total sl[1]=355
+      info.usersonline := strtoint(sl[1]);
+    end;
+
     if typ = 'symbols' then
     begin
       // die Bytes in eine Datei schreiben
@@ -649,21 +674,6 @@ begin
       except
         lbCSVError.Items.Add('F:writeUsersStream');
       end;
-
-      // Stream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
-      // stream.Position:=0;
-      // ParseDelimited('symbols', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, stream, append);
-
-      // // hier sind Grenzen gesetzt - bei 1.2 mio Kursen zB StackOverflow
-      // n := trunc(Stream.Size / SizeOf(trade));
-      // if (n > 50000) then
-      // begin
-      // debug('zu viele Orders:' + inttostr(n) + ' -> 50000 begrenzt');
-      // n := 50000;
-      // end;
-      // SetLength(trades, n);
-      // Stream.Position := (Stream.Size - n * SizeOf(trade));
-      // Stream.ReadBuffer(trades[0], n * SizeOf(trade)); // nicht die ganze stream.size !
 
       ParseDelimited('symbols', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwsymbolsct := length(cwSymbols);
@@ -931,7 +941,13 @@ begin
   edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/comments';
   LoadInfo('Load Comments...');
   GetCsv(edGetUrlCSV.text, 'comments', lbCSVError, false, useCache);
+
+  edGetUrlCSV.text := 'http://www.stonedcompany.de/FTUsersOnline/usersOnline.csv';
+  LoadInfo('Load UsersOnline...');
+  GetCsv(edGetUrlCSV.text, 'usersOnline', lbCSVError, false, false); // hier keinen Cache verwenden !
+
   lbCSVError.Items.Add('Load SymbolsUsersComments:' + inttostr(GetTickCount - gt));
+
 end;
 
 procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
@@ -1118,7 +1134,7 @@ begin
     try
       inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, actionsPlus[i].userIndex]);
     except
-      on E: Exception do
+      on E: Exception do // hier kommen etliche Fehler vor
         lbCSVError.Items.Add('Err doSymbolGroupValues:' + E.ToString);
     end;
   end;
@@ -1232,8 +1248,9 @@ begin
       getSymbolsUsersComments(true);
       btnLoadCacheFileCwClick(nil);
       LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
-    end
-    else
+    end;
+
+    if ((cbLoadActionsFromCache.Checked = false) or (length(cwActions) = 0)) then
     begin
       getSymbolsUsersComments(false); // holt vom Server
       LoadInfo('Load All Actions (wait!) ...');
@@ -1293,7 +1310,7 @@ begin
 
   // fillStartScreen;
 
-  LoadInfo('Data preparations');
+  LoadInfo('Data preparation');
   whichAccounts := leftstr(whichAccounts, length(whichAccounts) - 1);
   lblAllDataInfo.Caption := whichAccounts + #13#10 + ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10;
@@ -1306,6 +1323,7 @@ begin
   // TabSheet7.TabVisible := true; // SymbolsGroups
 
   dosleep(CSleep);
+
   doFinalizeData;
 
   Panel10.enabled := true;
@@ -1323,6 +1341,7 @@ begin
   Dialog2.fdialog2.Button1click(nil);
 
   updateTimer.enabled := true;
+  updateTimerStarted := now;
   // nextUpdateTicks:=gettickcount+updateTimer.interval;
 end;
 
@@ -1499,7 +1518,7 @@ end;
 
 procedure TForm2.btnLoadCacheFileCwClick(Sender: TObject);
 begin
-  loadCacheFileCw('CwActions', 'actions', lbCSVError);
+  loadCacheFileCw(cCachefile, 'actions', lbCSVError);
 
   doCacheGridCwInfo;
   lblAllDataInfo.Caption := 'From Cache  Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
@@ -1667,6 +1686,7 @@ end;
 
 procedure TForm2.btnDoFilterClick(Sender: TObject);
 begin
+  mynow := monthof(now) + 12 * yearof(now);
   FilterTopic := 'manual';
   doFilter();
   // -> cwFilteredActions cwFilteredActionsCt
@@ -1802,6 +1822,7 @@ var
   TradesSwapTotal: double;
   gct: integer;
 begin
+  gt := GetTickCount;
   gct := 0;
   for i := 1 to GroupingCt do
   begin
@@ -1876,8 +1897,15 @@ begin
       inc(fall[7]);
     end;
 
+    if (cwgrouping.element[i].styp) = 'months' then
+    begin
+      le[i] := 12;
+      inc(fall[8]);
+    end;
+
   end;
 
+  // le[] sind immer die Anzahl der möglichen Varianten des betreffenden Groupkriteriums
   max := le[0] * le[1] * le[2];
   setlength(cw3summaries, le[0], le[1], le[2]);
   max1 := length(cw3summaries);
@@ -1946,6 +1974,13 @@ begin
               // FEHLT NOCH
               p[j] := cwFilteredActions[i].accountId;
               par[j] := inttostr(cwFilteredActions[i].accountId); // BESSER machen mit Namen
+            end;
+          8: // months
+            begin
+              // FEHLT NOCH
+              p[j] := trimMonthYear(monthof(unixtodatetime(cwFilteredActions[i].closeTime)),
+                yearof(unixtodatetime(cwFilteredActions[i].closeTime)), par[j]);
+              // par[j] := inttostr(monthof(unixtodatetime(cwFilteredActions[i].closeTime))+'/'+yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
             end;
         else
           begin
@@ -2031,12 +2066,14 @@ begin
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
   DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 9);
-  DynGrid9.lblHeader.caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt);
+  DynGrid9.lblHeader.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt) + ' z:'
+    + inttostr(GetTickCount - gt);
+
 end;
 
 function TForm2.trimYear(year: integer): integer;
 begin
-  // 2012 bis 2023 sind die 12 Jahre auf die getrimmt wird
+  // 2012 bis 2023 sind die 12 Jahre auf die getrimmt wird -> 0 bis 11
   if year < 2012 then
     year := 2012; // 2012-12;
   if year > 2023 then
@@ -2045,11 +2082,53 @@ begin
 
 end;
 
+function TForm2.trimMonthYear(Month, year: integer; var s: string): integer;
+var
+  // mynow:integer; //einsparen wegen Rechenzeit !
+  my: integer;
+  diff: integer;
+begin
+  if (mynow = 0) then
+    mynow := yearof(now) * 12 + monthof(now); // zB 24236
+  my := year * 12 + Month;
+  diff := mynow - my;
+  if (diff = 0) then
+    s := '0 this month';
+  if (diff > 0) then
+    s := inttostr(diff) + ' months before';
+  if (diff < 0) then
+  begin
+    diff := 0;
+    s := 'in the future';
+  end;
+  if (diff > 11) then
+  begin
+    diff := 11;
+    s := 'before 1 year';
+  end;
+  result := diff;
+end;
+
+
+// wie kann man das mit den Monaten machen
+//
+
 procedure TForm2.updateTimerTimer(Sender: TObject);
 begin
   // Update timer
+  updateTimerStarted := now;
+  if (updateStatus > 0) then
+    if (updateGoing = true) then
+    begin
+      updateGoing := false;
+      updateStatus := 0;
+    end;
+
   if (updateGoing = false) then
+  begin
+    Dialog2.fdialog2.Button2.Visible := false;
     btnUpdateDataClick(nil);
+  end;
 end;
 
 function TForm2.groupingTyp(styp: string): integer;
@@ -2071,6 +2150,8 @@ begin
     result := 6;
   if styp = ('brokerAccount') then
     result := 7;
+  if styp = ('months') then
+    result := 8;
 
 end;
 
@@ -2281,6 +2362,7 @@ begin
         // end;
       end;
   end;
+
   showmessage('z:' + inttostr(timegettime - gt) + ' ' + inttostr(timegettime - tg));
   cwFilteredActionCt := fz + 1;
   setlength(cwFilteredActions, fz + 1); // vergessen
@@ -2323,8 +2405,6 @@ begin
   DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
 end;
 
-
-
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
 var
   i, lold, lnew: integer;
@@ -2337,7 +2417,7 @@ var
   na2: int64array;
   n: integer;
   a1, a2: integer;
-label rest;
+  // label rest;
 begin
   // update data
   updateGoing := true;
@@ -2399,9 +2479,12 @@ begin
   // begin
   if (cnew = 0) then
   begin
-    lbCSVError.Items.Add('[Abbruch - keine Änderungen]' + inttostr(GetTickCount - gt));
-    Dialog2.fdialog2.Close;
-    goto rest; // exit
+    lbCSVError.Items.Add('[Abbruch - keine neuen Actions]' + inttostr(GetTickCount - gt));
+    updateStatus := 1;
+    updateGoing := false;
+    Dialog2.fdialog2.askFinish(); // Close;
+    exit;
+    // goto rest; // exit
   end;
 
   // end;
@@ -2488,15 +2571,55 @@ begin
   lbCSVError.Items.Add('[einfügen2]' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
   gt := GetTickCount;
-  // fertig
-  doFinalizeData;
-  dosleep(CSleep);
-  lbCSVError.Items.Add('[finalize]' + inttostr(GetTickCount - gt));
 
-  lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) +
-    #13#10 + ' Actions:' + inttostr(length(cwActions));
-  lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
-rest:
+  updateStatus := 2;
+  Dialog2.fdialog2.askFinish(); // Close;
+
+  exit;
+
+  // // -> nach finishUpdate verschoben
+  // // fertig
+  // showmessage('new data available');
+  // doFinalizeData;
+  // dosleep(CSleep);
+  // lbCSVError.Items.Add('[finalize]' + inttostr(GetTickCount - gt));
+  //
+  // lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) +
+  // #13#10 + ' Actions:' + inttostr(length(cwActions));
+  // lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
+  // rest:
+  // dosleep(CSleep);
+  // // gt:=gettickcount;
+  // // computeStartScreen;
+  // // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // dosleep(CSleep);
+  // getSymbolsUsersComments(false); // vom Server damit die Werte aktuell sind
+  // dosleep(CSleep);
+  // gt := GetTickCount;
+  // computeStartScreen;
+  // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // dosleep(CSleep);
+  //
+  // Dialog2.fdialog2.Close;
+  // updateGoing := false;
+end;
+
+procedure TForm2.finishUpdate();
+
+begin
+  updateGoing := true; // damit niemand reinfunkt
+  if (updateStatus = 2) then // die wichtigen Action-Updates
+  begin
+
+    // showmessage('new data available');
+    doFinalizeData;
+    dosleep(CSleep);
+
+    lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols))
+      + #13#10 + ' Actions:' + inttostr(length(cwActions));
+  end;
+  // lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
+  // rest:
   dosleep(CSleep);
   // gt:=gettickcount;
   // computeStartScreen;
@@ -2504,13 +2627,13 @@ rest:
   dosleep(CSleep);
   getSymbolsUsersComments(false); // vom Server damit die Werte aktuell sind
   dosleep(CSleep);
-  gt := GetTickCount;
   computeStartScreen;
-  lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
 
   Dialog2.fdialog2.Close;
   updateGoing := false;
+  updateStatus := 0; // fertig
 end;
 
 procedure TForm2.Button9Click(Sender: TObject);
@@ -2764,7 +2887,7 @@ end;
 procedure TForm2.btnSaveCacheFileCwClick(Sender: TObject);
 begin
   //
-  saveCacheFileCw('cwactions', 'actions', lbCSVError);
+  saveCacheFileCw(cCachefile, 'actions', lbCSVError);
 end;
 
 procedure TForm2.CategoryPanel1Click(Sender: TObject);
@@ -2851,31 +2974,30 @@ begin
 end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  DynGrid1.saveInit;
+  DynGrid2.saveInit;
+  DynGrid3.saveInit;
+  DynGrid4.saveInit;
+  DynGrid5.saveInit;
+  DynGrid6.saveInit;
+  DynGrid7.saveInit;
+  DynGrid8.saveInit;
+  DynGrid9.saveInit;
+  DynGrid10.saveInit;
+
+  freeandnil(faIni);
+  if HTTPWorker1.Finished = false then
   begin
-  dyngrid1.saveInit;
-    dyngrid2.saveInit;
-    dyngrid3.saveInit;
-    dyngrid4.saveInit;
-    dyngrid5.saveInit;
-    dyngrid6.saveInit;
-    dyngrid7.saveInit;
-    dyngrid8.saveInit;
-    dyngrid9.saveInit;
-    dyngrid10.saveInit;
-
-    freeandnil(faIni);
-    if HTTPWorker1.Finished = false then
-    begin
-      HTTPWorker1.Terminate;
-      HTTPWorker1.waitfor;
-      HTTPWorker1.free;
-      HTTPWorker1.ResultList.free;
-      HTTPWorker1Aktiv := false;
-      dosleep(10);
-    end;
-    DeleteCriticalSection(HTTPWorkCriticalSection);
+    HTTPWorker1.Terminate;
+    HTTPWorker1.waitfor;
+    HTTPWorker1.free;
+    HTTPWorker1.ResultList.free;
+    HTTPWorker1Aktiv := false;
+    dosleep(10);
   end;
-
+  DeleteCriticalSection(HTTPWorkCriticalSection);
+end;
 
 procedure TForm2.FormCreate(Sender: TObject);
 var
@@ -2890,7 +3012,7 @@ begin
   pwct := 0;
   updateGoing := false;
   pwok := false;
-  claus := true;
+  claus := false;
   if (claus = false) then
   begin
     for pwct := 0 to 2 do
@@ -3623,6 +3745,7 @@ begin
     // Starttimer
     StartTimer.enabled := false;
 
+    Dialog2.fdialog2.Button2.Visible := false;
     Dialog2.fdialog2.Show; // Modal;
     Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height - 4;
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
@@ -3731,8 +3854,15 @@ begin
   end;
 
   procedure TForm2.infoTimerTimer(Sender: TObject);
+  var
+    s: string;
+    sec: integer;
+    rest: double;
   begin
+    rest := (trunc(updateTimer.Interval / 1000)) - (now - updateTimerStarted) * 86400; // Rest in sekunden
+    s := FormatDateTime('nn:ss', rest / 86400);
     // lblInfoTimer.caption:=inttostr(nextUpdateT
+    lblUpdateRest.Caption := 'Next Update:' + s;
   end;
 
   procedure TForm2.lbCSVErrorClick(Sender: TObject);
@@ -3746,7 +3876,7 @@ begin
     gt, ngt: Cardinal;
 
     li: integer;
-    liText: array [1 .. 8] of string;
+    liText: array [1 .. 10] of string;
 
   begin
     while (HTTPWorker1.RequestBusy = true) do
@@ -3774,10 +3904,11 @@ begin
     liText[2] := 'Dieser sorgt später für einen schnellen Programmstart';
     liText[3] := 'Das erste Laden aller über 3 Millionen Actions ...';
     liText[4] := 'kann je nach Leitung etliche Minuten dauern';
-    liText[5] := 'Es kann sich nur noch um Stunden handeln ... noch etwas Geduld !';
+    liText[5] := 'Es kann sich nur noch um Minuten handeln ... noch etwas Geduld !';
     liText[6] := 'Es wurden inzwischen ' + inttostr(length(cwSymbols)) + ' Symbole geladen';
     liText[7] := 'Es wurden inzwischen ' + inttostr(length(cwUsers)) + ' User geladen';
     liText[8] := 'Es wurden inzwischen ' + inttostr(length(cwComments)) + ' Kommentare geladen';
+    liText[9] := '';
     gt := GetTickCount;
     ngt := gt + 1000;
     li := 0;
@@ -3805,11 +3936,18 @@ begin
         if (li < high(liText)) then
         begin
           if liText[li] = '' then
-            li := 1;
-          Memo1.lines.clear;
+            // li := 1;
+            Memo1.lines.clear;
           Memo1.lines.Add(liText[li]);
           Dialog2.fdialog2.info2(liText[li]);
+          liText[li] := ''; // damit es nur am Anfang einmal angezeigt wird
+        end
+        else
+        begin
+          Memo1.lines.clear;
+          Dialog2.fdialog2.info2('');
         end;
+
         ngt := gt + 8000;
 
       end;
@@ -3835,16 +3973,16 @@ begin
 
   procedure TForm2.FormDestroy(Sender: TObject);
   begin
-  dyngrid1.saveInit;
-    dyngrid2.saveInit;
-    dyngrid3.saveInit;
-    dyngrid4.saveInit;
-    dyngrid5.saveInit;
-    dyngrid6.saveInit;
-    dyngrid7.saveInit;
-    dyngrid8.saveInit;
-    dyngrid9.saveInit;
-    dyngrid10.saveInit;
+    DynGrid1.saveInit;
+    DynGrid2.saveInit;
+    DynGrid3.saveInit;
+    DynGrid4.saveInit;
+    DynGrid5.saveInit;
+    DynGrid6.saveInit;
+    DynGrid7.saveInit;
+    DynGrid8.saveInit;
+    DynGrid9.saveInit;
+    DynGrid10.saveInit;
 
     freeandnil(faIni);
     if HTTPWorker1.Finished = false then
@@ -3894,14 +4032,15 @@ begin
     twoLblStart[8].l1.Caption := 'Actions 1 week:';
     twoLblStart[9].l1.Caption := 'Profit today:';
     twoLblStart[10].l1.Caption := 'Profit 1 week:';
-    twoLblStart[11].l1.Caption := 'logged Users 1 day:';
-    twoLblStart[12].l1.Caption := 'logged Users 1 week:';
-    twoLblStart[13].l1.Caption := 'logged Users 1 month:';
+    twoLblStart[11].l1.Caption := 'Logged Users 1 day:';
+    twoLblStart[12].l1.Caption := 'Logged Users 1 week:';
+    twoLblStart[13].l1.Caption := 'Logged Users 1 month:';
+    twoLblStart[14].l1.Caption := 'Closed actions day/week/month/year:';
 
     twoLblStart[1].l2.Caption := inttostr(length(cwUsers));
     twoLblStart[2].l2.Caption := inttostr(length(cwActions));
     // 'Actions total:';
-    twoLblStart[3].l2.Caption := '33'; // inttostr(info.usersOnline); // '...';//'Users online:';
+    twoLblStart[3].l2.Caption := inttostr(info.usersonline); // '...';//'Users online:';
     twoLblStart[4].l2.Caption := inttostr(info.openActions); // ''/'Open Actions:';
     twoLblStart[5].l2.Caption := inttostr(info.newUsers1w); // ''/'New Users 1 week:';
     twoLblStart[6].l2.Caption := inttostr(info.newUsers1m); // ''/'New Users 1 month:';
@@ -3912,6 +4051,7 @@ begin
     twoLblStart[11].l2.Caption := inttostr(info.logUsers1d); // ''/'Actions new today:';
     twoLblStart[12].l2.Caption := inttostr(info.logUsers1w); // ''/'Actions new today:';
     twoLblStart[13].l2.Caption := inttostr(info.logUsers1m); // ''/'Actions new today:';
+    twoLblStart[14].l2.Caption := info.ctHWMY; // ''/'Actions new today:';
     pnlStart.Refresh;
   end;
 
@@ -3932,16 +4072,18 @@ begin
 
   var
     i: integer;
-    t: tdatetime;
+    t: TDateTime;
     ut: integer;
     dt: integer;
     gt: Cardinal;
+    unow: integer;
     startHeute: integer;
     // jeweils in Unix umgerechnet
     startMontag: integer;
     startMonat: integer;
     startJahr: integer;
     dow, dom, doy: integer;
+    ctHeute, ctWoche, ctMonat, ctJahr: integer;
     doffset: integer;
   const
     c1 = 86400;
@@ -3958,6 +4100,7 @@ begin
       doffset := doffset + 7;
     dom := DayOfTheMonth(t);
     doy := DayOfTheYear(t);
+    unow := datetimetounix(now); // JETZT damit die blöden Zukunftswerte wegfallen
     startHeute := datetimetounix(int(t));
     startMontag := datetimetounix(int(t) - doffset);
     startMonat := datetimetounix(int(t) - dom + 1);
@@ -4003,6 +4146,10 @@ begin
         inc(info.logUsers1y);
 
     end;
+    ctHeute := 0;
+    ctWoche := 0;
+    ctMonat := 0;
+    ctJahr := 0;
     for i := 0 to cwactionsct - 1 do
     begin
 
@@ -4022,21 +4169,36 @@ begin
         // offene Orders weisen immer einen momentanen Profit aus
         if (cwActions[i].closeTime > 0) then
         begin
+          if (dt < unow) then
+          begin
+            if (dt > startHeute) then
+            begin
+              info.profit1d := info.profit1d + cwActions[i].profit;
+              inc(ctHeute);
+            end;
+            if (dt > startMontag) then
+            begin
+              info.profit1w := info.profit1w + cwActions[i].profit;
+              inc(ctWoche);
+            end;
+            if (dt > startMonat) then
+            begin
+              info.profit1m := info.profit1m + cwActions[i].profit;
+              inc(ctMonat);
+            end;
+            if (dt > startJahr) then
+            begin
+              info.profit1y := info.profit1y + cwActions[i].profit;
+              inc(ctJahr);
+            end;
 
-          if (dt > startHeute) then
-            info.profit1d := info.profit1d + cwActions[i].profit;
-          if (dt > startMontag) then
-            info.profit1w := info.profit1w + cwActions[i].profit;
-          if (dt > startMonat) then
-            info.profit1m := info.profit1m + cwActions[i].profit;
-          if (dt > startJahr) then
-            info.profit1y := info.profit1y + cwActions[i].profit;
-
+          end;
         end
         else
           inc(info.openActions);
 
       end;
+      info.ctHWMY := inttostr(ctHeute) + '/' + inttostr(ctWoche) + '/' + inttostr(ctMonat) + '/' + inttostr(ctJahr);
     end;
     if (makeLabelsDone = false) then
     begin

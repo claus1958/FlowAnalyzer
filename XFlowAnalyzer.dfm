@@ -28,7 +28,7 @@ object Form2: TForm2
     Top = 0
     Width = 1527
     Height = 937
-    ActivePage = TabSheet1
+    ActivePage = TabSheet2
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -16
@@ -79,6 +79,18 @@ object Form2: TForm2
         TabOrder = 1
         StyleElements = [seClient, seBorder]
         OnResize = pnlStartBackResize
+        object lblUpdateRest: TLabel
+          Left = 20
+          Top = 16
+          Width = 3
+          Height = 13
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clGrayText
+          Font.Height = -11
+          Font.Name = 'Tahoma'
+          Font.Style = []
+          ParentFont = False
+        end
         object pnlStart: TPanel
           Left = 252
           Top = 96
@@ -150,14 +162,18 @@ object Form2: TForm2
               end
               inherited lblTime: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited SpeedButton1: TSpeedButton
@@ -189,6 +205,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 165
+                  ExplicitTop = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 165
                 end
@@ -231,14 +248,18 @@ object Form2: TForm2
               end
               inherited lblTime: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited SpeedButton1: TSpeedButton
@@ -270,6 +291,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 120
+                  ExplicitTop = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 120
                 end
@@ -312,14 +334,18 @@ object Form2: TForm2
               end
               inherited lblTime: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited SpeedButton1: TSpeedButton
@@ -351,6 +377,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 120
+                  ExplicitTop = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 120
                 end
@@ -400,14 +427,18 @@ object Form2: TForm2
               end
               inherited lblTime: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
                 Top = 2
+                Width = 4
                 Height = 14
                 ExplicitTop = 2
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited SpeedButton1: TSpeedButton
@@ -439,6 +470,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1495
                   Height = 120
+                  ExplicitTop = 1
                   ExplicitWidth = 1495
                   ExplicitHeight = 120
                 end
@@ -593,11 +625,15 @@ object Form2: TForm2
               Align = alTop
               ExplicitWidth = 498
               inherited lblTime: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
             end
@@ -673,11 +709,15 @@ object Form2: TForm2
               Align = alTop
               ExplicitWidth = 1012
               inherited lblTime: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
             end
@@ -688,32 +728,32 @@ object Form2: TForm2
               Height = 650
               Align = alClient
               ExplicitLeft = 0
-              ExplicitTop = 0
+              ExplicitTop = 41
               ExplicitWidth = 1012
-              ExplicitHeight = 691
+              ExplicitHeight = 650
               inherited ScrollBar1: TScrollBar
                 Left = 995
                 Height = 648
                 ExplicitLeft = 995
-                ExplicitHeight = 689
+                ExplicitHeight = 648
               end
               inherited Panel3: TPanel
                 Width = 994
                 Height = 648
                 ExplicitWidth = 994
-                ExplicitHeight = 689
+                ExplicitHeight = 648
                 inherited SG: TStringGridSorted
                   Width = 992
                   Height = 616
                   ExplicitTop = 1
                   ExplicitWidth = 992
-                  ExplicitHeight = 657
+                  ExplicitHeight = 616
                 end
                 inherited SGSum: TStringGridSorted
                   Top = 617
                   Width = 992
                   Font.Height = -12
-                  ExplicitTop = 658
+                  ExplicitTop = 617
                   ExplicitWidth = 992
                 end
               end
@@ -1167,11 +1207,15 @@ object Form2: TForm2
               Align = alTop
               ExplicitWidth = 991
               inherited lblTime: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
               inherited lblSelection: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
             end
@@ -1199,6 +1243,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 971
                   Height = 338
+                  ExplicitTop = 1
                   ExplicitWidth = 971
                   ExplicitHeight = 338
                 end
@@ -1236,7 +1281,9 @@ object Form2: TForm2
                 ExplicitHeight = 19
               end
               inherited lblSelection: TLabel
+                Width = 4
                 Height = 14
+                ExplicitWidth = 4
                 ExplicitHeight = 14
               end
             end
@@ -1264,6 +1311,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 971
                   Height = 400
+                  ExplicitTop = 1
                   ExplicitWidth = 971
                   ExplicitHeight = 400
                 end
@@ -1552,11 +1600,15 @@ object Form2: TForm2
             Align = alTop
             ExplicitWidth = 1517
             inherited lblTime: TLabel
+              Width = 4
               Height = 14
+              ExplicitWidth = 4
               ExplicitHeight = 14
             end
             inherited lblSelection: TLabel
+              Width = 4
               Height = 14
+              ExplicitWidth = 4
               ExplicitHeight = 14
             end
           end
@@ -1584,6 +1636,7 @@ object Form2: TForm2
               inherited SG: TStringGridSorted
                 Width = 1497
                 Height = 826
+                ExplicitTop = 1
                 ExplicitWidth = 1497
                 ExplicitHeight = 826
               end
@@ -1738,11 +1791,15 @@ object Form2: TForm2
                   ExplicitWidth = 1233
                   ExplicitHeight = 5
                   inherited lblTime: TLabel
+                    Width = 5
                     Height = 19
+                    ExplicitWidth = 5
                     ExplicitHeight = 19
                   end
                   inherited lblSelection: TLabel
+                    Width = 5
                     Height = 19
+                    ExplicitWidth = 5
                     ExplicitHeight = 19
                   end
                 end
@@ -1770,6 +1827,7 @@ object Form2: TForm2
                     inherited SG: TStringGridSorted
                       Width = 1213
                       Height = 235
+                      ExplicitTop = 1
                       ExplicitWidth = 1213
                       ExplicitHeight = 235
                     end
@@ -3052,7 +3110,7 @@ object Form2: TForm2
   object ApplicationEvents1: TApplicationEvents
     OnModalBegin = ApplicationEvents1ModalBegin
     OnModalEnd = ApplicationEvents1ModalEnd
-    Left = 294
+    Left = 282
     Top = 38
   end
   object StartTimer: TTimer
@@ -3064,14 +3122,14 @@ object Form2: TForm2
   end
   object updateTimer: TTimer
     Enabled = False
-    Interval = 12000000
+    Interval = 20000
     OnTimer = updateTimerTimer
-    Left = 364
+    Left = 392
     Top = 36
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer
-    Left = 396
-    Top = 36
+    Left = 460
+    Top = 44
   end
 end

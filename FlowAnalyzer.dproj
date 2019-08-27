@@ -77,6 +77,12 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_MinorVer>1</VerInfo_MinorVer>
+        <VerInfo_AutoIncVersion>true</VerInfo_AutoIncVersion>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.1.0.2;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=;ProgramID=com.embarcadero.$(MSBuildProjectName)</VerInfo_Keys>
+        <VerInfo_Build>2</VerInfo_Build>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -159,10 +165,8 @@
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSCommonD260.6.0.bpl">RiverSoftAVG Common Classes Library</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSChartsDBD260.bpl">RiverSoftAVG Database Charting Components</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSChartingD260.bpl">RiverSoftAVG Charting Component Suite (VCL)</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\advchartdXE12.bpl">TMS VCL Chart</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSCommonChartsD260.bpl">RiverSoftAVG Charting Component Suite Common Library</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSFMXCommonD260.6.0.bpl">RiverSoftAVG Common Classes Library (FMX)</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Program Files (x86)\tmssoftware\AdvChart RSXE12\Win32\AdvChartDEDXE12.bpl">TMS VCL Chart Designtime</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
                 </Excluded_Packages>

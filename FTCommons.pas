@@ -16,6 +16,7 @@ const
   // Use bAlpha to determine the opacity of the layered window..
   LWA_ALPHA = 2;
   WS_EX_LAYERED = $80000;
+  cCachefile = 'CwActions2';
 
 type
 
@@ -57,6 +58,7 @@ type
     profit1w: double;
     profit1m: double;
     profit1y: double;
+    ctHWMY:string;
   end;
 
   TPieParameters = Packed record

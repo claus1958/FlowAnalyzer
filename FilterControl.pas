@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Strutils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, FTCommons, Vcl.CheckLst,DateUtils;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ComCtrls, FTCommons, Vcl.CheckLst, DateUtils;
 
 const
 
@@ -19,9 +19,9 @@ const
   fltTopicAccountDate = 9;
   fltTopicAccountDateUnix = 10;
   fltTopicOpenDateTime = 11;
-  //fltTopicOpenDateTimeUnix = 12;
+  // fltTopicOpenDateTimeUnix = 12;
   fltTopicCloseDateTime = 13;
-  //fltTopicCloseDateTimeUnix = 14;
+  // fltTopicCloseDateTimeUnix = 14;
   fltTopicOpenPrice = 15;
   fltTopicVolume = 16;
   fltTopicMarginRate = 17;
@@ -35,7 +35,7 @@ const
   fltOpKlGleich = 6;
   fltOpContains = 7;
   fltOpBegins = 8;
-  fltOpGroesserOderNull = 9;//bei Datum wichtig
+  fltOpGroesserOderNull = 9; // bei Datum wichtig
 
 type
   TFilterElemente = class(TFrame)
@@ -49,8 +49,8 @@ type
     procedure WndProc(var Msg: TMessage); override;
     procedure cbTopicChange(Sender: TObject);
     constructor Create(AOwner: TComponent); override;
-    //function checkCwaction(var a: cwaction): boolean;
-    function checkCwaction(var a: cwaction;var aplus:cwActionPlus): boolean;
+    // function checkCwaction(var a: cwaction): boolean;
+    function checkCwaction(var a: cwaction; var aplus: cwActionPlus): boolean;
     procedure btnMoreClick(Sender: TObject);
     procedure chkActiveClick(Sender: TObject);
     procedure chkLB1DrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
@@ -75,7 +75,7 @@ type
     procedure wegdamit;
     procedure FrameClick(Sender: TObject);
     procedure chkLB1Click(Sender: TObject);
-    function vorQuote(s:string):string;
+    function vorQuote(s: string): string;
     // function vergleichInteger(was,mit: integer; op: string): boolean;
     // function vergleichIntegerArray(was: array of integer; mit: integer; op: string): boolean;
   private
@@ -95,14 +95,14 @@ type
     vInteger: Integer;
     brokerId: array [0 .. 7] of Integer;
     counter: Integer;
-    mmon:boolean;
-    mmc:integer;
-    mm:array[1..1000] of integer;
+    mmon: boolean;
+    mmc: Integer;
+    mm: array [1 .. 1000] of Integer;
     //
-//    active:boolean;
-//    topic:string;
-//    operator:string;
-//    value:string;
+    // active:boolean;
+    // topic:string;
+    // operator:string;
+    // value:string;
   end;
 
 implementation
@@ -131,7 +131,7 @@ begin
   e := Sender as TDateTimePicker;
   if screen.ActiveControl = e then
   begin
-  // Dateof ist notwendig damit man an Null Uhr des gewählten Datums landet
+    // Dateof ist notwendig damit man an Null Uhr des gewählten Datums landet
     edValue.Text := inttostr(datetimetounix(dateof(e.DateTime)));
   end;
 end;
@@ -214,14 +214,14 @@ end;
 procedure TFilterElemente.WndProc(var Msg: TMessage);
 begin
   inherited;
-//  // if msg.Msg=WM_VSCROLL then
+  // // if msg.Msg=WM_VSCROLL then
   // begin
   // if msg.WParamLo=5 then   //5=SB_THUMBTRACK  Der Thumb wird bewegt
-  if mmon=true  then
+  if mmon = true then
   begin
     inc(mmc);
-    if(mmc<1000) then
-      mm[mmc]:=msg.Msg;
+    if (mmc < 1000) then
+      mm[mmc] := Msg.Msg;
 
   end;
 end;
@@ -232,14 +232,14 @@ begin
 
 end;
 
-function TFilterElemente.vorQuote(s:string):string;
+function TFilterElemente.vorQuote(s: string): string;
 begin
-  if pos('''',s)>0 then
+  if pos('''', s) > 0 then
   begin
-    result:=leftstr(s, pos('''',s)-1);
+    result := leftstr(s, pos('''', s) - 1);
   end
   else
-    result:=s;
+    result := s;
 
 end;
 
@@ -248,11 +248,11 @@ var
   typ: Integer;
   i: Integer;
   lb1flag: boolean;
-  topic:string;
+  topic: string;
 begin
 
   chkLB1.Items.Clear;
-  topic:=vorquote(cbTopic.Text);
+  topic := vorQuote(cbTopic.Text);
   lb1flag := false;
   setlength(chkLB1Selected, 0);
   // BrokerId
@@ -307,6 +307,7 @@ begin
     chkLB1.Items.Add('SELL STOP');
     chkLB1.Items.Add('BALANCE');
     chkLB1.Items.Add('CREDIT');
+    chkLB1.Items.Add('BALANCE,CREDIT');
     lb1flag := true;
     btnMore.Visible := true;
   end;
@@ -321,7 +322,6 @@ begin
     lb1flag := true;
     btnMore.Visible := true;
   end;
-
 
   if topic = 'Symbol' then
   begin
@@ -450,9 +450,9 @@ var
   s: string;
   i, j, ict, p: Integer;
 begin
- // etwas eigenartig
- // am Ende werden je nach cTopic und edValue.text verschiedene Variablen gefüllt
- // mal vglI[] und vglICt oder  vglS[] mit vglSCt, vDouble oder vInteger
+  // etwas eigenartig
+  // am Ende werden je nach cTopic und edValue.text verschiedene Variablen gefüllt
+  // mal vglI[] und vglICt oder  vglS[] mit vglSCt, vDouble oder vInteger
 
   vglICt := 0;
   charArray[0] := ',';
@@ -477,12 +477,12 @@ begin
       end;
 
     end;
-    if (vglICt=0) then
+    if (vglICt = 0) then
     begin
-      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
-        vglICt := vglICt + 1;
-        setlength(vglI, vglICt);
-        vglI[vglICt - 1] := 0
+      // nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+      vglICt := vglICt + 1;
+      setlength(vglI, vglICt);
+      vglI[vglICt - 1] := 0
     end;
   end;
 
@@ -499,12 +499,12 @@ begin
         vglI[vglICt - 1] := j + 1; // index hier 1..7 !!
       end;
     end;
-    if (vglICt=0) then
+    if (vglICt = 0) then
     begin
-      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
-        vglICt := vglICt + 1;
-        setlength(vglI, vglICt);
-        vglI[vglICt - 1] := 0
+      // nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+      vglICt := vglICt + 1;
+      setlength(vglI, vglICt);
+      vglI[vglICt - 1] := 0
     end;
   end;
 
@@ -519,16 +519,14 @@ begin
         vglI[vglICt - 1] := strtoint(strArray[i]);
       end;
     end;
-    if (vglICt=0) then
+    if (vglICt = 0) then
     begin
-      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
-        vglICt := vglICt + 1;
-        setlength(vglI, vglICt);
-        vglI[vglICt - 1] := 0
+      // nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+      vglICt := vglICt + 1;
+      setlength(vglI, vglICt);
+      vglI[vglICt - 1] := 0
     end;
   end;
-
-
 
   if (ctopic = fltTopicSymbolId) and (coperator = fltOpGleich) then
   begin
@@ -550,33 +548,32 @@ begin
         end;
       end;
     end;
-      if (vglICt=0) then
+    if (vglICt = 0) then
     begin
-      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
-        vglICt := vglICt + 1;
-        setlength(vglI, vglICt);
-        vglI[vglICt - 1] := 0
+      // nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+      vglICt := vglICt + 1;
+      setlength(vglI, vglICt);
+      vglI[vglICt - 1] := 0
     end;
-end;
+  end;
 
-//  //bei Symbol und gleich werden die Namen zu symbolIds gewandelt
-//  if (ctopic = fltTopicSymbol) and (coperator = fltOpGleich) then
-//  begin
-//    for i := 0 to length(strArray) - 1 do
-//    begin
-//      if strArray[i] <> '' then
-//      begin
-//        j := findSymbolId(strArray[i]);
-//        if (j > 0) then
-//        begin
-//          vglICt := vglICt + 1;
-//          setlength(vglI, vglICt);
-//          vglI[vglICt - 1] := strtoint(strArray[i]);
-//        end;
-//      end;
-//    end;
-//  end;
-
+  // //bei Symbol und gleich werden die Namen zu symbolIds gewandelt
+  // if (ctopic = fltTopicSymbol) and (coperator = fltOpGleich) then
+  // begin
+  // for i := 0 to length(strArray) - 1 do
+  // begin
+  // if strArray[i] <> '' then
+  // begin
+  // j := findSymbolId(strArray[i]);
+  // if (j > 0) then
+  // begin
+  // vglICt := vglICt + 1;
+  // setlength(vglI, vglICt);
+  // vglI[vglICt - 1] := strtoint(strArray[i]);
+  // end;
+  // end;
+  // end;
+  // end;
 
   if ctopic = fltTopicAccountCurrency then
   begin
@@ -587,24 +584,24 @@ end;
       begin
         vglICt := vglICt + 1;
         setlength(vglI, vglICt);
-        vglI[vglICt - 1] := j + 1; //1-4
+        vglI[vglICt - 1] := j + 1; // 1-4
       end;
     end;
-    if (vglICt=0) then
+    if (vglICt = 0) then
     begin
-      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
-        vglICt := vglICt + 1;
-        setlength(vglI, vglICt);
-        vglI[vglICt - 1] := 0
+      // nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+      vglICt := vglICt + 1;
+      setlength(vglI, vglICt);
+      vglI[vglICt - 1] := 0
     end;
   end;
-
 
   if ctopic = fltTopicActionType then
   begin
     for i := 0 to length(strArray) - 1 do
     begin
-      j := IndexStr(strArray[i], ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'BALANCE','CREDIT']);
+      j := IndexStr(strArray[i], ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'BALANCE',
+        'CREDIT']);
       if (j > -1) then
       begin
         vglICt := vglICt + 1;
@@ -612,12 +609,12 @@ end;
         vglI[vglICt - 1] := j + 1; // index hier 1..8 !!
       end;
     end;
-    if (vglICt=0) then
+    if (vglICt = 0) then
     begin
-      //nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
-        vglICt := vglICt + 1;
-        setlength(vglI, vglICt);
-        vglI[vglICt - 1] := 0
+      // nix passendes eingetragen dann wenigstens eine Null verwenden um den Absturz abzufangen
+      vglICt := vglICt + 1;
+      setlength(vglI, vglICt);
+      vglI[vglICt - 1] := 0
     end;
   end;
 
@@ -644,12 +641,12 @@ end;
   then
   begin
     vString := edValue.Text;
-    if(vString='') then
-      vString:='0';
-    if pos('.', vString) = 0 then  //keine Angabe wie 12.01.2019
+    if (vString = '') then
+      vString := '0';
+    if pos('.', vString) = 0 then // keine Angabe wie 12.01.2019
     begin
-      if (vstring='') then
-        vInteger:=0
+      if (vString = '') then
+        vInteger := 0
       else
 
         vInteger := strtoint(vString)
@@ -658,7 +655,8 @@ end;
       vInteger := datetimetounix(strtodatetime(vString));
   end;
 
-  if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) OR (ctopic = fltTopicMarginRate)then
+  if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) OR
+    (ctopic = fltTopicMarginRate) then
     vDouble := mystringtofloat(edValue.Text);
 
 end;
@@ -713,7 +711,7 @@ begin
   end;
   if op = fltOpGroesserOderNull then
   begin
-    if ((was > mit)or(was=0)) then
+    if ((was > mit) or (was = 0)) then
       result := true;
     exit;
   end;
@@ -762,7 +760,7 @@ begin
   end;
   if op = fltOpGroesserOderNull then
   begin
-    if ((was > mit)or(was=0)) then
+    if ((was > mit) or (was = 0)) then
       result := true;
     exit;
   end;
@@ -770,16 +768,33 @@ begin
 end;
 
 function TFilterElemente.vergleichIntegerArray(var mit: array of Integer; var was: Integer; op: Integer): boolean;
+// eines der Kriterien passt -> true
+// das ist aber nicht immer sinnvoll nämlich bei <>
 var
   i: Integer;
   res: boolean;
 begin
-  res := false;
-  for i := 0 to length(mit) - 1 do
+  if (op = fltOpUnGleich) then
   begin
-    res := vergleichInteger(mit[i], was, op);
-    if res = true then
-      break
+    res := true;
+    for i := 0 to length(mit) - 1 do
+    begin
+      res := vergleichInteger(mit[i], was, op);
+      if res = false then
+        break
+    end;
+
+  end
+  else
+  begin
+
+    res := false;
+    for i := 0 to length(mit) - 1 do
+    begin
+      res := vergleichInteger(mit[i], was, op);
+      if res = true then
+        break
+    end;
   end;
   result := res;
 end;
@@ -853,8 +868,6 @@ begin
   end;
 end;
 
-
-
 function TFilterElemente.findUserName(userId: Integer): string;
 var
   i: Integer;
@@ -888,7 +901,7 @@ end;
 
 procedure TFilterElemente.FrameClick(Sender: TObject);
 begin
-mmc:=mmc;
+  mmc := mmc;
 end;
 
 procedure TFilterElemente.FrameExit(Sender: TObject);
@@ -899,13 +912,13 @@ begin
 
 end;
 
-procedure TFilterElemente.setValues(f:TFilterParameter);
+procedure TFilterElemente.setValues(f: TFilterParameter);
 begin
-  chkActive.Checked:=f.active;
-  cbTopic.Text:=f.topic;
-  cbOperator.Text:=f.operator;
-  edValue.Text:=f.values;
- end;
+  chkActive.Checked := f.active;
+  cbTopic.Text := f.topic;
+  cbOperator.Text := f.operator;
+  edValue.Text := f.values;
+end;
 
 procedure TFilterElemente.getValues(f: TFilterParameter);
 var
@@ -1005,7 +1018,7 @@ begin
   end;
 end;
 
-function TFilterElemente.checkCwaction(var a: cwaction;var aplus:cwActionPlus): boolean;
+function TFilterElemente.checkCwaction(var a: cwaction; var aplus: cwActionPlus): boolean;
 // prüft ob eine CwAction den Filterkriterien entspricht
 
 // BrokerId
@@ -1046,163 +1059,162 @@ begin
 
   // result:=true;   //so nur 31 statt 3136
   // exit;
- try
-  if vglSCt > 1 then
-  begin
-    if (ctopic = fltTopicSymbol) then
+  try
+    if vglSCt > 1 then
     begin
-      result := vergleichStringArray(vglS, findSymbol(a.symbolId), coperator);
-      exit;
+      if (ctopic = fltTopicSymbol) then
+      begin
+        result := vergleichStringArray(vglS, findSymbol(a.symbolId), coperator);
+        exit;
+      end;
+    end
+    else
+    begin
+      if (ctopic = fltTopicSymbol) then
+      begin
+        s := findSymbol(a.symbolId);
+        result := vergleichString(vglS[0], s, coperator);
+        exit;
+      end;
+
     end;
-  end
-  else
-  begin
-    if (ctopic = fltTopicSymbol) then
+
+    if vglICt >= 1 then
+    // wenn mit mehreren Elementen verglichen wird
     begin
-      s := findSymbol(a.symbolId);
-      result := vergleichString(vglS[0], s, coperator);
+      if ctopic = fltTopicBrokerId then
+      begin
+        result := vergleichIntegerArray(vglI, brokerId[a.accountId], coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicAccountId then
+      begin
+        result := vergleichIntegerArray(vglI, a.accountId, coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicUserId then
+      begin
+        result := vergleichIntegerArray(vglI, a.userId, coperator);
+        exit;
+      end;
+
+      if (ctopic = fltTopicSymbolId) and (coperator = fltOpGleich) then
+      begin
+        result := vergleichIntegerArray(vglI, a.symbolId, coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicActionType then
+      begin
+        result := vergleichIntegerArray(vglI, a.typeId, coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicAccountCurrency then
+      begin
+        result := vergleichIntegerArray(vglI, cwusersPlus[aplus.userindex].accountCurrency, coperator);
+        exit;
+      end;
+
+    end
+    else
+    // wenn nur mit einem Element verglichen wird
+    begin
+      if ctopic = fltTopicBrokerId then
+      begin
+        result := vergleichInteger(vglI[0], brokerId[a.accountId], coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicAccountId then
+      begin
+        result := vergleichInteger(vglI[0], a.accountId, coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicUserId then
+      begin
+        result := vergleichInteger(vglI[0], a.userId, coperator);
+        exit;
+      end;
+
+      if (ctopic = fltTopicSymbolId) and (coperator = fltOpGleich) then
+      begin
+        result := vergleichInteger(vglI[0], a.symbolId, coperator);
+        exit;
+      end;
+
+      if ctopic = fltTopicActionType then
+      begin
+        result := vergleichInteger(vglI[0], a.typeId, coperator);
+        exit;
+      end;
+
+    end;
+
+    // Ende der Array Vergleiche
+
+    if ctopic = fltTopicUserName then
+    begin
+      s := findUserName(a.userId);
+      result := vergleichString(vString, s, coperator);
       exit;
     end;
 
-  end;
-
-  if vglICt >= 1 then
-  //wenn mit mehreren Elementen verglichen wird
-  begin
-    if ctopic = fltTopicBrokerId then
+    if ctopic = fltTopicProfit then
     begin
-      result := vergleichIntegerArray(vglI, brokerId[a.accountId], coperator);
+      result := vergleichDouble(vDouble, a.profit, coperator);
       exit;
     end;
 
-    if ctopic = fltTopicAccountId then
+    if ctopic = fltTopicOpenDateTime then
     begin
-      result := vergleichIntegerArray(vglI, a.accountId, coperator);
+      result := vergleichInteger(vInteger, a.openTime, coperator);
       exit;
+
     end;
 
-    if ctopic = fltTopicUserId then
+    if ctopic = fltTopicCloseDateTime then
     begin
-      result := vergleichIntegerArray(vglI, a.userId, coperator);
+      result := vergleichInteger(vInteger, a.closeTime, coperator);
       exit;
+
     end;
 
-    if (ctopic = fltTopicSymbolId) and (coperator = fltOpGleich) then
+    if ctopic = fltTopicOpenPrice then
     begin
-      result := vergleichIntegerArray(vglI, a.symbolId, coperator);
+      result := vergleichDouble(vDouble, a.openPrice, coperator);
+      exit;
+
+    end;
+    if ctopic = fltTopicProfit then
+    begin
+      result := vergleichDouble(vDouble, a.profit, coperator);
+      exit;
+
+    end;
+    if ctopic = fltTopicVolume then
+    begin
+      result := vergleichDouble(vDouble, a.profit, coperator);
       exit;
     end;
-
-    if ctopic = fltTopicActionType then
+    if ctopic = fltTopicMarginRate then
     begin
-      result := vergleichIntegerArray(vglI, a.typeId, coperator);
+      result := vergleichDouble(vDouble, a.marginRate, coperator);
       exit;
     end;
 
     if ctopic = fltTopicAccountCurrency then
     begin
-      result := vergleichIntegerArray(vglI, cwusersPlus[aplus.userindex].accountCurrency, coperator);
-      exit;
-  end;
-
-  end
-  else
-  //wenn nur mit einem Element verglichen wird
-  begin
-    if ctopic = fltTopicBrokerId then
-    begin
-      result := vergleichInteger(vglI[0], brokerId[a.accountId], coperator);
+      result := vergleichInteger(vInteger, cwusersPlus[aplus.userindex].accountCurrency, coperator);
       exit;
     end;
 
-    if ctopic = fltTopicAccountId then
-    begin
-      result := vergleichInteger(vglI[0], a.accountId, coperator);
-      exit;
-    end;
-
-    if ctopic = fltTopicUserId then
-    begin
-      result := vergleichInteger(vglI[0], a.userId, coperator);
-      exit;
-    end;
-
-    if (ctopic = fltTopicSymbolId) and (coperator = fltOpGleich) then
-    begin
-      result := vergleichInteger(vglI[0], a.symbolId, coperator);
-      exit;
-    end;
-
-    if ctopic = fltTopicActionType then
-    begin
-      result := vergleichInteger(vglI[0], a.typeId, coperator);
-      exit;
-    end;
-
+  except
+    result := false;
   end;
-
-  // Ende der Array Vergleiche
-
-  if ctopic = fltTopicUserName then
-  begin
-    s := findUserName(a.userId);
-    result := vergleichString(vString, s, coperator);
-    exit;
-  end;
-
-  if ctopic = fltTopicProfit then
-  begin
-    result := vergleichDouble(vDouble, a.profit, coperator);
-    exit;
-  end;
-
-
-  if ctopic = fltTopicOpenDateTime then
-  begin
-    result := vergleichInteger(vInteger, a.openTime, coperator);
-    exit;
-
-  end;
-
-  if ctopic = fltTopicCloseDateTime then
-  begin
-    result := vergleichInteger(vInteger, a.closeTime, coperator);
-    exit;
-
-  end;
-
-  if ctopic = fltTopicOpenPrice then
-  begin
-    result := vergleichDouble(vDouble, a.openPrice, coperator);
-    exit;
-
-  end;
-  if ctopic = fltTopicProfit then
-  begin
-    result := vergleichDouble(vDouble, a.profit, coperator);
-    exit;
-
-  end;
-  if ctopic = fltTopicVolume then
-  begin
-    result := vergleichDouble(vDouble, a.profit, coperator);
-    exit;
-  end;
-  if ctopic = fltTopicMarginRate then
-  begin
-    result := vergleichDouble(vDouble, a.marginRate, coperator);
-    exit;
-  end;
-
-  if ctopic = fltTopicAccountCurrency then
-  begin
-    result := vergleichInteger(vInteger, cwusersPlus[aplus.userindex].accountCurrency, coperator);
-    exit;
-  end;
-
- except
-   result:=false;
- end;
 end;
 
 procedure TFilterElemente.chkActiveClick(Sender: TObject);
@@ -1226,8 +1238,8 @@ end;
 
 procedure TFilterElemente.chkLB1Click(Sender: TObject);
 begin
-//
-mmc:=mmc;
+  //
+  mmc := mmc;
 end;
 
 procedure TFilterElemente.chkLB1DrawItem(Control: TWinControl; Index: Integer; Rect: TRect; State: TOwnerDrawState);
@@ -1266,7 +1278,7 @@ var
   i: Integer;
   Sel: string;
 begin
-  mmon:=true;
+  mmon := true;
   Sel := EmptyStr;
   chkLB1Selected[TComboBox(Sender).itemindex] := not chkLB1Selected[TComboBox(Sender).itemindex];
   for i := 0 to TComboBox(Sender).Items.Count - 1 do
@@ -1274,7 +1286,7 @@ begin
       Sel := Sel + TComboBox(Sender).Items[i] + ' ';
   chkLB1.InvalIdate;
   chkLB1.DroppedDown := true;
-  mmon:=false;
+  mmon := false;
 end;
 
 function TFilterElemente.findSymbolId(symbol: string): Integer;
@@ -1294,4 +1306,3 @@ begin
 end;
 
 end.
-

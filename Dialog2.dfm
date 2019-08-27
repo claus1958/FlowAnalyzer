@@ -102,6 +102,22 @@ object Dialog2: TDialog2
     ParentFont = False
     TabOrder = 3
   end
+  object Button2: TButton
+    Left = 0
+    Top = 0
+    Width = 500
+    Height = 88
+    Caption = 'Click to finish Update now ...'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -24
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 4
+    Visible = False
+    OnClick = Button2Click
+  end
   object Timer1: TTimer
     Enabled = False
     Interval = 3000
