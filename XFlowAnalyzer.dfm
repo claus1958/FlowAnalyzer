@@ -11,6 +11,7 @@ object Form2: TForm2
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
@@ -159,6 +160,10 @@ object Form2: TForm2
                 ExplicitTop = 2
                 ExplicitHeight = 14
               end
+              inherited SpeedButton1: TSpeedButton
+                Top = 1
+                ExplicitTop = 1
+              end
             end
             inherited Panel2: TPanel
               Left = 0
@@ -236,6 +241,10 @@ object Form2: TForm2
                 ExplicitTop = 2
                 ExplicitHeight = 14
               end
+              inherited SpeedButton1: TSpeedButton
+                Top = 1
+                ExplicitTop = 1
+              end
             end
             inherited Panel2: TPanel
               Left = 0
@@ -312,6 +321,10 @@ object Form2: TForm2
                 Height = 14
                 ExplicitTop = 2
                 ExplicitHeight = 14
+              end
+              inherited SpeedButton1: TSpeedButton
+                Top = 1
+                ExplicitTop = 1
               end
             end
             inherited Panel2: TPanel
@@ -396,6 +409,10 @@ object Form2: TForm2
                 Height = 14
                 ExplicitTop = 2
                 ExplicitHeight = 14
+              end
+              inherited SpeedButton1: TSpeedButton
+                Top = 1
+                ExplicitTop = 1
               end
             end
             inherited Panel2: TPanel
@@ -608,6 +625,7 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 478
                   Height = 823
+                  ExplicitTop = 1
                   ExplicitWidth = 478
                   ExplicitHeight = 823
                 end
@@ -652,10 +670,8 @@ object Form2: TForm2
             ExplicitHeight = 691
             inherited Panel1: TPanel
               Width = 1012
-              Height = 0
               Align = alTop
               ExplicitWidth = 1012
-              ExplicitHeight = 0
               inherited lblTime: TLabel
                 Height = 14
                 ExplicitHeight = 14
@@ -667,9 +683,9 @@ object Form2: TForm2
             end
             inherited Panel2: TPanel
               Left = 0
-              Top = 0
+              Top = 41
               Width = 1012
-              Height = 691
+              Height = 650
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 0
@@ -677,23 +693,24 @@ object Form2: TForm2
               ExplicitHeight = 691
               inherited ScrollBar1: TScrollBar
                 Left = 995
-                Height = 689
+                Height = 648
                 ExplicitLeft = 995
                 ExplicitHeight = 689
               end
               inherited Panel3: TPanel
                 Width = 994
-                Height = 689
+                Height = 648
                 ExplicitWidth = 994
                 ExplicitHeight = 689
                 inherited SG: TStringGridSorted
                   Width = 992
-                  Height = 657
+                  Height = 616
+                  ExplicitTop = 1
                   ExplicitWidth = 992
                   ExplicitHeight = 657
                 end
                 inherited SGSum: TStringGridSorted
-                  Top = 658
+                  Top = 617
                   Width = 992
                   Font.Height = -12
                   ExplicitTop = 658
@@ -1211,9 +1228,11 @@ object Form2: TForm2
               Align = alTop
               ExplicitWidth = 991
               inherited lblTime: TLabel
+                Width = 5
                 Height = 19
                 Font.Height = -16
                 ParentFont = False
+                ExplicitWidth = 5
                 ExplicitHeight = 19
               end
               inherited lblSelection: TLabel
@@ -1255,6 +1274,11 @@ object Form2: TForm2
                   ExplicitTop = 401
                   ExplicitWidth = 971
                 end
+              end
+            end
+            inherited PopupMenu1: TPopupMenu
+              inherited Selectcolumns1: TMenuItem
+                OnClick = DynGrid9Selectcolumns1Click
               end
             end
           end

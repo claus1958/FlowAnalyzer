@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Clipbrd, Vcl.Grids, StringGridSorted,
   Vcl.ExtCtrls, MMSystem,
-  FTCommons, FTTypes, System.strutils;
+  FTCommons, FTTypes, System.strutils, Vcl.Menus, Vcl.Buttons;
 
 type
   TDynGrid = class(TFrame)
@@ -19,8 +19,12 @@ type
     SG: TStringGridSorted;
     SGSum: TStringGridSorted;
     lblSelection: TLabel;
-    Button1: TButton;
+    SpeedButton1: TSpeedButton;
+    PopupMenu1: TPopupMenu;
+    Selectcolumns1: TMenuItem;
+    CSVExport1: TMenuItem;
     constructor Create(AOwner: TComponent); override;
+    procedure saveInit();
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
@@ -52,7 +56,9 @@ type
     procedure SGKeyPress(Sender: TObject; var Key: Char);
     procedure SGSelectCell(Sender: TObject; ACol, ARow: integer; var CanSelect: Boolean);
     procedure workSelection(mdrow, murow: integer; Button: TMouseButton; Shift: TShiftState);
-    procedure Button1Click(Sender: TObject);
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure Selectcolumns1Click(Sender: TObject);
+    procedure CSVExport1Click(Sender: TObject);
   private
     { Private-Deklarationen }
   public
@@ -85,22 +91,15 @@ implementation
 
 {$R *.dfm}
 
-uses XFlowAnalyzer;
+uses XFlowAnalyzer, Dialog1;
 
 procedure Register;
 begin
   RegisterComponents('Samples', [TDynGrid]);
 end;
 
-procedure TDynGrid.Button1Click(Sender: TObject);
-var
-  expo: TExport;
-begin
-  // Export test
-  expo.fileName := 'test.csv';
-  expo.separator := ';';
-  gridHandler(@expo);
-end;
+
+
 
 constructor TDynGrid.Create(AOwner: TComponent);
 begin
@@ -112,6 +111,25 @@ begin
   setlength(sSort, 0);
 end;
 
+procedure TDynGrid.CSVExport1Click(Sender: TObject);
+var
+  expo: TExport;
+  fname: string;
+  ok: Boolean;
+begin
+  // Export test
+  fname := 'export.csv';
+
+  ok := InputQuery('Export to CSV-File', 'Filename:', fname);
+  if (ok = false) then
+    exit;
+
+  if (fname = '') then
+    exit;
+  expo.fileName := fname;
+  expo.separator := ';';
+  gridHandler(@expo);
+end;
 procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
 // diese gridinterne Funktion ist beim DynGrid abgeschaltet
 var
@@ -385,6 +403,16 @@ begin
   btn := mbleft;
   // col row ist die Zelle in welcher die Taste gedrückt wurde und nicht die Zielzelle !
   case Key of
+  //geht leider nicht, da die Kopfzeile gar nicht gewählt werden kann.Daher ist col immer 0 , egal wo man sich befindet
+//    VK_DELETE:
+//      begin
+//        // showmessage('make col invisible');
+//        SG.ColWidths[col] := 20;
+//        SGSum.ColWidths[col] := 20;
+//        gridHandler(nil);
+//        form2.repaint;
+//      end;
+
     VK_DOWN:
       begin
         if (row >= visibleRows - 1) then
@@ -509,6 +537,13 @@ begin
   end;
 end;
 
+procedure TDynGrid.Selectcolumns1Click(Sender: TObject);
+begin
+dialog1.form5.gridselektor(self);
+dialog1.form5.Showmodal;
+//Column selection
+end;
+
 // spezieller Teil auf zB cwactions,cwfilteredactions,cwsingleuseractions bezugnehmend
 // todo: cwsymbols cwusers cwcomments cwsymbolsgroups cwfilteredsymbolsgroups
 
@@ -573,13 +608,19 @@ begin
       begin
         SGFieldCol[i] := faIni.ReadInteger('dyngrid:' + source, 'sfc' + inttostr(i), 0);
         SGColField[i] := faIni.ReadInteger('dyngrid:' + source, 'scf' + inttostr(i), 0);
+        SG.ColWidths[i] := faIni.ReadInteger('dyngrid:' + source, 'cw' + inttostr(i), 100);
+        SGSum.ColWidths[i] := faIni.ReadInteger('dyngrid:' + source, 'cw' + inttostr(i), 100);
+
       end;
+      autosized := true;
     end
     else
       for i := 0 to cols - 1 do
       begin
         SGFieldCol[i] := i;
         SGColField[i] := i;
+        SG.ColWidths[i] := 100;
+        SGSum.ColWidths[i] := 100;
       end;
     initialized := true;
   end;
@@ -611,7 +652,7 @@ begin
   if source = 'cwsummaries' then
     sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
 
-  autosized := false;
+  // autosized := false;
 
   setlength(selSorted, length(ixSorted));
   for i := 0 to length(ixSorted) - 1 do
@@ -856,7 +897,7 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1115,10 +1156,17 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
+procedure TDynGrid.SpeedButton1Click(Sender: TObject);
+var p:tpoint;
+
+begin
+p:=speedbutton1.ClientToScreen(point(0,speedbutton1.Height));
+popupmenu1.Popup(p.x,p.y);
+end;
 procedure TDynGrid.sortGridCwComments(source: string; sortcol: string; sortdir: integer; var comments: DACwComment);
 var
   dl, i, scol, smethode: integer;
@@ -1183,7 +1231,7 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1359,7 +1407,7 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1479,7 +1527,7 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1597,7 +1645,7 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1726,7 +1774,7 @@ begin
     end;
 
   end;
-  lblTime.caption := inttostr(gettickcount - gt);
+  //lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1789,6 +1837,11 @@ begin
   begin
     vScrollvon := 0;
     vscrollbis := maxDataRows;
+    if (maxDataRows > 30000) then
+    begin
+      showmessage('Maximum number of lines = 30000');
+      vscrollbis := 29999;
+    end;
   end;
 
   // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
@@ -1822,7 +1875,7 @@ begin
   begin
     // die sl ist nun bereits erzeugt worden
     sl.SaveToFile(exp.fileName);
-    showmessage(inttostr(vscrollbis-vscrollvon+1)+' lines successfully exported to:'+exp.fileName);
+    showmessage(inttostr(vscrollbis - vScrollvon + 1) + ' lines successfully exported to:' + exp.fileName);
   end;
   // end;
 end;
@@ -2009,17 +2062,11 @@ begin
         end;
 
         ;
+
         for i := 0 to length(SGFieldCol) - 1 do
           SGFieldCol[SGColField[i]] := i;
 
-        // hier könnte in INI File gesichert werden
-        faIni.writeBool('dyngrid:' + source, 'sfcscf', true);
-        for i := 0 to length(SGFieldCol) - 1 do
-        begin
-          faIni.writeInteger('dyngrid:' + source, 'sfc' + inttostr(i), SGFieldCol[i]);
-          faIni.writeInteger('dyngrid:' + source, 'scf' + inttostr(i), SGColField[i]);
-        end;
-        faIni.UpdateFile;
+        saveInit;
       end;
     end
     else
@@ -2038,6 +2085,22 @@ begin
   // ClipBoard.AsText := grid.Cells[col, row];
   // hier kann dann individuell gehandelt werden !
   // gridMouseLeftClickHandler(grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
+
+end;
+
+procedure TDynGrid.saveInit();
+var
+  i: integer;
+begin
+  // hier könnte in INI File gesichert werden
+  faIni.writeBool('dyngrid:' + source, 'sfcscf', true);
+  for i := 0 to length(SGFieldCol) - 1 do
+  begin
+    faIni.writeInteger('dyngrid:' + source, 'sfc' + inttostr(i), SGFieldCol[i]);
+    faIni.writeInteger('dyngrid:' + source, 'scf' + inttostr(i), SGColField[i]);
+    faIni.writeInteger('dyngrid:' + source, 'cw' + inttostr(i), SG.ColWidths[i]);
+  end;
+  faIni.UpdateFile;
 
 end;
 

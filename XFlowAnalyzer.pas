@@ -298,6 +298,8 @@ type
     procedure infoTimerTimer(Sender: TObject);
     procedure OnMove(var Msg: TWMMove); message WM_MOVE;
     procedure Button3Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure DynGrid9Selectcolumns1Click(Sender: TObject);
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -1157,6 +1159,12 @@ begin
     dyngridMouseLeftClickHandler('users', grid, col, row, grid.Cells[col, row], grid.Cells[col, 0], grid.Cells[0, row]);
 
   end;
+end;
+
+procedure TForm2.DynGrid9Selectcolumns1Click(Sender: TObject);
+begin
+  DynGrid9.Selectcolumns1Click(Sender);
+
 end;
 
 procedure TForm2.btnListDoublesCwClick(Sender: TObject);
@@ -2023,7 +2031,7 @@ begin
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
   DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 9);
-  DynGrid9.lblTime.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt);
+  DynGrid9.lblHeader.caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt);
 end;
 
 function TForm2.trimYear(year: integer): integer;
@@ -2842,6 +2850,33 @@ begin
   end;
 end;
 
+procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
+  begin
+  dyngrid1.saveInit;
+    dyngrid2.saveInit;
+    dyngrid3.saveInit;
+    dyngrid4.saveInit;
+    dyngrid5.saveInit;
+    dyngrid6.saveInit;
+    dyngrid7.saveInit;
+    dyngrid8.saveInit;
+    dyngrid9.saveInit;
+    dyngrid10.saveInit;
+
+    freeandnil(faIni);
+    if HTTPWorker1.Finished = false then
+    begin
+      HTTPWorker1.Terminate;
+      HTTPWorker1.waitfor;
+      HTTPWorker1.free;
+      HTTPWorker1.ResultList.free;
+      HTTPWorker1Aktiv := false;
+      dosleep(10);
+    end;
+    DeleteCriticalSection(HTTPWorkCriticalSection);
+  end;
+
+
 procedure TForm2.FormCreate(Sender: TObject);
 var
   i: integer;
@@ -2851,7 +2886,7 @@ var
   pwok: boolean;
 
 begin
-  faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, 'ini'));
+  faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
   pwct := 0;
   updateGoing := false;
   pwok := false;
@@ -3800,6 +3835,17 @@ begin
 
   procedure TForm2.FormDestroy(Sender: TObject);
   begin
+  dyngrid1.saveInit;
+    dyngrid2.saveInit;
+    dyngrid3.saveInit;
+    dyngrid4.saveInit;
+    dyngrid5.saveInit;
+    dyngrid6.saveInit;
+    dyngrid7.saveInit;
+    dyngrid8.saveInit;
+    dyngrid9.saveInit;
+    dyngrid10.saveInit;
+
     freeandnil(faIni);
     if HTTPWorker1.Finished = false then
     begin
@@ -3811,7 +3857,6 @@ begin
       dosleep(10);
     end;
     DeleteCriticalSection(HTTPWorkCriticalSection);
-
   end;
 
   procedure TForm2.FormResize(Sender: TObject);

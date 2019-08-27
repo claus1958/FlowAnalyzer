@@ -3424,6 +3424,8 @@ var
   c, R, w, ColWidthMax: integer;
   header: string;
 begin
+  exit; //vorläufig abgeschaltet, da manuell einstellbar !
+
   for c := 0 to Grid.ColCount - 1 do
   begin
     // bestehende durch -1 unsichtbare Spalten unberührt lassen !
