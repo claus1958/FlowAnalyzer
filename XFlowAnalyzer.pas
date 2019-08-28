@@ -585,7 +585,7 @@ begin
   ok := false;
   if (tryCache = true) then
   begin
-    fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\' + typ + '.csv';
+    fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\' + typ + '.csv';
     if (fileExists(fileName) = true) then
     begin
       Stream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
@@ -647,7 +647,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\usersOnline.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\usersOnline.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -666,7 +666,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\symbols.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\symbols.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -685,7 +685,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\users.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\users.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -702,7 +702,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\comments.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\comments.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -820,7 +820,8 @@ begin
     btnGetSingleUserActionsClick(nil);
     // if (ssshift in shift) then
     if (Button = mbright) then
-      PageControl1.TabIndex := 2;
+//      PageControl1.TabIndex := 2;
+      PageControl1.ActivepageIndex := 2;
   end;
 
   // if grid.name = 'SGCwUsers' then
@@ -850,7 +851,7 @@ begin
     if colHeader = 'userId' then
     begin
       edSingleUserActionsId.text := grid.Cells[col, row];
-      PageControl1.TabIndex := 2;
+      PageControl1.ActivePageIndex := 2;
       btnGetSingleUserActionsClick(nil);
     end;
 
@@ -860,7 +861,7 @@ begin
     if colHeader = 'userId' then
     begin
       edSingleUserActionsId.text := grid.Cells[col, row];
-      PageControl1.TabIndex := 2;
+      PageControl1.ActivepageIndex := 2;
       btnGetSingleUserActionsClick(nil);
     end;
 
@@ -1316,10 +1317,13 @@ begin
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10;
   // ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
+  if(claus=true) then
+  begin
   TabSheet1.TabVisible := true; // Filter
   TabSheet6.TabVisible := true; // All Data
   TabSheet5.TabVisible := true; // User
 
+  end;
   // TabSheet7.TabVisible := true; // SymbolsGroups
 
   dosleep(CSleep);
@@ -1330,7 +1334,7 @@ begin
   LoadInfo('Finished');
   Dialog2.fdialog2.info2('');
 
-  PageControl1.TabIndex := 0; // START
+  PageControl1.ActivePageIndex := 0; // START
 
   computeStartScreen;
   dosleep(CSleep);
@@ -3006,24 +3010,37 @@ var
   style: string;
   pwct: integer;
   pwok: boolean;
-  s:string;
+  s: string;
 
 begin
   faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
   pwct := 0;
   updateGoing := false;
   pwok := false;
-  claus := true;
+  claus := false;
+
+
   if (claus = false) then
   begin
+  tabsheet1.TabVisible:=false;
+  tabsheet2.TabVisible:=false;
+  tabsheet3.TabVisible:=false;
+  tabsheet4.TabVisible:=false;
+  tabsheet5.TabVisible:=false;
+  tabsheet6.TabVisible:=false;
+  tabsheet7.TabVisible:=false;
+  tabsheet8.TabVisible:=false;
+  tabsheet9.TabVisible:=false;
+  tabsheet10.TabVisible:=false;
+  pagecontrol1.ActivePageIndex:=0;
+
     for pwct := 0 to 2 do
     begin
 
-
-      if InputQuery('Password', #31 + 'Please enter a password:',pw) then
+      if InputQuery('Password', #31 + 'Please enter a password:', pw) then
       else
         exit;
-//    pw := InputBox('Password:', 'Password:', '');
+      // pw := InputBox('Password:', 'Password:', '');
 
       if pw = '2502' then
       begin
@@ -3053,7 +3070,7 @@ begin
   gridsortmethode2 := false;
   folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
   createDir(folder);
-  fileName := folder + '\'+cCachefile+'.bin';
+  fileName := folder + '\' + cCachefile + '.bin';
   if fileExists(fileName) then
   begin
     cbLoadActionsFromCache.Visible := true;
@@ -3638,36 +3655,36 @@ begin
 
   procedure TForm2.SpeedButton1Click(Sender: TObject);
   begin
-    PageControl1.TabIndex := 0;
+    PageControl1.ActivePageIndex := 0;
 
   end;
 
   procedure TForm2.SpeedButton2Click(Sender: TObject);
   begin
-    PageControl1.TabIndex := 3;
+    PageControl1.ActivePageIndex := 3;
 
   end;
 
   procedure TForm2.SpeedButton3Click(Sender: TObject);
   begin
-    PageControl1.TabIndex := 2;
+    PageControl1.ActivePageIndex := 2;
 
   end;
 
   procedure TForm2.SpeedButton4Click(Sender: TObject);
   begin
-    PageControl1.TabIndex := 1;
+    PageControl1.ActivePageIndex := 1;
   end;
 
   procedure TForm2.SpeedButton5Click(Sender: TObject);
   begin
-    PageControl1.TabIndex := 4;
+    PageControl1.ActivePageIndex := 4;
 
   end;
 
   procedure TForm2.SpeedButton6Click(Sender: TObject);
   begin
-    PageControl1.TabIndex := 4;
+    PageControl1.ActivePageIndex := 4;
 
   end;
 
@@ -3757,7 +3774,7 @@ begin
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
     Form2.Repaint;
     btnLoadDataClick(nil);
-
+    //Form2.Width := Form2.Width + 1;
   end;
 
   // procedure TForm2.TrackBar1Change(Sender: TObject);
@@ -4007,11 +4024,14 @@ begin
   var
     Msg: TWMMove;
   begin
-    PageControl1.Width := Form2.Width - pnlIcons.Width;
-    PageControl1.Top := -30;
-    PageControl1.Height := Form2.Height+30;
-    if (claus = true) then
-      PageControl1.Top := -20;
+    //über align nicht mehr nötig
+
+//    PageControl1.Width := Form2.Width - pnlIcons.Width;
+//    PageControl1.Top := -30;
+//    PageControl1.Height := Form2.Height + 30;
+//    if (claus = true) then
+//      PageControl1.Top := -20;
+
     if Form2.Width < 200 then
       Form2.Width := 200;
     if Form2.Height < 100 then
