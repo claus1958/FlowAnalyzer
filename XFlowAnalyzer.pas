@@ -585,7 +585,7 @@ begin
   ok := false;
   if (tryCache = true) then
   begin
-    fileName := ExtractFilePath(paramstr(0)) + 'cachecw\' + typ + '.csv';
+    fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\' + typ + '.csv';
     if (fileExists(fileName) = true) then
     begin
       Stream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
@@ -647,7 +647,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + 'cachecw\usersOnline.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\usersOnline.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -666,7 +666,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + 'cachecw\symbols.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\symbols.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -685,7 +685,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + 'cachecw\users.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\users.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -702,7 +702,7 @@ begin
     begin
       // die Bytes in eine Datei schreiben
       try
-        fileName := ExtractFilePath(paramstr(0)) + 'cachecw\comments.csv';
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder+'\comments.csv';
         fileMode := fmCreate;
         Stream := TFileStream.Create(fileName, fileMode);
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
@@ -3006,18 +3006,24 @@ var
   style: string;
   pwct: integer;
   pwok: boolean;
+  s:string;
 
 begin
   faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
   pwct := 0;
   updateGoing := false;
   pwok := false;
-  claus := false;
+  claus := true;
   if (claus = false) then
   begin
     for pwct := 0 to 2 do
     begin
-      pw := InputBox('Password:', 'Password:', '');
+
+
+      if InputQuery('Password', #31 + 'Please enter a password:',pw) then
+      else
+        exit;
+//    pw := InputBox('Password:', 'Password:', '');
 
       if pw = '2502' then
       begin
@@ -3045,9 +3051,9 @@ begin
   end;
 
   gridsortmethode2 := false;
-  folder := ExtractFilePath(paramstr(0)) + 'cachecw';
+  folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
   createDir(folder);
-  fileName := folder + '\cwactions.bin';
+  fileName := folder + '\'+cCachefile+'.bin';
   if fileExists(fileName) then
   begin
     cbLoadActionsFromCache.Visible := true;
@@ -4001,9 +4007,9 @@ begin
   var
     Msg: TWMMove;
   begin
-    PageControl1.Height := Form2.Height;
     PageControl1.Width := Form2.Width - pnlIcons.Width;
     PageControl1.Top := -30;
+    PageControl1.Height := Form2.Height+30;
     if (claus = true) then
       PageControl1.Top := -20;
     if Form2.Width < 200 then
@@ -4026,16 +4032,16 @@ begin
     twoLblStart[2].l1.Caption := 'Actions total:';
     twoLblStart[3].l1.Caption := 'Users online:';
     twoLblStart[4].l1.Caption := 'Open Actions:';
-    twoLblStart[5].l1.Caption := 'New Users 1 week:';
-    twoLblStart[6].l1.Caption := 'New Users 1 month:';
+    twoLblStart[5].l1.Caption := 'New Users 1 Week:';
+    twoLblStart[6].l1.Caption := 'New Users 1 Month:';
     twoLblStart[7].l1.Caption := 'Actions new today:';
-    twoLblStart[8].l1.Caption := 'Actions 1 week:';
+    twoLblStart[8].l1.Caption := 'Actions 1 Week:';
     twoLblStart[9].l1.Caption := 'Profit today:';
-    twoLblStart[10].l1.Caption := 'Profit 1 week:';
+    twoLblStart[10].l1.Caption := 'Profit 1 Week:';
     twoLblStart[11].l1.Caption := 'Logged Users 1 day:';
     twoLblStart[12].l1.Caption := 'Logged Users 1 week:';
     twoLblStart[13].l1.Caption := 'Logged Users 1 month:';
-    twoLblStart[14].l1.Caption := 'Closed actions day/week/month/year:';
+    twoLblStart[14].l1.Caption := 'Closed Actions Day/Week/Month/Year:';
 
     twoLblStart[1].l2.Caption := inttostr(length(cwUsers));
     twoLblStart[2].l2.Caption := inttostr(length(cwActions));

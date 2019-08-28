@@ -16,18 +16,15 @@ object Form5: TForm5
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object chkLB1: TComboBox
-    Left = 10
-    Top = 31
+  object chkLB1x: TComboBox
+    Left = 6
+    Top = 483
     Width = 405
     Height = 22
     AutoDropDown = True
     Style = csOwnerDrawFixed
     DropDownCount = 24
     TabOrder = 0
-    OnClick = chkLB1Click
-    OnDrawItem = chkLB1DrawItem
-    OnSelect = chkLB1Select
   end
   object Button1: TButton
     Left = 10
@@ -64,6 +61,14 @@ object Form5: TForm5
     Caption = 'exit'
     TabOrder = 4
     OnClick = Button4Click
+  end
+  object chkLB1: TCheckListBox
+    Left = 12
+    Top = 32
+    Width = 401
+    Height = 445
+    ItemHeight = 13
+    TabOrder = 5
   end
   object Timer1: TTimer
     Enabled = False

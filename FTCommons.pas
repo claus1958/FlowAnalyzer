@@ -16,8 +16,8 @@ const
   // Use bAlpha to determine the opacity of the layered window..
   LWA_ALPHA = 2;
   WS_EX_LAYERED = $80000;
-  cCachefile = 'CwActions2';
-
+  cCachefile = 'Actions';
+  cCacheFolder='cache';
 type
 
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -2515,7 +2515,7 @@ var
 begin
   try
     gt := GetTickCount();
-    folder := ExtractFilePath(paramstr(0)) + 'cachecw';
+    folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
     createDir(folder);
     fileName := folder + '\' + fname + '.bin';
     if fileexists(fileName) then
@@ -2586,7 +2586,7 @@ var
 begin
   try
     gt := GetTickCount();
-    folder := ExtractFilePath(paramstr(0)) + 'cachecw';
+    folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
     createDir(folder);
     fileName := folder + '\' + fname + '.bin';
     fstream := TFileStream.Create(fileName, fmCreate);

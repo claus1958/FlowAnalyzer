@@ -304,7 +304,10 @@ begin
           end;
       end;
       SGSum.Cells[mdcol, mdrow] := summe;
-    end;
+    end
+    else
+      SGSum.Cells[mdcol, mdrow] := '';
+
   end;
 
 end;
@@ -559,6 +562,7 @@ begin
   self.sortcol := sortcol;
   self.sortdir := sortdir;
   maxDataRows := 0;
+  visibleRows := trunc(((SG.height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
   mrows := visibleRows;
   SG.test := 1;
   if rows < mrows then
@@ -1969,7 +1973,7 @@ end;
 
 procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 var
-  col, row, merk, i, nr, anr, fall, seltop, selbottom: integer;
+  col, row, merk,merkWidth, i, nr, anr, fall, seltop, selbottom: integer;
   grid: FTCommons.TStringGridSorted;
   Cursor: TCursor;
   such, vgl: string;
@@ -2010,17 +2014,31 @@ begin
           begin
             // nach rechts verschoben
             merk := SGColField[mdcol];
+            merkWidth:=SG.ColWidths[mdcol];
             for i := mdcol to mucol - 1 do
+            begin
               SGColField[i] := SGColField[i + 1];
+              SG.Colwidths[i] := SG.Colwidths[i + 1];
+              SGSum.Colwidths[i] := SGSum.Colwidths[i + 1];
+            end;
             SGColField[mucol] := merk;
+            SG.Colwidths[mucol] := merkWidth;
+            SGSum.Colwidths[mucol] := merkWidth;
           end
           else
           begin
             // nach links verschoben
             merk := SGColField[mdcol];
+            merkWidth:=SG.ColWidths[mdcol];
             for i := mdcol downto mucol + 1 do
+            begin
               SGColField[i] := SGColField[i - 1];
+              SG.Colwidths[i] := SG.Colwidths[i - 1];
+              SGSum.Colwidths[i] := SGSum.Colwidths[i - 1];
+            end;
             SGColField[mucol] := merk;
+            SG.Colwidths[mucol] := merkWidth;
+            SGSum.Colwidths[mucol] := merkWidth;
           end
         end
         else
