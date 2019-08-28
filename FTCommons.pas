@@ -1357,10 +1357,10 @@ begin
       // Ausblenden was nicht erwünscht ist
       for k := 0 to 26 do
       begin
-        if (claus = false) then
-          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
-            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
-            SG.ColWidths[SGFieldCol[k]] := -1;
+//        if (claus = false) then
+//          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
+//            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
+//            SG.ColWidths[SGFieldCol[k]] := -1;
       end;
       SG.Rows[0].endUpdate;
     end;

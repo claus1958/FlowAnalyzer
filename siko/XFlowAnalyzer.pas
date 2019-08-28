@@ -20,7 +20,7 @@ type
 
   TForm2 = class(TForm)
     StatusBar1: TStatusBar;
-    PageControl1: TPanel;
+    PageControl1: TPageControl;
     TabSheet2: TTabSheet;
     TabSheet5: TTabSheet;
     Panel6: TPanel;
@@ -190,10 +190,6 @@ type
     Button3: FTCommons.TButton;
     SG: TStringGridSorted;
     lblUpdateRest: TLabel;
-    btnSample5: TButton;
-    procedure doUpdate(dt: TDateTime = 0);
-    procedure doLockWindowUpdate(yn:boolean);
-    procedure setPageIndex(i: integer);
     procedure getSymbolsUsersComments(useCache: boolean);
     procedure finishUpdate();
     procedure btnGetCsvClick(Sender: TObject);
@@ -247,7 +243,9 @@ type
     // procedure gridHandler(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure btnUpdateDataClick(Sender: TObject);
+    procedure PageControl1DrawTab(Control: TCustomTabControl; TabIndex: integer; const Rect: TRect; Active: boolean);
     procedure PageControl1Change(Sender: TObject);
+    procedure PageControl1Changing(Sender: TObject; var AllowChange: boolean);
     procedure btnDoUsersAndSymbolsPlusClick(Sender: TObject);
     procedure CategoryPanel1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
     procedure CategoryPanelGroup1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
@@ -304,8 +302,6 @@ type
     procedure Button3Click(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure DynGrid9Selectcolumns1Click(Sender: TObject);
-    procedure lblUpdateRestClick(Sender: TObject);
-    procedure lblUpdateRestDblClick(Sender: TObject);
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -824,8 +820,8 @@ begin
     btnGetSingleUserActionsClick(nil);
     // if (ssshift in shift) then
     if (Button = mbright) then
-      // PageControl1.TabIndex := 2;
-      setPageIndex(4); // 2;
+//      PageControl1.TabIndex := 2;
+      PageControl1.ActivepageIndex := 2;
   end;
 
   // if grid.name = 'SGCwUsers' then
@@ -855,7 +851,7 @@ begin
     if colHeader = 'userId' then
     begin
       edSingleUserActionsId.text := grid.Cells[col, row];
-      setPageIndex(4); // 2;
+      PageControl1.ActivePageIndex := 2;
       btnGetSingleUserActionsClick(nil);
     end;
 
@@ -865,7 +861,7 @@ begin
     if colHeader = 'userId' then
     begin
       edSingleUserActionsId.text := grid.Cells[col, row];
-      setPageIndex(4); // 2;
+      PageControl1.ActivepageIndex := 2;
       btnGetSingleUserActionsClick(nil);
     end;
 
@@ -1321,11 +1317,11 @@ begin
     inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10;
   // ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
-  if (claus = true) then
+  if(claus=true) then
   begin
-    TabSheet1.TabVisible := true; // Filter
-    TabSheet6.TabVisible := true; // All Data
-    TabSheet5.TabVisible := true; // User
+  TabSheet1.TabVisible := true; // Filter
+  TabSheet6.TabVisible := true; // All Data
+  TabSheet5.TabVisible := true; // User
 
   end;
   // TabSheet7.TabVisible := true; // SymbolsGroups
@@ -1338,7 +1334,7 @@ begin
   LoadInfo('Finished');
   Dialog2.fdialog2.info2('');
 
-  setPageIndex(1); // 0; // START
+  PageControl1.ActivePageIndex := 0; // START
 
   computeStartScreen;
   dosleep(CSleep);
@@ -1365,20 +1361,6 @@ begin
   lbLoadInfo.Repaint;
   Dialog2.fdialog2.lbLoadInfo.Repaint;
 
-end;
-
-procedure TForm2.doLockWindowUpdate(yn:boolean);
-//Klappt alles nicht richtig !
-begin
-  if(yn=true) then
-    SendMessage(Form2.pnlFilter.Handle, WM_SETREDRAW, WPARAM(FALSE),0)
-  else
-  begin
-    SendMessage(Form2.pnlFilter.handle, WM_SETREDRAW, WPARAM(TRUE),0);
-    Form2.pnlFilter.Repaint;
-  end;
-
-//  LockWindowUpdate(Form2.WindowHandle);
 end;
 
 procedure TForm2.machActionsUserIndex;
@@ -1489,30 +1471,47 @@ end;
 // end;
 
 procedure TForm2.PageControl1Change(Sender: TObject);
-// var
-// a: integer;
+var
+  a: integer;
 begin
-  // a := PageControl1.TabIndex;
-  // // wirksam um die falschen Skinnings zu beseitigen
-  // PageControl1.ActivePage.Width := PageControl1.ActivePage.Width + 1;
-  // if PageControl1.ActivePage.TabIndex = 5 then // caption='SymbolsGroups' then
-  // begin
-  // remeasureCategoryPanels(CategoryPanelGroup3);
-  // end;
-  // if PageControl1.ActivePage.TabIndex = 3 then // caption='SymbolsGroups' then
-  // begin
-  //
-  // if (firstSampleDone = false) then
-  // begin
-  // btnSampleClick(btnSample2);
-  // firstSampleDone := true;
-  // end;
-  // end;
-  // if PageControl1.ActivePage.TabIndex = 1 then // all data
-  // begin
-  // end;
+  a := PageControl1.TabIndex;
+  // wirksam um die falschen Skinnings zu beseitigen
+  PageControl1.ActivePage.Width := PageControl1.ActivePage.Width + 1;
+  if PageControl1.ActivePage.TabIndex = 5 then // caption='SymbolsGroups' then
+  begin
+    remeasureCategoryPanels(CategoryPanelGroup3);
+  end;
+  if PageControl1.ActivePage.TabIndex = 3 then // caption='SymbolsGroups' then
+  begin
+
+    if (firstSampleDone = false) then
+    begin
+      btnSampleClick(btnSample2);
+      firstSampleDone := true;
+    end;
+  end;
+  if PageControl1.ActivePage.TabIndex = 1 then // all data
+  begin
+  end;
 
   //
+end;
+
+procedure TForm2.PageControl1Changing(Sender: TObject; var AllowChange: boolean);
+var
+  a: integer;
+begin
+  a := 1;
+  //
+end;
+
+procedure TForm2.PageControl1DrawTab(Control: TCustomTabControl; TabIndex: integer; const Rect: TRect; Active: boolean);
+var
+  a: integer;
+begin
+  //
+  a := 1;
+
 end;
 
 procedure TForm2.pnlStartBackResize(Sender: TObject);
@@ -2411,11 +2410,6 @@ begin
 end;
 
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
-begin
-  doUpdate();
-end;
-
-procedure TForm2.doUpdate(dt: TDateTime = 0);
 var
   i, lold, lnew: integer;
   merkOpenTime, merkCloseTime: integer;
@@ -2438,37 +2432,30 @@ begin
   Dialog2.fdialog2.info('Update data ...');
   gtall := GetTickCount;
   gt := GetTickCount;
-
-  if (dt = 0) then
+  merkOpenTime := 0;
+  merkCloseTime := 0;
+  tnow := datetimetounix(now);
+  // feststellen, wie weit die 'alten' actions zeitlich reichen
+  for i := 0 to length(cwActions) - 1 do
   begin
-    merkOpenTime := 0;
-    merkCloseTime := 0;
-    tnow := datetimetounix(now);
-    // feststellen, wie weit die 'alten' actions zeitlich reichen
-    for i := 0 to length(cwActions) - 1 do
+    if cwActions[i].typeId <> 7 then
     begin
-      if cwActions[i].typeId <> 7 then
-      begin
-        if cwActions[i].openTime > merkOpenTime then
-          if cwActions[i].openTime < tnow then
-            merkOpenTime := cwActions[i].openTime;
-        if cwActions[i].closeTime > merkCloseTime then
-          if cwActions[i].closeTime < tnow then
-            merkCloseTime := cwActions[i].closeTime;
+      if cwActions[i].openTime > merkOpenTime then
+        if cwActions[i].openTime < tnow then
+          merkOpenTime := cwActions[i].openTime;
+      if cwActions[i].closeTime > merkCloseTime then
+        if cwActions[i].closeTime < tnow then
+          merkCloseTime := cwActions[i].closeTime;
 
-      end
-      else
-      begin
-      end;
-      tt := merkOpenTime;
-      if merkCloseTime > tt then
-        tt := merkCloseTime;
-      tt := tt - 0; // 5 Minuten zurück ???
+    end
+    else
+    begin
     end;
-
-  end
-  else
-    tt := datetimetounix(dt);
+    tt := merkOpenTime;
+    if merkCloseTime > tt then
+      tt := merkCloseTime;
+    tt := tt - 0; // 5 Minuten zurück ???
+  end;
   lold := length(cwActions);
   lbCSVError.Items.Add('[Vorbereitung]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
@@ -2823,7 +2810,6 @@ begin
   begin
     fe.Active := true;
     fe.topic := 'ActionType';
-
     fe.operator := '=';
     fe.values := 'BALANCE';
     Filter[1].setValues(fe);
@@ -2885,28 +2871,6 @@ begin
     fe.topic := 'CloseDateTime';
     fe.operator := '<>';
     fe.values := '0';
-    Filter[3].setValues(fe);
-
-  end;
-
-  if (Sender = btnSample5) then
-  begin
-    fe.Active := true;
-    fe.topic := 'ActionType';
-    fe.operator := '<>';
-    fe.values := 'BALANCE,CREDIT';
-    Filter[1].setValues(fe);
-
-    fe.Active := true;
-    fe.topic := 'CloseDateTime';
-    fe.operator := '>';
-    fe.values := '1564617600';
-    Filter[2].setValues(fe);
-
-    fe.Active := true;
-    fe.topic := 'CloseDateTime';
-    fe.operator := '<';
-    fe.values := '1567209600';
     Filter[3].setValues(fe);
 
   end;
@@ -3013,80 +2977,6 @@ begin
   end;
 end;
 
-procedure TForm2.setPageIndex(i: integer);
-var
-  j: integer;
-begin
-  // Ersatz für PageControl1.ActivePageIndex:=i
-  for j := 0 to 9 do
-  begin
-  end;
-  if (TabSheet1.Visible = true) then
-    if (i <> 0) then
-      TabSheet1.Visible := false;
-  if (TabSheet2.Visible = true) then
-    if (i <> 1) then
-
-      TabSheet2.Visible := false;
-  if (TabSheet3.Visible = true) then
-    if (i <> 2) then
-
-      TabSheet3.Visible := false;
-  if (TabSheet4.Visible = true) then
-    if (i <> 3) then
-
-      TabSheet4.Visible := false;
-  if (TabSheet5.Visible = true) then
-    if (i <> 4) then
-
-      TabSheet5.Visible := false;
-  if (TabSheet6.Visible = true) then
-    if (i <> 5) then
-
-      TabSheet6.Visible := false;
-  if (TabSheet7.Visible = true) then
-    if (i <> 6) then
-
-      TabSheet7.Visible := false;
-  if (TabSheet8.Visible = true) then
-    if (i <> 7) then
-
-      TabSheet8.Visible := false;
-  if (TabSheet9.Visible = true) then
-    if (i <> 8) then
-
-      TabSheet9.Visible := false;
-  if (TabSheet10.Visible = true) then
-    if (i <> 9) then
-
-      TabSheet10.Visible := false;
-
-  case i of
-    0:
-      TabSheet1.Visible := true;
-    1:
-      TabSheet2.Visible := true;
-    2:
-      TabSheet3.Visible := true;
-    3:
-      TabSheet4.Visible := true;
-    4:
-      TabSheet5.Visible := true;
-    5:
-      TabSheet6.Visible := true;
-    6:
-      TabSheet7.Visible := true;
-    7:
-      TabSheet8.Visible := true;
-    8:
-      TabSheet9.Visible := true;
-    9:
-      TabSheet10.Visible := true;
-
-  end;
-
-end;
-
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   DynGrid1.saveInit;
@@ -3129,19 +3019,20 @@ begin
   pwok := false;
   claus := false;
 
+
   if (claus = false) then
   begin
-    TabSheet1.TabVisible := false;
-    TabSheet2.TabVisible := false;
-    TabSheet3.TabVisible := false;
-    TabSheet4.TabVisible := false;
-    TabSheet5.TabVisible := false;
-    TabSheet6.TabVisible := false;
-    TabSheet7.TabVisible := false;
-    TabSheet8.TabVisible := false;
-    TabSheet9.TabVisible := false;
-    TabSheet10.TabVisible := false;
-    setPageIndex(1);
+  tabsheet1.TabVisible:=false;
+  tabsheet2.TabVisible:=false;
+  tabsheet3.TabVisible:=false;
+  tabsheet4.TabVisible:=false;
+  tabsheet5.TabVisible:=false;
+  tabsheet6.TabVisible:=false;
+  tabsheet7.TabVisible:=false;
+  tabsheet8.TabVisible:=false;
+  tabsheet9.TabVisible:=false;
+  tabsheet10.TabVisible:=false;
+  pagecontrol1.ActivePageIndex:=0;
 
     for pwct := 0 to 2 do
     begin
@@ -3764,36 +3655,36 @@ begin
 
   procedure TForm2.SpeedButton1Click(Sender: TObject);
   begin
-    setPageIndex(1); // 0;
+    PageControl1.ActivePageIndex := 0;
 
   end;
 
   procedure TForm2.SpeedButton2Click(Sender: TObject);
   begin
-    setPageIndex(0); // 3;
+    PageControl1.ActivePageIndex := 3;
 
   end;
 
   procedure TForm2.SpeedButton3Click(Sender: TObject);
   begin
-    setPageIndex(4); // 2;
+    PageControl1.ActivePageIndex := 2;
 
   end;
 
   procedure TForm2.SpeedButton4Click(Sender: TObject);
   begin
-    setPageIndex(5); // 1;
+    PageControl1.ActivePageIndex := 1;
   end;
 
   procedure TForm2.SpeedButton5Click(Sender: TObject);
   begin
-    setPageIndex(4); // 4;
+    PageControl1.ActivePageIndex := 4;
 
   end;
 
   procedure TForm2.SpeedButton6Click(Sender: TObject);
   begin
-    setPageIndex(4); // 4;
+    PageControl1.ActivePageIndex := 4;
 
   end;
 
@@ -3883,7 +3774,7 @@ begin
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
     Form2.Repaint;
     btnLoadDataClick(nil);
-    // Form2.Width := Form2.Width + 1;
+    //Form2.Width := Form2.Width + 1;
   end;
 
   // procedure TForm2.TrackBar1Change(Sender: TObject);
@@ -4002,38 +3893,7 @@ begin
     lbCSVError.Items.clear;
   end;
 
-  procedure TForm2.lblUpdateRestClick(Sender: TObject);
-  begin
-    //
-    updateTimerTimer(nil);
-
-  end;
-
-  procedure TForm2.lblUpdateRestDblClick(Sender: TObject);
-  var s:string;
-  dt:tdatetime;
-begin
-  // Update timer
-  s:=inputbox('Manual update','Time to update from',datetimetostr(now));
-  if(s='') then exit;
-  dt:=strtodatetime(s);
-
-  updateTimerStarted := now;
-  if (updateStatus > 0) then
-    if (updateGoing = true) then
-    begin
-      updateGoing := false;
-      updateStatus := 0;
-    end;
-
-  if (updateGoing = false) then
-  begin
-    Dialog2.fdialog2.Button2.Visible := false;
-    doUpdate(dt);
-//    btnUpdateDataClick(nil);
-  end;
-end;
-function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
+  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
   var
     flag: integer;
     gt, ngt: Cardinal;
@@ -4164,13 +4024,13 @@ function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string)
   var
     Msg: TWMMove;
   begin
-    // über align nicht mehr nötig
+    //über align nicht mehr nötig
 
-    // PageControl1.Width := Form2.Width - pnlIcons.Width;
-    // PageControl1.Top := -30;
-    // PageControl1.Height := Form2.Height + 30;
-    // if (claus = true) then
-    // PageControl1.Top := -20;
+//    PageControl1.Width := Form2.Width - pnlIcons.Width;
+//    PageControl1.Top := -30;
+//    PageControl1.Height := Form2.Height + 30;
+//    if (claus = true) then
+//      PageControl1.Top := -20;
 
     if Form2.Width < 200 then
       Form2.Width := 200;

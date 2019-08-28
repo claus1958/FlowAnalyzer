@@ -109,6 +109,8 @@ implementation
 
 {$R *.dfm}
 
+uses XFlowAnalyzer;
+
 constructor TFilterElemente.Create(AOwner: TComponent);
 begin
   brokerId[0] := 0; // gibts natürlich nicht
@@ -250,7 +252,7 @@ var
   lb1flag: boolean;
   topic: string;
 begin
-
+//  form2.dolockWindowUpdate(true);
   chkLB1.Items.Clear;
   topic := vorQuote(cbTopic.Text);
   lb1flag := false;
@@ -440,6 +442,7 @@ begin
     cbOperator.Items.Add('<');
     cbOperator.Items.Add('> or 0');
   end;
+  //form2.dolockWindowUpdate(false);
 
 end;
 
@@ -916,6 +919,8 @@ procedure TFilterElemente.setValues(f: TFilterParameter);
 begin
   chkActive.Checked := f.active;
   cbTopic.Text := f.topic;
+  if (chkActive.Checked) = true then
+    cbTopicChange(nil); // damit die Felder rechts entsprechend aktiviert/ausgefüllt werden
   cbOperator.Text := f.operator;
   edValue.Text := f.values;
 end;
