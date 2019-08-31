@@ -7,7 +7,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.strutils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.ComCtrls, FTCommons, Vcl.StdCtrls, Vcl.Grids,
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
-  Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons, iniFiles;
+  Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons, iniFiles,ShellApi;
 // AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
 // AdvChartPaneEditor, AdvChartSerieEditor, ;
 
@@ -191,20 +191,25 @@ type
     SG: TStringGridSorted;
     lblUpdateRest: TLabel;
     btnSample5: TButton;
-    procedure doUpdate(dt: TDateTime = 0);
-    procedure doLockWindowUpdate(yn:boolean);
+    Label13: TLabel;
+    Button8: TButton;
+    function checkLastUpdate(): TDatetime;
+    procedure AppOnMessage(var Msg: TMsg; var Handled: Boolean);
+    procedure MyExceptionHandler(Sender: TObject; E: Exception);
+    procedure doUpdate(dt: TDatetime = 0);
+    procedure doLockWindowUpdate(yn: Boolean);
     procedure setPageIndex(i: integer);
-    procedure getSymbolsUsersComments(useCache: boolean);
+    procedure getSymbolsUsersComments(useCache: Boolean);
     procedure finishUpdate();
     procedure btnGetCsvClick(Sender: TObject);
-    procedure GetCsv(url, typ: string; lb: TListBox; append: boolean; tryCache: boolean);
+    procedure GetCsv(url, typ: string; lb: TListBox; append: Boolean; tryCache: Boolean);
     procedure btnCwSymbolsToGridClick(Sender: TObject);
     procedure btnCwactionsToGridClick(Sender: TObject);
     procedure btnCwusersToGridClick(Sender: TObject);
     procedure btnCwCommentsToGridClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnGetBinDataClick(Sender: TObject);
-    function GetBinData(url, typ: string; lb: TListBox; append: boolean): integer;
+    function GetBinData(url, typ: string; lb: TListBox; append: Boolean): integer;
     procedure btnLoadCacheFileCwClick(Sender: TObject);
     procedure doCacheGridCwInfo;
     procedure btnShowCacheCwClick(Sender: TObject);
@@ -232,7 +237,6 @@ type
     procedure remeasureCategoryPanels(c1: TCategoryPanelGroup);
     procedure StartHTTPWorker;
     procedure HTTPOnTerminate(Sender: TObject);
-    procedure FormDestroy(Sender: TObject);
     function doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
     procedure dosleep(t: integer);
     procedure Button4Click(Sender: TObject);
@@ -306,6 +310,8 @@ type
     procedure DynGrid9Selectcolumns1Click(Sender: TObject);
     procedure lblUpdateRestClick(Sender: TObject);
     procedure lblUpdateRestDblClick(Sender: TObject);
+    procedure DynGrid9SpeedButton1Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -327,20 +333,23 @@ var
   SGColField: DAInteger;
   maxActionsPerGrid: integer;
   HTTPWorker1: THTTPWorker;
-  HTTPWorker1Aktiv: boolean; // wenn create->true wenn terminate -> false
+  HTTPWorker1Aktiv: Boolean; // wenn create->true wenn terminate -> false
   HTTPWorkCriticalSection: TRTLCriticalSection;
-  gridsortmethode2: boolean;
+  gridsortmethode2: Boolean;
   info: TInfo;
-  firstSampleDone: boolean;
-  makeLabelsDone: boolean;
+  firstSampleDone: Boolean;
+  makeLabelsDone: Boolean;
   nextUpdateTicks: integer;
-  claus: boolean;
+  claus: Boolean;
   CSleep: integer;
   pw: string;
-  updateGoing: boolean;
+  updateGoing: Boolean;
   mynow: integer; // month year *12 (now)
   updateStatus: integer; // 0=nix zu tun 1=schnell ohne Actions Update 2=mit Actions
-  updateTimerStarted: TDateTime;
+  updateTimerStarted: TDatetime;
+  getAppOnMessage: Boolean;
+  lastUserActivity: cardinal;
+  askFinishUpdate: Boolean; //
   // (now-updateTimeStarted)*86400=Sekunden seit Start. Rest:  timer.Interval/1000-x in Sekunden
 
 implementation
@@ -381,12 +390,12 @@ begin
   GetBinData(edGetUrlBin.text, typ, lbCSVError, chkGetBinAppend.Checked);
 end;
 
-function TForm2.GetBinData(url, typ: string; lb: TListBox; append: boolean): integer;
+function TForm2.GetBinData(url, typ: string; lb: TListBox; append: Boolean): integer;
 // kann actions symbols und ticks binär abrufen
 // die users symbols gibt es noch nicht !
 var
   ret: String;
-  gt: Cardinal;
+  gt: cardinal;
   i, l: integer;
   j: integer;
   bytes: Bytearray;
@@ -552,7 +561,7 @@ end;
 procedure TForm2.btnGetCsvClick(Sender: TObject);
 var
   typ: string;
-  tryCache: boolean;
+  tryCache: Boolean;
 begin
   tryCache := true;
   if containstext(edGetUrlCSV.text, '/symbols') then
@@ -568,10 +577,10 @@ begin
 
 end;
 
-procedure TForm2.GetCsv(url, typ: string; lb: TListBox; append: boolean; tryCache: boolean);
+procedure TForm2.GetCsv(url, typ: string; lb: TListBox; append: Boolean; tryCache: Boolean);
 
 var
-  gt: Cardinal;
+  gt: cardinal;
   fileName: string;
   fileMode: integer;
   bytes: Bytearray;
@@ -579,10 +588,11 @@ var
   ms: TMemoryStream;
   bpms: integer;
   Stream: TFileStream;
-  ok: boolean;
+  ok: Boolean;
   res: integer;
   i, j: integer;
   sl: TStringList;
+  sErr:string;
 begin
   gt := GetTickCount;
 
@@ -618,11 +628,17 @@ begin
     end;
   end;
   if (ok = false) then
+  // vom Server laden
   begin
 
     // bytes := doHTTPGetByteArray(url, lbCSVError);
-    res := doHttpGetByteArrayFromWorker(bytes, url);
+    res := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
+    if (res <> 0) then
+    begin
+      sErr:='Fehler HTTPGet';
+      exit;
 
+    end;
     bpms := trunc(length(bytes) / (GetTickCount - gt));
 
     lb.Items.Add('CSV-Load:' + url);
@@ -646,6 +662,26 @@ begin
     lb.Items.Add('Z:MStream :' + inttostr(GetTickCount - gt));
 
     lb.Items.Add('Bytes gelesen:' + inttostr(length(s)));
+
+    if typ = 'lastUpdate' then
+    begin
+
+      // die Bytes in eine Datei schreiben
+      try
+        fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\lastUpdate.csv';
+        fileMode := fmCreate;
+        Stream := TFileStream.Create(fileName, fileMode);
+        Stream.WriteBuffer(bytes[0], high(bytes) + 1);
+        Stream.free; // Speicher freigeben
+      except
+        lbCSVError.Items.Add('F:writeUsersStream');
+      end;
+      sl := TStringList.Create;
+      sl.Delimiter := ';';
+      sl.DelimitedText := s; // ohne den Delimiter sl[0] = 'total;366;27.08.2019'
+      // so jetzt sl[0]=total sl[1]=355
+      info.lastUpdateOnServer := strtodatetime(sl[1]);
+    end;
 
     if typ = 'usersOnline' then
     begin
@@ -801,7 +837,7 @@ procedure TForm2.gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, r
 var
   colHeader: string;
   i: integer;
-  b: boolean;
+  b: Boolean;
 begin
   // showmessage('Grid:' + grid.name + ' cell:' + sCell + ' col:' + sCol + ' row:' + sRow);
   colHeader := grid.Cells[col, 0];
@@ -929,9 +965,9 @@ begin
   getSymbolsUsersComments(true);
 end;
 
-procedure TForm2.getSymbolsUsersComments(useCache: boolean);
+procedure TForm2.getSymbolsUsersComments(useCache: Boolean);
 var
-  gt: Cardinal;
+  gt: cardinal;
 begin
   // Die drei Dateien vom Server abrufen: symbols user und comments
   gt := GetTickCount;
@@ -953,6 +989,36 @@ begin
 
   lbCSVError.Items.Add('Load SymbolsUsersComments:' + inttostr(GetTickCount - gt));
 
+end;
+
+function TForm2.checkLastUpdate(): TDatetime;
+var
+  dt: TDatetime;
+begin
+
+  edGetUrlCSV.text := 'http://www.stonedcompany.de/FTServer/lastUpdate.csv';
+  LoadInfo('Load LastUpdate...');
+  info.lastUpdateOnServer := 0; // -> wird nun gesetzt oder auch nicht
+  GetCsv(edGetUrlCSV.text, 'lastUpdate', lbCSVError, false, false); // hier keinen Cache verwenden !
+  if (info.lastUpdateOnServer <> 0) then
+  begin
+    dt := info.lastUpdateOnServer;
+  end;
+
+  info.lastUpdateOnClient := faIni.ReadDateTime('updateOnClient:', 'dateTime', 0);
+  // die ältere Zeit zählt
+  // Server=10:00  Client:07:00 Abrufen ab 07:00  merken: 10:00
+  // Server=11:00 Client=11:30 kann niemals vorkommen und wenn dann muss client wieder ab 11:00 abrufen
+  // nächster Abruf um 10:09  Server:10:05 ab 10:05 und merken 10:05
+  dt := info.lastUpdateOnServer;
+  if (info.lastUpdateOnClient < dt) then
+    dt := info.lastUpdateOnClient;
+  // am Ende der Verarbeitung wird info.lastUpdateOnClient=info.lastUpdateOnServer und weggeschrieben
+
+  // evtl bei Null etwas moderateres vorgeben ?
+  if (dt = 0) then
+    dt := now - 7; // 7 Tage default wenn nix geht
+  result := dt;
 end;
 
 procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
@@ -988,7 +1054,7 @@ var
   nam: string;
   found: integer;
   typ: integer;
-  gt: Cardinal;
+  gt: cardinal;
 label weiter;
 
 begin
@@ -1065,6 +1131,7 @@ begin
     groups[i].TradesUsers := 0;
     groups[i].TradesProfitTotal := 0;
     groups[i].TradesSwapTotal := 0;
+    groups[i].TradesProfitSwapTotal := 0;
   end;
 
   t.free;
@@ -1106,7 +1173,7 @@ end;
 procedure TForm2.doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
   var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 var
-  gt: Cardinal;
+  gt: cardinal;
   ba: Bytearray;
   aba: array of Bytearray;
   i, j, ll, ct: integer;
@@ -1188,6 +1255,12 @@ begin
 
 end;
 
+procedure TForm2.DynGrid9SpeedButton1Click(Sender: TObject);
+begin
+  DynGrid9.SpeedButton1Click(Sender);
+
+end;
+
 procedure TForm2.btnListDoublesCwClick(Sender: TObject);
 // liste alle doppelten OrderIds auf - macht aber sonst nichts!
 var
@@ -1221,13 +1294,13 @@ end;
 
 procedure TForm2.btnLoadDataClick(Sender: TObject);
 var
-  all: boolean;
+  all: Boolean;
   i: integer;
-  appendCSVUsers: boolean;
-  appendBinActions: boolean;
+  appendCSVUsers: Boolean;
+  appendBinActions: Boolean;
   whichAccounts: string;
   p: integer;
-  gt: Cardinal;
+  gt: cardinal;
 begin
   gt := GetTickCount;
   whichAccounts := '';
@@ -1367,25 +1440,25 @@ begin
 
 end;
 
-procedure TForm2.doLockWindowUpdate(yn:boolean);
-//Klappt alles nicht richtig !
+procedure TForm2.doLockWindowUpdate(yn: Boolean);
+// Klappt alles nicht richtig !
 begin
-  if(yn=true) then
-    SendMessage(Form2.pnlFilter.Handle, WM_SETREDRAW, WPARAM(FALSE),0)
+  if (yn = true) then
+    SendMessage(Form2.pnlFilter.Handle, WM_SETREDRAW, WPARAM(false), 0)
   else
   begin
-    SendMessage(Form2.pnlFilter.handle, WM_SETREDRAW, WPARAM(TRUE),0);
+    SendMessage(Form2.pnlFilter.Handle, WM_SETREDRAW, WPARAM(true), 0);
     Form2.pnlFilter.Repaint;
   end;
 
-//  LockWindowUpdate(Form2.WindowHandle);
+  // LockWindowUpdate(Form2.WindowHandle);
 end;
 
 procedure TForm2.machActionsUserIndex;
 var
   i, j: integer;
   index: integer;
-  gt: Cardinal;
+  gt: cardinal;
 
 begin
   //
@@ -1401,7 +1474,7 @@ end;
 procedure TForm2.doFinalizeData;
 var
   i, p: integer;
-  gt: Cardinal;
+  gt: cardinal;
   sort: Stringarray; // string
   isort: intarray;
 begin
@@ -1625,7 +1698,7 @@ end;
 
 procedure TForm2.Button2Click(Sender: TObject);
 var
-  gt: Cardinal;
+  gt: cardinal;
   i, j, l: integer;
   ia: intarray;
   ia2: intarray;
@@ -1691,7 +1764,7 @@ end;
 
 procedure TForm2.btnDoFilterClick(Sender: TObject);
 begin
-  mynow := monthof(now) + 12 * yearof(now);
+  mynow := monthof(now) + 12 * yearof(now); // viel gebraucht und aus Speedgründen hier einmalig belegt
   FilterTopic := 'manual';
   doFilter();
   // -> cwFilteredActions cwFilteredActionsCt
@@ -1701,12 +1774,13 @@ begin
 end;
 
 procedure TForm2.machUserSelection();
+// die User aus einer großen CwFilteredActions Menge wird herausgesucht, so daß nicht mehr alle User in die Gruppierungsermittlung rein müssen
 var
   i, ix, ct, p: integer;
   v: array of cwuser;
   u: array of integer;
   isort: intarray;
-  gt: Cardinal;
+  gt: cardinal;
 begin
   gt := GetTickCount;
   setlength(u, cwusersct);
@@ -1755,7 +1829,7 @@ procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
 var
   i, index, j, total: integer;
   sum: double;
-  gt: Cardinal;
+  gt: cardinal;
 
 begin
   // zusätzliche Berechnungen durchführen
@@ -1782,6 +1856,8 @@ begin
       cwActions[i].profit;
     cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal +
       cwActions[i].swap;
+    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitSwapTotal := cwSymbolsPlus[cwActions[i].symbolId]
+      .TradesProfitSwapTotal + cwActions[i].profit + cwActions[i].swap;
 
     // NEU: die schnelle Variante
     // index := finduserindex(cwActions[i].userId);
@@ -1810,7 +1886,7 @@ end;
 procedure TForm2.doGroup();
 var
   i, j, k, l: integer;
-  gt: Cardinal;
+  gt: cardinal;
   s: string;
   ct: integer;
   ctmax: integer;
@@ -1825,6 +1901,7 @@ var
   TradesVolumeTotal: double;
   TradesProfitTotal: double;
   TradesSwapTotal: double;
+  TradesProfitSwapTotal:double;
   gct: integer;
 begin
   gt := GetTickCount;
@@ -1928,6 +2005,7 @@ begin
         cw3summaries[i][j][k].TradesVolumeTotal := 0;
         cw3summaries[i][j][k].TradesProfitTotal := 0;
         cw3summaries[i][j][k].TradesSwapTotal := 0;
+        cw3summaries[i][j][k].TradesProfitSwapTotal := 0;
         cw3summaries[i][j][k].TradesUsers := 0;
       end;
   try
@@ -2007,11 +2085,14 @@ begin
         cwFilteredActions[i].profit;
       cw3summaries[p[0], p[1], p[2]].TradesSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesSwapTotal +
         cwFilteredActions[i].swap;
+      cw3summaries[p[0], p[1], p[2]].TradesProfitSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitSwapTotal +
+        cwFilteredActions[i].profit+cwFilteredActions[i].swap;
 
       TradesCount := TradesCount + 1;
       TradesVolumeTotal := TradesVolumeTotal + cwFilteredActions[i].volume;
       TradesProfitTotal := TradesProfitTotal + cwFilteredActions[i].profit;
       TradesSwapTotal := TradesSwapTotal + cwFilteredActions[i].swap;
+      TradesProfitSwapTotal := TradesProfitSwapTotal + cwFilteredActions[i].profit+ cwFilteredActions[i].swap;
     end;
   except
     on E: Exception do
@@ -2121,6 +2202,7 @@ end;
 procedure TForm2.updateTimerTimer(Sender: TObject);
 begin
   // Update timer
+  updateTimer.Interval := cUpdateTimerInterval;
   updateTimerStarted := now;
   if (updateStatus > 0) then
     if (updateGoing = true) then
@@ -2132,6 +2214,7 @@ begin
   if (updateGoing = false) then
   begin
     Dialog2.fdialog2.Button2.Visible := false;
+    askFinishUpdate := false;
     btnUpdateDataClick(nil);
   end;
 end;
@@ -2163,11 +2246,11 @@ end;
 procedure TForm2.doFilter();
 var
   i, j: integer;
-  r: boolean;
+  r: Boolean;
   fz: integer;
   max, fzmax: integer;
-  gt: Cardinal;
-  chk: array of boolean;
+  gt: cardinal;
+  chk: array of Boolean;
   faktivCt: integer;
 
 label weiter, weiter1;
@@ -2180,6 +2263,7 @@ begin
       inc(faktivCt);
   end;
   if faktivCt = 0 then
+  // gar kein Filter aktiv -> alles wird durchgelassen
   begin
     setlength(cwFilteredActions, length(cwActions));
     setlength(cwFilteredActionsPlus, length(cwActions));
@@ -2220,12 +2304,7 @@ begin
     else
   end;
 
-  // for i := 1 to FilterCt do
-  // begin
-  // if (chk[i] = true) then
-  // Filter[i].machVergleichArrays; // verlegt      War aber dann ein Fehler in der Berechnung ???
-  // end;
-
+  // nun werden alle Actions durchlaufen
   for i := 0 to length(cwActions) - 1 do
   begin
     for j := 1 to FilterCt do
@@ -2234,7 +2313,8 @@ begin
       begin
         r := Filter[j].checkCwaction(cwActions[i], cwActionsPlus[i]);
         if (r = false) then
-          // die erste nicht erfüllte Bedingung lässt diese action herausfallen
+          // die erste nicht erfüllte Bedingung lässt diese Action herausfallen
+          // sie wird ausgefiltert und ist damit weg
           goto weiter
       end;
     end;
@@ -2292,10 +2372,10 @@ procedure TForm2.Button5Click(Sender: TObject);
 // Balance direkt filtern (zum Geschwindigkeitsvergleich die der Filtersuche)
 var
   i: integer;
-  gt, tg: Cardinal;
+  gt, tg: cardinal;
   fz, max, fzmax: integer;
 
-  function vergleichInteger(was, mit: integer; op: integer): boolean;
+  function vergleichInteger(was, mit: integer; op: integer): Boolean;
   // var oben bringt nix
   begin
     result := false;
@@ -2410,16 +2490,51 @@ begin
   DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
 end;
 
+procedure TForm2.Button8Click(Sender: TObject);
+var http:tourhttp;
+     url:string;
+     body:string;
+     tbody:TStringStream;
+     tresult:TStringStream;
+     res:string;
+     ret:integer;
+
+     bytes:bytearray;
+
+begin
+http:=tourhttp.Create();
+url:='http://h2827643.stratoserver.net:8081/login';
+body:='flow_collector:f9#w01*F21b/dQ';
+tbody:=tstringstream.Create(body);
+tbody.position:=0;
+tresult:=TStringStream.create();
+http.Get(url,tbody,tresult);
+res:=tresult.datastring;
+showmessage('res:'+res);
+
+url:='http://h2827643.stratoserver.net:8080/json/symbols';
+ret := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
+
+url:='http://www.stonedcompany.de/123.txt';
+ret := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
+
+
+url:='http://h2827643.stratoserver.net:8081/json/symbols?sessionKey='+res;
+
+ret := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
+//ret=0 kein Fehler bytes() keine Daten - wo ist der Fehler ?
+end;
+
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
 begin
   doUpdate();
 end;
 
-procedure TForm2.doUpdate(dt: TDateTime = 0);
+procedure TForm2.doUpdate(dt: TDatetime = 0);
 var
   i, lold, lnew: integer;
   merkOpenTime, merkCloseTime: integer;
-  gt, gtall, tt, tnow: Cardinal;
+  gt, gtall, tnow: cardinal;
   p, cnew, cold: integer;
   ia: intarray;
   ia2: int64array;
@@ -2427,6 +2542,8 @@ var
   na2: int64array;
   n: integer;
   a1, a2: integer;
+  tt: cardinal;
+  dtt: TDatetime;
   // label rest;
 begin
   // update data
@@ -2435,40 +2552,45 @@ begin
   Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height;
   Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width;
 
-  Dialog2.fdialog2.info('Update data ...');
+  Dialog2.fdialog2.info('Getting data ...');
   gtall := GetTickCount;
   gt := GetTickCount;
 
-  if (dt = 0) then
+  if (dt = 0) then // 0=keine Zeitvorgabe aus Dialogfenster
   begin
-    merkOpenTime := 0;
-    merkCloseTime := 0;
-    tnow := datetimetounix(now);
-    // feststellen, wie weit die 'alten' actions zeitlich reichen
-    for i := 0 to length(cwActions) - 1 do
-    begin
-      if cwActions[i].typeId <> 7 then
-      begin
-        if cwActions[i].openTime > merkOpenTime then
-          if cwActions[i].openTime < tnow then
-            merkOpenTime := cwActions[i].openTime;
-        if cwActions[i].closeTime > merkCloseTime then
-          if cwActions[i].closeTime < tnow then
-            merkCloseTime := cwActions[i].closeTime;
 
-      end
-      else
-      begin
-      end;
-      tt := merkOpenTime;
-      if merkCloseTime > tt then
-        tt := merkCloseTime;
-      tt := tt - 0; // 5 Minuten zurück ???
-    end;
-
+    dtt := checkLastUpdate(); // -> info.lastUpdateOnServer bzw info.lastUpdateOnClient jeweils das ältere von beiden
+    tt := datetimetounix(dtt);
+    // merkOpenTime := 0;
+    // merkCloseTime := 0;
+    // tnow := datetimetounix(now);
+    // // feststellen, wie weit die 'alten' actions zeitlich reichen
+    // // falsches Vorgehen !
+    // for i := 0 to length(cwActions) - 1 do
+    // begin
+    // if cwActions[i].typeId <> 7 then
+    // begin
+    // if cwActions[i].openTime > merkOpenTime then
+    // if cwActions[i].openTime < tnow then
+    // merkOpenTime := cwActions[i].openTime;
+    // if cwActions[i].closeTime > merkCloseTime then
+    // if cwActions[i].closeTime < tnow then
+    // merkCloseTime := cwActions[i].closeTime;
+    //
+    // end
+    // else
+    // begin
+    // end;
+    // tt := merkOpenTime;
+    // if merkCloseTime > tt then
+    // tt := merkCloseTime;
+    // tt := tt - 0; // 5 Minuten zurück ???
+    // end;
+    // tt := tt - (43200 * 1000); // 12 Stunden zurück
   end
   else
-    tt := datetimetounix(dt);
+    tt := datetimetounix(dt); // das ist die Vorgabe per Inputbox
+
   lold := length(cwActions);
   lbCSVError.Items.Add('[Vorbereitung]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
@@ -2500,6 +2622,7 @@ begin
     updateStatus := 1;
     updateGoing := false;
     Dialog2.fdialog2.askFinish(); // Close;
+    askFinishUpdate := true;
     exit;
     // goto rest; // exit
   end;
@@ -2591,6 +2714,10 @@ begin
 
   updateStatus := 2;
   Dialog2.fdialog2.askFinish(); // Close;
+  askFinishUpdate := true;
+
+  // Zeiten hier sind TDateTime
+  faIni.WriteDateTime('updateOnClient:', 'dateTime', info.lastUpdateOnServer);
 
   exit;
 
@@ -2625,6 +2752,7 @@ procedure TForm2.finishUpdate();
 
 begin
   updateGoing := true; // damit niemand reinfunkt
+  askFinishUpdate := false;
   if (updateStatus = 2) then // die wichtigen Action-Updates
   begin
 
@@ -2926,7 +3054,6 @@ end;
 
 procedure TForm2.btnSaveCacheFileCwClick(Sender: TObject);
 begin
-  //
   saveCacheFileCw(cCachefile, 'actions', lbCSVError);
 end;
 
@@ -3089,6 +3216,10 @@ end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  if (length(cwActions) > 0) then
+
+    btnSaveCacheFileCwClick(nil);
+  Application.OnMessage := nil;
   DynGrid1.saveInit;
   DynGrid2.saveInit;
   DynGrid3.saveInit;
@@ -3113,16 +3244,33 @@ begin
   DeleteCriticalSection(HTTPWorkCriticalSection);
 end;
 
+procedure TForm2.AppOnMessage(var Msg: TMsg; var Handled: Boolean);
+begin
+  if getAppOnMessage then
+    case Msg.Message of
+      WM_KEYFIRST .. WM_KEYLAST, // Keyboard events
+      WM_MOUSEFIRST .. WM_MOUSELAST: // Mouse events
+        begin
+          lastUserActivity := GetTickCount;
+          // Handled := True
+        end;
+    end;
+end;
+
 procedure TForm2.FormCreate(Sender: TObject);
 var
   i: integer;
   folder, fileName: string;
   style: string;
   pwct: integer;
-  pwok: boolean;
+  pwok: Boolean;
   s: string;
 
 begin
+  askFinishUpdate := false; // Button drücken Update
+  getAppOnMessage := true;
+  Application.OnMessage := AppOnMessage;
+  Application.OnException := MyExceptionHandler;
   faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
   pwct := 0;
   updateGoing := false;
@@ -3148,7 +3296,11 @@ begin
 
       if InputQuery('Password', #31 + 'Please enter a password:', pw) then
       else
+      begin
+        Application.Terminate;
         exit;
+      end;
+
       // pw := InputBox('Password:', 'Password:', '');
 
       if pw = '2502' then
@@ -3165,6 +3317,7 @@ begin
     begin
       showmessage('Sorry ...');
       Application.Terminate;
+      exit;
     end;
 
   end;
@@ -3274,6 +3427,7 @@ begin
 
   btnLadeDialogClick(nil);
   // fillStartScreen;
+
 end;
 
 procedure TForm2.makelabels;
@@ -3371,7 +3525,7 @@ var
   slweg: TStringList;
   i, n: integer;
   doubleCount: integer;
-  gt: Cardinal;
+  gt: cardinal;
   da: doublearray; // array of integer;
   ia: intarray; // array of double;
   ct: integer;
@@ -3608,8 +3762,8 @@ var
   i: integer;
   grid: FTCommons.TStringGridSorted;
   col, row: integer;
-  fixedCol, fixedRow: boolean;
-  gt: Cardinal;
+  fixedCol, fixedRow: Boolean;
+  gt: cardinal;
   Cursor: TCursor;
   header: string;
 begin
@@ -3705,7 +3859,7 @@ begin
     MyList: TStringList;
     da: doublearray;
     ia: intarray;
-    gt: Cardinal;
+    gt: cardinal;
   begin
     // Give the number of rows in the StringGrid
     CountItem := genstrgrid.rowcount;
@@ -3805,7 +3959,7 @@ begin
   var
     CountItem, i, j, k, ThePosition: integer;
     MyList: TStringList;
-    gt: Cardinal;
+    gt: cardinal;
   begin
     // Give the number of rows in the StringGrid
     CountItem := genstrgrid.rowcount;
@@ -3878,11 +4032,14 @@ begin
     StartTimer.enabled := false;
 
     Dialog2.fdialog2.Button2.Visible := false;
+    askFinishUpdate := false;
     Dialog2.fdialog2.Show; // Modal;
     Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height - 4;
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
     Form2.Repaint;
     btnLoadDataClick(nil);
+    updateTimer.Interval := 1000; // gleich nach dem Start ein Update durchführen
+
     // Form2.Width := Form2.Width + 1;
   end;
 
@@ -3990,11 +4147,22 @@ begin
     s: string;
     sec: integer;
     rest: double;
+    s2: string;
   begin
     rest := (trunc(updateTimer.Interval / 1000)) - (now - updateTimerStarted) * 86400; // Rest in sekunden
     s := FormatDateTime('nn:ss', rest / 86400);
+    s2 := FormatDateTime('nn:ss', (GetTickCount - lastUserActivity) / 1000 / 86400);
     // lblInfoTimer.caption:=inttostr(nextUpdateT
-    lblUpdateRest.Caption := 'Next Update:' + s;
+    lblUpdateRest.Caption := 'Next Update:' + s + ' User Off:' + s2;
+    if (GetTickCount - lastUserActivity) > 120000 then
+    begin
+      // 2 Minuten keine Usereingabe - update anklicken
+      if (askFinishUpdate = true) then
+      begin
+        Dialog2.fdialog2.Button2Click(nil); // Update durchführen
+        btnSaveCacheFileCwClick(nil);
+      end;
+    end;
   end;
 
   procedure TForm2.lbCSVErrorClick(Sender: TObject);
@@ -4010,33 +4178,37 @@ begin
   end;
 
   procedure TForm2.lblUpdateRestDblClick(Sender: TObject);
-  var s:string;
-  dt:tdatetime;
-begin
-  // Update timer
-  s:=inputbox('Manual update','Time to update from',datetimetostr(now));
-  if(s='') then exit;
-  dt:=strtodatetime(s);
-
-  updateTimerStarted := now;
-  if (updateStatus > 0) then
-    if (updateGoing = true) then
-    begin
-      updateGoing := false;
-      updateStatus := 0;
-    end;
-
-  if (updateGoing = false) then
+  var
+    s: string;
+    dt: TDatetime;
   begin
-    Dialog2.fdialog2.Button2.Visible := false;
-    doUpdate(dt);
-//    btnUpdateDataClick(nil);
+    // Update timer
+    s := inputbox('Manual update', 'Time to update from', datetimetostr((now - 0.25))); // 6 Stunden zurück));
+    if (s = '') then
+      exit;
+    dt := strtodatetime(s);
+
+    updateTimerStarted := now;
+    if (updateStatus > 0) then
+      if (updateGoing = true) then
+      begin
+        updateGoing := false;
+        updateStatus := 0;
+      end;
+
+    if (updateGoing = false) then
+    begin
+      Dialog2.fdialog2.Button2.Visible := false;
+      askFinishUpdate := false;
+      doUpdate(dt);
+      // btnUpdateDataClick(nil);
+    end;
   end;
-end;
-function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
+
+  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
   var
     flag: integer;
-    gt, ngt: Cardinal;
+    gt, ngt: cardinal;
 
     li: integer;
     liText: array [1 .. 10] of string;
@@ -4125,39 +4297,13 @@ function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string)
 
   procedure TForm2.dosleep(t: integer);
   var
-    gt: Cardinal;
+    gt: cardinal;
   begin
     gt := GetTickCount();
     repeat
       Application.ProcessMessages;
     until (GetTickCount - gt) > t;
     // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
-  end;
-
-  procedure TForm2.FormDestroy(Sender: TObject);
-  begin
-    DynGrid1.saveInit;
-    DynGrid2.saveInit;
-    DynGrid3.saveInit;
-    DynGrid4.saveInit;
-    DynGrid5.saveInit;
-    DynGrid6.saveInit;
-    DynGrid7.saveInit;
-    DynGrid8.saveInit;
-    DynGrid9.saveInit;
-    DynGrid10.saveInit;
-
-    freeandnil(faIni);
-    if HTTPWorker1.Finished = false then
-    begin
-      HTTPWorker1.Terminate;
-      HTTPWorker1.waitfor;
-      HTTPWorker1.free;
-      HTTPWorker1.ResultList.free;
-      HTTPWorker1Aktiv := false;
-      dosleep(10);
-    end;
-    DeleteCriticalSection(HTTPWorkCriticalSection);
   end;
 
   procedure TForm2.FormResize(Sender: TObject);
@@ -4238,10 +4384,10 @@ function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string)
 
   var
     i: integer;
-    t: TDateTime;
+    t: TDatetime;
     ut: integer;
     dt: integer;
-    gt: Cardinal;
+    gt: cardinal;
     unow: integer;
     startHeute: integer;
     // jeweils in Unix umgerechnet
@@ -4375,6 +4521,16 @@ function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string)
     end;
     fillStartScreen;
     lbCSVError.Items.Add('ComputeStartScreen:' + inttostr(GetTickCount - gt));
+  end;
+
+  procedure TForm2.MyExceptionHandler(Sender: TObject; E: Exception);
+  var
+    s: string;
+  begin
+    s := E.Message;
+    // MessageDlg('ERROR: ' +s);
+
+    showmessage('MyExHandler Error:' + s);
   end;
 
 end.

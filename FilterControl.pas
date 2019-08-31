@@ -143,7 +143,7 @@ var
   e: TEdit;
 begin
   e := Sender as TEdit;
-  if screen.ActiveControl = e then
+  if(( screen.ActiveControl = e) or(sender<>dtPicker1)) then
   begin
     if dtPicker1.Visible = true then
     begin
@@ -923,6 +923,7 @@ begin
     cbTopicChange(nil); // damit die Felder rechts entsprechend aktiviert/ausgefüllt werden
   cbOperator.Text := f.operator;
   edValue.Text := f.values;
+
 end;
 
 procedure TFilterElemente.getValues(f: TFilterParameter);

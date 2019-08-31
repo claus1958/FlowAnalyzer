@@ -143,7 +143,6 @@ object DynGrid: TDynGrid
         OnRowMoved = SGRowMoved
         OnSelectCell = SGSelectCell
         OnTopLeftChanged = SGTopLeftChanged
-        ExplicitTop = 2
         ColWidths = (
           64
           64
@@ -189,6 +188,14 @@ object DynGrid: TDynGrid
     object CSVExport1: TMenuItem
       Caption = 'CSV-Export'
       OnClick = CSVExport1Click
+    end
+  end
+  object PopupMenu0: TPopupMenu
+    Left = 664
+    Top = 8
+    object MenuItem1: TMenuItem
+      Caption = 'Column Selection'
+      OnClick = Selectcolumns1Click
     end
   end
 end

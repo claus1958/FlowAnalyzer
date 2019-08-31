@@ -17,7 +17,8 @@ uses
   GroupControl in 'GroupControl.pas' {GroupControl: TFrame},
   Dialog1 in 'Dialog1.pas' {Form5},
   uTwoLabel in 'uTwoLabel.pas' {twoLabel: TFrame},
-  Dialog2 in 'Dialog2.pas' {Dialog2};
+  Dialog2 in 'Dialog2.pas' {Dialog2},
+  ChangeLog in 'ChangeLog.pas';
 
 {$R *.res}
 

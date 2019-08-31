@@ -18,6 +18,7 @@ const
   WS_EX_LAYERED = $80000;
   cCachefile = 'Actions';
   cCacheFolder='cache';
+  const  cUpdateTimerInterval=600000;
 type
 
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -59,6 +60,8 @@ type
     profit1m: double;
     profit1y: double;
     ctHWMY:string;
+    lastUpdateOnServer:TDateTime;//letzte Serverupdate-Zeit mit kompletten Daten = die Startzeit der Verarbeitung FTCOll->Server - geschrieben wenn Upload fertig ist
+    lastUpdateOnClient:TDateTime;//letzte Serverupdate-Zeit die vom Client verarbeitet wurde
   end;
 
   TPieParameters = Packed record
@@ -204,6 +207,7 @@ type
     TradesUsers: integer; // wieviele User handelten Symbol. Nur bei handlebarer Anzahl berechenbar !
     TradesProfitTotal: double;
     TradesSwapTotal: double;
+    TradesProfitSwapTotal: double;
   End;
 
   DACwSummary = array of cwSummary;
@@ -229,6 +233,8 @@ type
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
     TradesSwapTotal: double;
+    TradesProfitSwapTotal: double;
+
   End;
 
   DACwSymbolGroup = array of cwSymbolGroup;
@@ -239,6 +245,7 @@ type
     TradesUsers: integer; // wieviele User handelten Symbol
     TradesProfitTotal: double;
     TradesSwapTotal: double;
+    TradesProfitSwapTotal: double;
     groupId: integer; // symbolsgroup
   End;
 
@@ -307,6 +314,7 @@ type
 
   // byteArray = array of byte;
 
+function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: Integer): Boolean;
 function DateTimeToUnix(ConvDate: TDateTime): Longint;
 function UnixToDateTime(UnixTime: dword): TDateTime;
 function doHTTPGetByteArray(Url: string; lbHTTP: TListBox): byteArray;
@@ -1326,7 +1334,7 @@ begin
     begin
       SG.Rows[0].BeginUpdate;
       SG.cells[SGFieldCol[0], 0] := 'actionId';
-      SG.ColWidths[SGFieldCol[0]] := 140;
+//      SG.ColWidths[SGFieldCol[0]] := 140;
       SG.cells[SGFieldCol[1], 0] := 'userId';
       SG.cells[SGFieldCol[2], 0] := 'accountId';
       SG.cells[SGFieldCol[3], 0] := 'symbol';
@@ -1444,7 +1452,7 @@ begin
       if (toSL = false) then
       begin
         SG.Rows[0].BeginUpdate;
-        SG.ColWidths[SGFieldCol[0]] := 140;
+//        SG.ColWidths[SGFieldCol[0]] := 140;
       end;
       // SG.cells[SGFieldCol[0], 0] := 'actionId';
 
@@ -1476,19 +1484,18 @@ begin
       lines[SGFieldCol[25]] := 'openProfit';
       lines[SGFieldCol[26]] := 'openSwap';
 
-      for k := 0 to 26 do
-      begin
-        if (claus = false) then
-          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
-            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
-            SG.ColWidths[SGFieldCol[k]] := -1;
-      end;
+//      for k := 0 to 26 do
+//      begin
+//        if (claus = false) then
+//          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
+//            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
+//            SG.ColWidths[SGFieldCol[k]] := -1;
+//      end;
 
       if (toSL = false) then
       begin
         for k := 0 to 26 do
           SG.cells[k, 0] := lines[k];
-
         // Ausblenden was nicht erwünscht ist
         SG.Rows[0].endUpdate;
       end
@@ -1635,6 +1642,7 @@ begin
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
       SG.cells[SGFieldCol[7], 0] := 'tradesSwapTotal';
+      SG.cells[SGFieldCol[8], 0] := 'tradesProfitSwapTotal';
       SG.Rows[0].endUpdate;
     end;
     row := 0;
@@ -1667,6 +1675,7 @@ begin
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[i1][i2][i3].TradesUsers);
       SG.cells[SGFieldCol[7], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesSwapTotal);
+      SG.cells[SGFieldCol[8], row] := FormatFloat(',#0.00', summaries[i1][i2][i3].TradesProfitSwapTotal);
 
       SG.Rows[row].endUpdate;
     end;
@@ -1700,6 +1709,7 @@ begin
       SG.cells[SGFieldCol[5], 0] := 'tradesProfitTotal';
       SG.cells[SGFieldCol[6], 0] := 'tradesUsers';
       SG.cells[SGFieldCol[7], 0] := 'tradesSwapTotal';
+      SG.cells[SGFieldCol[8], 0] := 'tradesProfitSwapTotal';
       for i := 0 to 2 do
         if (cwGrouping.element[i].sTyp = 'unused') then
         begin
@@ -1724,6 +1734,7 @@ begin
       SG.cells[SGFieldCol[5], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesProfitTotal);
       SG.cells[SGFieldCol[6], row] := inttostr(summaries[sort[k]].TradesUsers);
       SG.cells[SGFieldCol[7], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesSwapTotal);
+      SG.cells[SGFieldCol[8], row] := FormatFloat(',#0.00', summaries[sort[k]].TradesProfitSwapTotal);
 
       SG.Rows[row].endUpdate;
     end;
@@ -1748,7 +1759,7 @@ begin
     begin
       SG.Rows[0].BeginUpdate;
       SG.cells[SGFieldCol[0], 0] := 'userId';
-      SG.ColWidths[SGFieldCol[0]] := 100;
+    //  SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'accountId';
       SG.cells[SGFieldCol[2], 0] := 'name';
       SG.cells[SGFieldCol[3], 0] := 'group';
@@ -1838,7 +1849,7 @@ begin
     begin
       SG.Rows[0].BeginUpdate;
       SG.cells[SGFieldCol[0], 0] := 'symbolId';
-      SG.ColWidths[SGFieldCol[0]] := 100;
+   //   SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'brokerId';
       SG.cells[SGFieldCol[2], 0] := 'name';
       SG.cells[SGFieldCol[3], 0] := 'description';
@@ -1981,7 +1992,7 @@ begin
       SG.FixedRows := 1;
     SG.Rows[0].BeginUpdate;
     SG.cells[SGFieldCol[0], 0] := 'actionId';
-    SG.ColWidths[SGFieldCol[0]] := 100;
+//    SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'userId';
     SG.cells[SGFieldCol[2], 0] := 'accountId';
     SG.cells[SGFieldCol[3], 0] := 'symbol';
@@ -2151,7 +2162,7 @@ begin
       SG.FixedRows := 1;
 
     SG.cells[SGFieldCol[0], 0] := 'userId';
-    SG.ColWidths[SGFieldCol[0]] := 100;
+ //   SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'accountId';
     SG.cells[SGFieldCol[2], 0] := 'group';
     SG.cells[SGFieldCol[3], 0] := 'enable';
@@ -2280,9 +2291,9 @@ begin
       SG.FixedRows := 1;
 
     SG.cells[SGFieldCol[0], 0] := 'commentId';
-    SG.ColWidths[SGFieldCol[0]] := 100;
+ //   SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'comment';
-    SG.ColWidths[SGFieldCol[1]] := 300;
+ //   SG.ColWidths[SGFieldCol[1]] := 300;
 
     // merkSeparator:=FormatSettings.DecimalSeparator;
     // FormatSettings.DecimalSeparator:='.';
@@ -2347,7 +2358,7 @@ begin
       SG.FixedRows := 1;
 
     SG.cells[SGFieldCol[0], 0] := 'symbolId';
-    SG.ColWidths[SGFieldCol[0]] := 100;
+ //   SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'brokerId';
     SG.cells[SGFieldCol[2], 0] := 'name';
     SG.cells[SGFieldCol[3], 0] := 'description';
@@ -2617,7 +2628,7 @@ begin
   finally
     fstream.Free;
   end;
-  lb.items.add('Zeit SaveCacheFile:' + inttostr(GetTickCount() - gt));
+  lb.items.add('Zeit SaveCacheFile:' + inttostr(GetTickCount() - gt));  //1.5 sec
 end;
 
 procedure QuicksortVUAS(low, high: integer; var dbla: StringArray; var inta: intArray);
@@ -3483,6 +3494,7 @@ var
   res: string;
   suchtyp: integer;
 label weiter;
+//ganz schlecht über eine Spalte über den Index zu suchen ...
 
 begin
   suchtyp := 0; // normal ab Anfang
@@ -4071,6 +4083,60 @@ begin
   lb.items.add('virtual memory  - total:     ' + inttostr(trunc(GMS.ullTotalVirtual / 1048576)) + ' MB');
   lb.items.add(' (this program) - available: ' + inttostr(trunc(GMS.ullAvailVirtual / 1048576)) + ' MB');
 
+end;
+
+function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: Integer): Boolean;
+var
+    fileInformation: PVSFIXEDFILEINFO;
+    verlen: Cardinal;
+    rs: TResourceStream;
+    m: TMemoryStream;
+    resource: HRSRC;
+begin
+    //You said zero, but you mean "us"
+    if Instance = 0 then
+        Instance := HInstance;
+
+    //UPDATE: Workaround bug in Delphi if resource doesn't exist
+    resource := FindResource(Instance, pwidechar(1), RT_VERSION);
+    if resource = 0 then
+    begin
+       iMajor := 0;
+       iMinor := 0;
+       iRelease := 0;
+       iBuild := 0;
+       Result := False;
+       Exit;
+    end;
+
+    m := TMemoryStream.Create;
+    try
+        rs := TResourceStream.CreateFromID(Instance, 1, RT_VERSION);
+        try
+            m.CopyFrom(rs, rs.Size);
+        finally
+            rs.Free;
+        end;
+
+        m.Position:=0;
+        if not VerQueryValue(m.Memory, '\', (*var*)Pointer(fileInformation), (*var*)verlen) then
+        begin
+            iMajor := 0;
+            iMinor := 0;
+            iRelease := 0;
+            iBuild := 0;
+            Exit;
+        end;
+
+        iMajor := fileInformation.dwFileVersionMS shr 16;
+        iMinor := fileInformation.dwFileVersionMS and $FFFF;
+        iRelease := fileInformation.dwFileVersionLS shr 16;
+        iBuild := fileInformation.dwFileVersionLS and $FFFF;
+    finally
+        m.Free;
+    end;
+
+    Result := True;
 end;
 
 end.

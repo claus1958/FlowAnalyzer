@@ -83,7 +83,7 @@ begin
     end;
     if (typ=3) then
     begin
-      bArray:=doHTTPGetByteArraySL(MerkUrl,list);//: byteArray;
+         bArray:=doHTTPGetByteArraySL(MerkUrl,list);//: byteArray;
     end;
     leaveCriticalSection(HTTPWorkcriticalSection);
     if fehler <> 0 then

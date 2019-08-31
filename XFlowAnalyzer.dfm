@@ -87,7 +87,6 @@ object Form2: TForm2
           Font.Name = 'Tahoma'
           Font.Style = []
           ParentFont = False
-          OnClick = lblUpdateRestClick
           OnDblClick = lblUpdateRestDblClick
         end
         object pnlStart: TPanel
@@ -106,6 +105,19 @@ object Form2: TForm2
           ParentCtl3D = False
           ParentFont = False
           TabOrder = 0
+          object Label13: TLabel
+            Left = 900
+            Top = 616
+            Width = 42
+            Height = 13
+            Caption = '1.0.0.15'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clMedGray
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+          end
         end
       end
     end
@@ -204,7 +216,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1501
                   Height = 165
-                  ExplicitTop = 1
                   ExplicitWidth = 1501
                   ExplicitHeight = 165
                 end
@@ -290,7 +301,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1501
                   Height = 120
-                  ExplicitTop = 1
                   ExplicitWidth = 1501
                   ExplicitHeight = 120
                 end
@@ -376,7 +386,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1501
                   Height = 120
-                  ExplicitTop = 1
                   ExplicitWidth = 1501
                   ExplicitHeight = 120
                 end
@@ -469,7 +478,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 1501
                   Height = 120
-                  ExplicitTop = 1
                   ExplicitWidth = 1501
                   ExplicitHeight = 120
                 end
@@ -660,7 +668,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 478
                   Height = 825
-                  ExplicitTop = 1
                   ExplicitWidth = 478
                   ExplicitHeight = 825
                 end
@@ -744,7 +751,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 998
                   Height = 618
-                  ExplicitTop = 1
                   ExplicitWidth = 998
                   ExplicitHeight = 618
                 end
@@ -1251,7 +1257,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 977
                   Height = 338
-                  ExplicitTop = 1
                   ExplicitWidth = 977
                   ExplicitHeight = 338
                 end
@@ -1294,6 +1299,9 @@ object Form2: TForm2
                 ExplicitWidth = 4
                 ExplicitHeight = 14
               end
+              inherited SpeedButton1: TSpeedButton
+                OnClick = DynGrid9SpeedButton1Click
+              end
             end
             inherited Panel2: TPanel
               Left = 0
@@ -1319,7 +1327,6 @@ object Form2: TForm2
                 inherited SG: TStringGridSorted
                   Width = 977
                   Height = 402
-                  ExplicitTop = 1
                   ExplicitWidth = 977
                   ExplicitHeight = 402
                 end
@@ -1644,7 +1651,6 @@ object Form2: TForm2
               inherited SG: TStringGridSorted
                 Width = 1503
                 Height = 828
-                ExplicitTop = 1
                 ExplicitWidth = 1503
                 ExplicitHeight = 828
               end
@@ -1835,7 +1841,6 @@ object Form2: TForm2
                     inherited SG: TStringGridSorted
                       Width = 1236
                       Height = 235
-                      ExplicitTop = 1
                       ExplicitWidth = 1236
                       ExplicitHeight = 235
                     end
@@ -2166,6 +2171,15 @@ object Form2: TForm2
           OnClick = lbCSVErrorClick
         end
       end
+    end
+    object Button8: TButton
+      Left = 108
+      Top = 140
+      Width = 109
+      Height = 53
+      Caption = 'Button8'
+      TabOrder = 10
+      OnClick = Button8Click
     end
   end
   object pnlIcons: TPanel

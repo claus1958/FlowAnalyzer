@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Clipbrd, Vcl.Grids, StringGridSorted,
   Vcl.ExtCtrls, MMSystem,
-  FTCommons, FTTypes, System.strutils, Vcl.Menus, Vcl.Buttons;
+  FTCommons, FTTypes, System.strutils, Vcl.Menus, Vcl.Buttons,ShellApi;
 
 type
   TDynGrid = class(TFrame)
@@ -23,6 +23,8 @@ type
     PopupMenu1: TPopupMenu;
     Selectcolumns1: TMenuItem;
     CSVExport1: TMenuItem;
+    PopupMenu0: TPopupMenu;
+    MenuItem1: TMenuItem;
     constructor Create(AOwner: TComponent); override;
     procedure saveInit();
     procedure Panel2Resize(Sender: TObject);
@@ -98,9 +100,6 @@ begin
   RegisterComponents('Samples', [TDynGrid]);
 end;
 
-
-
-
 constructor TDynGrid.Create(AOwner: TComponent);
 begin
   // hier können eider die Spalten noch nicht initialisert werden sondern erst in init
@@ -129,7 +128,9 @@ begin
   expo.fileName := fname;
   expo.separator := ';';
   gridHandler(@expo);
+  ShellExecute(Application.Handle, 'open', PChar('notepad.exe'), PChar(fname), Nil, SW_NORMAL);
 end;
+
 procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
 // diese gridinterne Funktion ist beim DynGrid abgeschaltet
 var
@@ -202,7 +203,7 @@ begin
   summe := '';
   if (source = 'cwsummaries') then
   begin
-    if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal', 'tradesSwapTotal']) > -1) then
+    if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal', 'tradesSwapTotal','tradesProfitSwapTotal']) > -1) then
     begin
       sumi := 0;
       sumd := 0;
@@ -216,6 +217,8 @@ begin
         typ := 2;
       if (header = 'tradesSwapTotal') then
         typ := 3;
+      if (header = 'tradesProfitSwapTotal') then
+        typ := 4;
       for i := 0 to length(ixSorted) - 1 do
       begin
         case typ of
@@ -235,6 +238,10 @@ begin
             begin
               sume := sume + cwsummaries[ixSorted[i]].TradesSwapTotal;
             end;
+          4:
+            begin
+              sume := sume + cwsummaries[ixSorted[i]].TradesProfitSwapTotal;
+            end;
         end;
       end;
       case typ of
@@ -251,6 +258,10 @@ begin
             summe := FormatFloat(',#0.00', sume);
           end;
         3:
+          begin
+            summe := FormatFloat(',#0.00', sume);
+          end;
+        4:
           begin
             summe := FormatFloat(',#0.00', sume);
           end;
@@ -406,15 +417,15 @@ begin
   btn := mbleft;
   // col row ist die Zelle in welcher die Taste gedrückt wurde und nicht die Zielzelle !
   case Key of
-  //geht leider nicht, da die Kopfzeile gar nicht gewählt werden kann.Daher ist col immer 0 , egal wo man sich befindet
-//    VK_DELETE:
-//      begin
-//        // showmessage('make col invisible');
-//        SG.ColWidths[col] := 20;
-//        SGSum.ColWidths[col] := 20;
-//        gridHandler(nil);
-//        form2.repaint;
-//      end;
+    // geht leider nicht, da die Kopfzeile gar nicht gewählt werden kann.Daher ist col immer 0 , egal wo man sich befindet
+    // VK_DELETE:
+    // begin
+    // // showmessage('make col invisible');
+    // SG.ColWidths[col] := 20;
+    // SGSum.ColWidths[col] := 20;
+    // gridHandler(nil);
+    // form2.repaint;
+    // end;
 
     VK_DOWN:
       begin
@@ -542,9 +553,9 @@ end;
 
 procedure TDynGrid.Selectcolumns1Click(Sender: TObject);
 begin
-dialog1.form5.gridselektor(self);
-dialog1.form5.Showmodal;
-//Column selection
+  Dialog1.form5.gridselektor(self);
+  Dialog1.form5.Showmodal;
+  // Column selection
 end;
 
 // spezieller Teil auf zB cwactions,cwfilteredactions,cwsingleuseractions bezugnehmend
@@ -901,7 +912,7 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1160,17 +1171,27 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
 procedure TDynGrid.SpeedButton1Click(Sender: TObject);
-var p:tpoint;
-
+var
+  p: TPoint;
+  m:integer;
 begin
-p:=speedbutton1.ClientToScreen(point(0,speedbutton1.Height));
-popupmenu1.Popup(p.x,p.y);
+  p := SpeedButton1.ClientToScreen(point(0, SpeedButton1.height));
+  m:=0;
+  if source = 'cwactions' then m:=1;
+  if source = 'cwfilteredactions' then m:=1;
+  if source = 'cwsingleuseractions' then m:=1;
+  if(m=1) then
+    PopupMenu1.Popup(p.X, p.Y);
+  if(m=0) then
+    PopupMenu0.Popup(p.X, p.Y);
+
 end;
+
 procedure TDynGrid.sortGridCwComments(source: string; sortcol: string; sortdir: integer; var comments: DACwComment);
 var
   dl, i, scol, smethode: integer;
@@ -1235,7 +1256,7 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1411,7 +1432,7 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1451,8 +1472,10 @@ begin
       scol := 9;
     if sortcol = 'groupId' then
       scol := 6;
+    if sortcol = 'tradesProfitSwapTotal' then
+      scol := 10;
 
-    if ((scol > 6)) then
+    if ((scol > 6)and(scol<10))then
     begin
       setlength(sSort, dl);
       smethode := 2;
@@ -1510,6 +1533,11 @@ begin
           sSort[i] := symbolsGroups[i].sourceIds;
           continue;
         end;
+        if scol =10 then
+        begin
+          dSort[i] := symbolsGroups[i].TradesProfitSwapTotal;
+          continue;
+        end;
       end;
     end;
     // nun sortieren
@@ -1531,7 +1559,7 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1570,6 +1598,8 @@ begin
       scol := 7;
     if sortcol = 'tradesSwapTotal' then
       scol := 8;
+    if sortcol = 'tradesProfitSwapTotal' then
+      scol := 9;
 
     if ((scol < 4)) then
     begin
@@ -1627,6 +1657,11 @@ begin
               dSort[l] := summaries[i][j][k].TradesSwapTotal;
               continue;
             end;
+            if scol = 9 then
+            begin
+              dSort[l] := summaries[i][j][k].TradesProfitSwapTotal;
+              continue;
+            end;
           end;
     end;
 
@@ -1649,7 +1684,7 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1694,6 +1729,8 @@ begin
       scol := 7;
     if sortcol = 'tradesSwapTotal' then
       scol := 8;
+    if sortcol = 'tradesProfitSwapTotal' then
+      scol := 9;
 
     if ((scol < 4)) then
     begin
@@ -1756,6 +1793,11 @@ begin
           dSort[l] := summaries[i].TradesSwapTotal;
           continue;
         end;
+        if scol = 9 then
+        begin
+          dSort[l] := summaries[i].TradesProfitSwapTotal;
+          continue;
+        end;
       end;
     end;
 
@@ -1778,7 +1820,7 @@ begin
     end;
 
   end;
-  //lblTime.caption := inttostr(gettickcount - gt);
+  // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
 end;
 
@@ -1881,6 +1923,8 @@ begin
     sl.SaveToFile(exp.fileName);
     showmessage(inttostr(vscrollbis - vScrollvon + 1) + ' lines successfully exported to:' + exp.fileName);
   end;
+
+  // hier kann auch ein Col resized worden sein! Das kann man merken, wenn SG nicht mehr dieselbe ColsWidth hat wie SGSUm
   // end;
 end;
 
@@ -1973,7 +2017,7 @@ end;
 
 procedure TDynGrid.SGMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 var
-  col, row, merk,merkWidth, i, nr, anr, fall, seltop, selbottom: integer;
+  col, row, merk, merkWidth, i, nr, anr, fall, seltop, selbottom: integer;
   grid: FTCommons.TStringGridSorted;
   Cursor: TCursor;
   such, vgl: string;
@@ -1981,6 +2025,7 @@ var
   suchfound: Boolean;
   gt: cardinal;
   found: integer;
+  flag: Boolean;
 begin
 
   //
@@ -2014,31 +2059,31 @@ begin
           begin
             // nach rechts verschoben
             merk := SGColField[mdcol];
-            merkWidth:=SG.ColWidths[mdcol];
+            merkWidth := SG.ColWidths[mdcol];
             for i := mdcol to mucol - 1 do
             begin
               SGColField[i] := SGColField[i + 1];
-              SG.Colwidths[i] := SG.Colwidths[i + 1];
-              SGSum.Colwidths[i] := SGSum.Colwidths[i + 1];
+              SG.ColWidths[i] := SG.ColWidths[i + 1];
+              SGSum.ColWidths[i] := SGSum.ColWidths[i + 1];
             end;
             SGColField[mucol] := merk;
-            SG.Colwidths[mucol] := merkWidth;
-            SGSum.Colwidths[mucol] := merkWidth;
+            SG.ColWidths[mucol] := merkWidth;
+            SGSum.ColWidths[mucol] := merkWidth;
           end
           else
           begin
             // nach links verschoben
             merk := SGColField[mdcol];
-            merkWidth:=SG.ColWidths[mdcol];
+            merkWidth := SG.ColWidths[mdcol];
             for i := mdcol downto mucol + 1 do
             begin
               SGColField[i] := SGColField[i - 1];
-              SG.Colwidths[i] := SG.Colwidths[i - 1];
-              SGSum.Colwidths[i] := SGSum.Colwidths[i - 1];
+              SG.ColWidths[i] := SG.ColWidths[i - 1];
+              SGSum.ColWidths[i] := SGSum.ColWidths[i - 1];
             end;
             SGColField[mucol] := merk;
-            SG.Colwidths[mucol] := merkWidth;
-            SGSum.Colwidths[mucol] := merkWidth;
+            SG.ColWidths[mucol] := merkWidth;
+            SGSum.ColWidths[mucol] := merkWidth;
           end
         end
         else
@@ -2047,6 +2092,7 @@ begin
           if ssshift in Shift then
           begin
             such := InputBox('Search in column', 'Search expression:', '');
+            // immer in Großbuchstaben wandeln
             such := uppercase(such);
             suchlength := such.length;
             if such <> '' then
@@ -2054,26 +2100,32 @@ begin
               suchfound := false;
               gt := gettickcount;
               i := scrollPosition;
-
+              //der Parameter mucol ist hier falsch
+              //wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
+              //string wäre leichter umzusetzen ist aber in der Suche langsam !
               if source = 'cwactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, mucol, such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, sgcolfield[mucol], such)
               else if source = 'cwfilteredactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwfilteredactions, i, mucol, such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwfilteredactions, i,sgcolfield[mucol], such)
               else if source = 'cwsingleuseractions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, mucol, such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, sgcolfield[mucol], such)
               else if source = 'cwsymbols' then
-                found := -1
+                found := -2
               else if ((source = 'cwusers') or (source = 'cwusers2')) then
-                found := -1
+                found := -2
               else if source = 'cwcomments' then
-                found := -1
+                found := -2
               else if source = 'cwsymbolsgroups' then
-                found := -1
+                found := -2
               else if source = 'cwfilteredsymbolsgroups' then
-                found := -1;
+                found := -2;
               if found > -1 then
+              //todo das ist natürlich bei DynGrid Quatsch !
                 ScrollBar1.Position := found;
-              showmessage('z:' + inttostr(gettickcount - gt));
+              if (found = -1) then
+                showmessage('z:' + inttostr(gettickcount - gt));
+              if (found = -2) then
+                showmessage('Funktion in'+source+' noch nicht implementiert');
 
             end;
           end;
@@ -2097,6 +2149,22 @@ begin
     // i := SGFieldCol[mucol];
     // SGFieldCol[mucol] := SGFieldCol[mdcol];
     // SGFieldCol[mdcol] := i;
+    // hier kann sich colwidths geändert haben !
+    flag := false;
+    if (SG.ColWidths[mdcol] <> SGSum.ColWidths[mdcol]) then
+    begin
+      SGSum.ColWidths[mdcol] := SG.ColWidths[mdcol];
+      flag := true;
+    end;
+
+    if (SG.ColWidths[mucol] <> SGSum.ColWidths[mucol]) then
+    begin
+      SGSum.ColWidths[mucol] := SG.ColWidths[mucol];
+      flag := true;
+    end;
+    if (flag = true) then
+      saveInit;
+
     gridHandler(nil);
   end;
 
