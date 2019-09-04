@@ -46,6 +46,10 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object btnLadeDialog: TButton
         Left = 604
         Top = 671
@@ -110,7 +114,7 @@ object Form2: TForm2
             Top = 616
             Width = 42
             Height = 13
-            Caption = '1.0.0.15'
+            Caption = '1.0.0.20'
             Font.Charset = DEFAULT_CHARSET
             Font.Color = clMedGray
             Font.Height = -11
@@ -1191,7 +1195,7 @@ object Form2: TForm2
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 995
+              Width = 6
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -1202,7 +1206,6 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
-              ExplicitWidth = 6
             end
           end
           inline DynGrid2: TDynGrid
@@ -1357,6 +1360,10 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 3
       ParentFont = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 8
         Top = 24
@@ -1880,6 +1887,10 @@ object Form2: TForm2
       Caption = 'TabSheet8'
       ImageIndex = 7
       TabVisible = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Button9: TButton
         Left = 36
         Top = 76
@@ -1893,6 +1904,10 @@ object Form2: TForm2
     object TabSheet9: TTabSheet
       Caption = 'Gelber Sack'
       ImageIndex = 8
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel21: TPanel
         Left = 120
         Top = 12
@@ -1981,6 +1996,10 @@ object Form2: TForm2
     object TabSheet10: TTabSheet
       Caption = 'Data Loading'
       ImageIndex = 9
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel10: TPanel
         AlignWithMargins = True
         Left = 216
@@ -2171,15 +2190,6 @@ object Form2: TForm2
           OnClick = lbCSVErrorClick
         end
       end
-    end
-    object Button8: TButton
-      Left = 108
-      Top = 140
-      Width = 109
-      Height = 53
-      Caption = 'Button8'
-      TabOrder = 10
-      OnClick = Button8Click
     end
   end
   object pnlIcons: TPanel
@@ -3150,7 +3160,7 @@ object Form2: TForm2
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer
-    Left = 460
-    Top = 44
+    Left = 440
+    Top = 40
   end
 end

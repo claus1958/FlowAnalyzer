@@ -26,6 +26,7 @@ const
   fltTopicVolume = 16;
   fltTopicMarginRate = 17;
   fltTopicAccountCurrency = 18;
+  fltTopicCloseDateTimeOrOpen = 19;
 
   fltOpGleich = 1;
   fltOpUnGleich = 2;
@@ -36,6 +37,7 @@ const
   fltOpContains = 7;
   fltOpBegins = 8;
   fltOpGroesserOderNull = 9; // bei Datum wichtig
+  fltOpGroesserGleichOderNull = 10; // bei Datum wichtig
 
 type
   TFilterElemente = class(TFrame)
@@ -143,7 +145,7 @@ var
   e: TEdit;
 begin
   e := Sender as TEdit;
-  if(( screen.ActiveControl = e) or(sender<>dtPicker1)) then
+  if ((screen.ActiveControl = e) or (Sender <> dtPicker1)) then
   begin
     if dtPicker1.Visible = true then
     begin
@@ -252,7 +254,7 @@ var
   lb1flag: boolean;
   topic: string;
 begin
-//  form2.dolockWindowUpdate(true);
+  // form2.dolockWindowUpdate(true);
   chkLB1.Items.Clear;
   topic := vorQuote(cbTopic.Text);
   lb1flag := false;
@@ -393,6 +395,10 @@ begin
   begin
     typ := 1;
   end;
+  if topic = 'CloseDateTime OR Open' then
+  begin
+    typ := 3;
+  end;
 
   if typ = 1 then
   // reines Editierfeld
@@ -438,11 +444,11 @@ begin
     btnMore.Visible := false;
     chkLB1.Visible := false;
     cbOperator.Items.Clear;
-    cbOperator.Items.Add('>');
+    cbOperator.Items.Add('>=');
     cbOperator.Items.Add('<');
-    cbOperator.Items.Add('> or 0');
+    cbOperator.Items.Add('>= or 0');
   end;
-  //form2.dolockWindowUpdate(false);
+  // form2.dolockWindowUpdate(false);
 
 end;
 
@@ -639,7 +645,8 @@ begin
     vString := edValue.Text;
   end;
 
-  if (ctopic = fltTopicAccountDate) or (ctopic = fltTopicOpenDateTime) or (ctopic = fltTopicCloseDateTime)
+  if (ctopic = fltTopicAccountDate) or (ctopic = fltTopicOpenDateTime) or (ctopic = fltTopicCloseDateTime) or
+    (ctopic = fltTopicCloseDateTimeOrOpen)
 
   then
   begin
@@ -718,6 +725,12 @@ begin
       result := true;
     exit;
   end;
+  if op = fltOpGroesserGleichOderNull then
+  begin
+    if ((was >= mit) or (was = 0)) then
+      result := true;
+    exit;
+  end;
 
 end;
 
@@ -764,6 +777,12 @@ begin
   if op = fltOpGroesserOderNull then
   begin
     if ((was > mit) or (was = 0)) then
+      result := true;
+    exit;
+  end;
+  if op = fltOpGroesserGleichOderNull then
+  begin
+    if ((was >= mit) or (was = 0)) then
       result := true;
     exit;
   end;
@@ -948,6 +967,8 @@ begin
     coperator := fltOpGroesser;
   if operators = '> or 0' then
     coperator := fltOpGroesserOderNull;
+  if operators = '>= or 0' then
+    coperator := fltOpGroesserGleichOderNull;
 
   if operators = '<' then
     coperator := fltOpKleiner;
@@ -996,6 +1017,8 @@ begin
     ctopic := fltTopicMarginRate; // = 17;
   if topic = 'AccountCurrency' then
     ctopic := fltTopicAccountCurrency; // = 18;
+  if topic = 'CloseDateTime OR Open' then
+    ctopic := fltTopicCloseDateTimeOrOpen; // = 13;
 
   // Rest passiert beim Aufrufer
 end;
@@ -1218,6 +1241,30 @@ begin
       exit;
     end;
 
+    if ctopic = fltTopicCloseDateTimeOrOpen then
+    begin
+      result := vergleichInteger(vInteger, a.closeTime, coperator);
+      // zusätzlich der Vergleich ob in diesem Zeitraum die Action open war. Also closeTime=0 und openTime
+      // Problem weil es zwei open Fälle gibt, die hier nicht ausgefiltert werden sollen:
+      // open vor A und kein Close
+      // open nach A und kein Close
+      // ist zusammen einfach open ja - close nein
+
+      // wenn > vergleich
+      if (coperator = fltOpGroesser) then
+        if (a.openTime <> 0) then
+          if (a.closeTime = 0) then
+            result := true;
+
+      // wenn < vergleich
+      if (coperator = fltOpKleiner) then
+        if (a.openTime < vInteger) then
+          if (a.closeTime = 0) then
+            result := true;
+
+      exit;
+
+    end;
   except
     result := false;
   end;

@@ -7,7 +7,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.strutils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.ComCtrls, FTCommons, Vcl.StdCtrls, Vcl.Grids,
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
-  Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons, iniFiles,ShellApi;
+  Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons, iniFiles, ShellApi,
+  System.NetEncoding;
 // AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
 // AdvChartPaneEditor, AdvChartSerieEditor, ;
 
@@ -192,7 +193,6 @@ type
     lblUpdateRest: TLabel;
     btnSample5: TButton;
     Label13: TLabel;
-    Button8: TButton;
     function checkLastUpdate(): TDatetime;
     procedure AppOnMessage(var Msg: TMsg; var Handled: Boolean);
     procedure MyExceptionHandler(Sender: TObject; E: Exception);
@@ -237,7 +237,7 @@ type
     procedure remeasureCategoryPanels(c1: TCategoryPanelGroup);
     procedure StartHTTPWorker;
     procedure HTTPOnTerminate(Sender: TObject);
-    function doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
+    function doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string; Var sErr: string): integer;
     procedure dosleep(t: integer);
     procedure Button4Click(Sender: TObject);
     procedure Button6Click(Sender: TObject);
@@ -311,7 +311,6 @@ type
     procedure lblUpdateRestClick(Sender: TObject);
     procedure lblUpdateRestDblClick(Sender: TObject);
     procedure DynGrid9SpeedButton1Click(Sender: TObject);
-    procedure Button8Click(Sender: TObject);
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -408,11 +407,12 @@ var
   res: integer;
   alt: integer;
   aneu: DACwAction;
+  sErr: string;
 begin
   gt := GetTickCount;
   // bytes := doHTTPGetByteArray(url, lb);
   // über einen zweiten Thread werden die Daten abgerufen
-  res := doHttpGetByteArrayFromWorker(bytes, url);
+  res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
   lbDebug2.Items.Add('Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
 
   if typ = 'actions' then
@@ -421,7 +421,7 @@ begin
     // Bytes->cwActions
     i := SizeOf(cwAction);
     sz := trunc(length(bytes) / i);
-    // Problem: es gibt bei den CloseTime Abrufen leider ca 11 actions deren Datum in der Zukunft liegt
+    // Problem: es gibt bei den CloseTime Abrufen leider ca 11 Actions deren Datum in der Zukunft liegt
     // und die deshalb in Wahrheit gar nicht neu sind !
     if ((sz > 0) and (sz < 20)) then
     begin
@@ -578,7 +578,8 @@ begin
 end;
 
 procedure TForm2.GetCsv(url, typ: string; lb: TListBox; append: Boolean; tryCache: Boolean);
-
+// die Routine gibt nichts zurück und behandelt die Ergebnisse selbst
+// Fehler werden in die lb geschrieben
 var
   gt: cardinal;
   fileName: string;
@@ -592,7 +593,8 @@ var
   res: integer;
   i, j: integer;
   sl: TStringList;
-  sErr:string;
+  sErr: string;
+
 begin
   gt := GetTickCount;
 
@@ -632,10 +634,11 @@ begin
   begin
 
     // bytes := doHTTPGetByteArray(url, lbCSVError);
-    res := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
+    res := doHttpGetByteArrayFromWorker(bytes, url, sErr); // res=0 ist der Normalfall ! <>0 ist ein Fehler
     if (res <> 0) then
     begin
-      sErr:='Fehler HTTPGet';
+      sErr := 'Fehler HTTPGet';
+      // hier passiert im Fehlerfalle einfach gar nix und die Routine wird einfach beendet
       exit;
 
     end;
@@ -971,15 +974,15 @@ var
 begin
   // Die drei Dateien vom Server abrufen: symbols user und comments
   gt := GetTickCount;
-  edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/symbols';
+  edGetUrlCSV.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/csv/symbols';
   LoadInfo('Load Symbols...');
   GetCsv(edGetUrlCSV.text, 'symbols', lbCSVError, false, useCache);
 
-  edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/users';
+  edGetUrlCSV.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/csv/users';
   LoadInfo('Load Users...');
   GetCsv(edGetUrlCSV.text, 'users', lbCSVError, false, useCache);
 
-  edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/comments';
+  edGetUrlCSV.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/csv/comments';
   LoadInfo('Load Comments...');
   GetCsv(edGetUrlCSV.text, 'comments', lbCSVError, false, useCache);
 
@@ -996,10 +999,10 @@ var
   dt: TDatetime;
 begin
 
-  edGetUrlCSV.text := 'http://www.stonedcompany.de/FTServer/lastUpdate.csv';
+  edGetUrlCSV.text := 'http://www.stonedcompany.de/FTServer/lastUpdate'+cServerPort+'.csv';
   LoadInfo('Load LastUpdate...');
   info.lastUpdateOnServer := 0; // -> wird nun gesetzt oder auch nicht
-  GetCsv(edGetUrlCSV.text, 'lastUpdate', lbCSVError, false, false); // hier keinen Cache verwenden !
+  GetCsv(edGetUrlCSV.text, 'lastUpdate'+cServerPort, lbCSVError, false, false); // hier keinen Cache verwenden !
   if (info.lastUpdateOnServer <> 0) then
   begin
     dt := info.lastUpdateOnServer;
@@ -1019,6 +1022,7 @@ begin
   if (dt = 0) then
     dt := now - 7; // 7 Tage default wenn nix geht
   result := dt;
+  LoadInfo('');
 end;
 
 procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
@@ -1332,7 +1336,7 @@ begin
     begin
       getSymbolsUsersComments(false); // holt vom Server
       LoadInfo('Load All Actions (wait!) ...');
-      GetBinData('http://h2827643.stratoserver.net:8080/bin/actions', 'actions', lbCSVError, false);
+      GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions', 'actions', lbCSVError, false);
       btnSaveCacheFileCwClick(nil);
       LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Server');
     end;
@@ -1342,17 +1346,17 @@ begin
   else
   begin
 
-    edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/symbols';
+    edGetUrlCSV.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/csv/symbols';
     LoadInfo('Load Symbols...');
     GetCsv(edGetUrlCSV.text, 'symbols', lbCSVError, false, true);
     LoadInfo(inttostr(length(cwSymbols)) + ' Symbols');
 
-    // edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/users';
+    // edGetUrlCSV.text := 'http://h2827643.stratoserver.net:'+cServerPort+'/csv/users';
     // LoadInfo('Load Users...');
     // GetCsv(edGetUrlCSV.text,'users', lbCSVError, false,true);
     // LoadInfo(inttostr(length(cwUsers)) + ' Users');
 
-    edGetUrlCSV.text := 'http://h2827643.stratoserver.net:8080/csv/comments';
+    edGetUrlCSV.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/csv/comments';
     LoadInfo('Load Comments...');
     GetCsv(edGetUrlCSV.text, 'comments', lbCSVError, false, true);
     LoadInfo(inttostr(length(cwComments)) + ' Comments');
@@ -1365,15 +1369,16 @@ begin
       begin
         whichAccounts := whichAccounts + clbBrokers.Items[i] + '/';
         LoadInfo('Load Users...');
-        GetCsv('http://h2827643.stratoserver.net:8080/csv/users?accountId=' + inttostr(i + 1), 'users', lbCSVError,
-          appendCSVUsers, false);
+        GetCsv('http://h2827643.stratoserver.net:' + cServerPort + '/csv/users?accountId=' + inttostr(i + 1), 'users',
+          lbCSVError, appendCSVUsers, false);
         appendCSVUsers := true; // ab dem 2.mal anhängen !
         LoadInfo(inttostr(length(cwUsers)) + ' Users');
 
-        edGetUrlBin.text := 'http://h2827643.stratoserver.net:8080/bin/actions?accountId=' + inttostr(i + 1);
+        edGetUrlBin.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' +
+          inttostr(i + 1);
         LoadInfo('Load Actions...');
-        GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?accountId=' + inttostr(i + 1), 'actions',
-          lbCSVError, appendBinActions);
+        GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' + inttostr(i + 1),
+          'actions', lbCSVError, appendBinActions);
         appendBinActions := true; // ab dem 2.mal anhängen !
 
         LoadInfo(inttostr(length(cwActions)) + ' Actions');
@@ -1901,7 +1906,7 @@ var
   TradesVolumeTotal: double;
   TradesProfitTotal: double;
   TradesSwapTotal: double;
-  TradesProfitSwapTotal:double;
+  TradesProfitSwapTotal: double;
   gct: integer;
 begin
   gt := GetTickCount;
@@ -2086,13 +2091,13 @@ begin
       cw3summaries[p[0], p[1], p[2]].TradesSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesSwapTotal +
         cwFilteredActions[i].swap;
       cw3summaries[p[0], p[1], p[2]].TradesProfitSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitSwapTotal +
-        cwFilteredActions[i].profit+cwFilteredActions[i].swap;
+        cwFilteredActions[i].profit + cwFilteredActions[i].swap;
 
       TradesCount := TradesCount + 1;
       TradesVolumeTotal := TradesVolumeTotal + cwFilteredActions[i].volume;
       TradesProfitTotal := TradesProfitTotal + cwFilteredActions[i].profit;
       TradesSwapTotal := TradesSwapTotal + cwFilteredActions[i].swap;
-      TradesProfitSwapTotal := TradesProfitSwapTotal + cwFilteredActions[i].profit+ cwFilteredActions[i].swap;
+      TradesProfitSwapTotal := TradesProfitSwapTotal + cwFilteredActions[i].profit + cwFilteredActions[i].swap;
     end;
   except
     on E: Exception do
@@ -2490,41 +2495,6 @@ begin
   DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
 end;
 
-procedure TForm2.Button8Click(Sender: TObject);
-var http:tourhttp;
-     url:string;
-     body:string;
-     tbody:TStringStream;
-     tresult:TStringStream;
-     res:string;
-     ret:integer;
-
-     bytes:bytearray;
-
-begin
-http:=tourhttp.Create();
-url:='http://h2827643.stratoserver.net:8081/login';
-body:='flow_collector:f9#w01*F21b/dQ';
-tbody:=tstringstream.Create(body);
-tbody.position:=0;
-tresult:=TStringStream.create();
-http.Get(url,tbody,tresult);
-res:=tresult.datastring;
-showmessage('res:'+res);
-
-url:='http://h2827643.stratoserver.net:8080/json/symbols';
-ret := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
-
-url:='http://www.stonedcompany.de/123.txt';
-ret := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
-
-
-url:='http://h2827643.stratoserver.net:8081/json/symbols?sessionKey='+res;
-
-ret := doHttpGetByteArrayFromWorker(bytes, url); // res=0 ist der Normalfall ! <>0 ist ein Fehler
-//ret=0 kein Fehler bytes() keine Daten - wo ist der Fehler ?
-end;
-
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
 begin
   doUpdate();
@@ -2595,11 +2565,11 @@ begin
   lbCSVError.Items.Add('[Vorbereitung]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   // showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
-  a1 := GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromOpen=' + inttostr(tt), 'actions',
-    lbCSVError, true);
+  a1 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromOpen=' + inttostr(tt),
+    'actions', lbCSVError, true);
   // showmessage(' Actions:' + inttostr(length(cwActions)));
-  a2 := GetBinData('http://h2827643.stratoserver.net:8080/bin/actions?fromClose=' + inttostr(tt), 'actions',
-    lbCSVError, true);
+  a2 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromClose=' + inttostr(tt),
+    'actions', lbCSVError, true);
   // a1 > 0 bedeutet es sind neue Openings vorhanden
   // a2 > 0 muss nix bedeuten da es momentan 11 mit CloseTime in der Zukunft gibt
   lbCSVError.Items.Add('[Daten laden]' + inttostr(GetTickCount - gt));
@@ -3267,6 +3237,7 @@ var
   s: string;
 
 begin
+  sessionkey:='';
   askFinishUpdate := false; // Button drücken Update
   getAppOnMessage := true;
   Application.OnMessage := AppOnMessage;
@@ -4205,7 +4176,7 @@ begin
     end;
   end;
 
-  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string): integer;
+  function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string; var sErr: string): integer;
   var
     flag: integer;
     gt, ngt: cardinal;
@@ -4214,6 +4185,7 @@ begin
     liText: array [1 .. 10] of string;
 
   begin
+    // wenn der Worker noch was macht ... warten !
     while (HTTPWorker1.RequestBusy = true) do
     begin
       dosleep(CSleep);
@@ -4229,6 +4201,7 @@ begin
     HTTPWorker1.RequestBusy := true;
     HTTPWorker1.Caption := 'HTTPWorker1';
     HTTPWorker1.bArray := bArray;
+    HTTPWorker1.ResultList.clear;
     // das array wird an den Worker übergeben und dieser befüllt es
 
     leaveCriticalSection(HTTPWorkCriticalSection);
@@ -4249,6 +4222,7 @@ begin
     li := 0;
     while (HTTPWorker1.RequestBusy = true) do
     begin
+      // der Unterhaltungsteil ...
       gt := GetTickCount;
       dosleep(CSleep);
       if flag < 20 then
@@ -4288,11 +4262,14 @@ begin
       end;
     end;
     // debugThread(inttostr(HTTPWorker1.ct) + 'HTTPWorker1. S Request Ende:' + Url);
+    // Nun ist der Worker mit seiner Arbeit fertig
     lblWarten.Caption := 'Loading Finished';
     Memo1.lines.clear;
-    // in HTTWorkerResultList stehen die Meldungen
+    // in HTTPWorker1.ResultList stehen die Meldungen
+    // diese werden hier überhaupt nicht ausgewertet
     bArray := HTTPWorker1.bArray;
     result := HTTPWorker1.HError; // hier noch was anders machen !
+    sErr := HTTPWorker1.ResultList.CommaText;
   end;
 
   procedure TForm2.dosleep(t: integer);
@@ -4340,8 +4317,8 @@ begin
     twoLblStart[4].l1.Caption := 'Open Actions:';
     twoLblStart[5].l1.Caption := 'New Users 1 Week:';
     twoLblStart[6].l1.Caption := 'New Users 1 Month:';
-    twoLblStart[7].l1.Caption := 'Actions new today:';
-    twoLblStart[8].l1.Caption := 'Actions 1 Week:';
+    twoLblStart[7].l1.Caption := 'New Actions today:';
+    twoLblStart[8].l1.Caption := 'New Actions 1 Week:';
     twoLblStart[9].l1.Caption := 'Profit today:';
     twoLblStart[10].l1.Caption := 'Profit 1 Week:';
     twoLblStart[11].l1.Caption := 'Logged Users 1 day:';

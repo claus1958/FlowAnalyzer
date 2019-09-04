@@ -8,17 +8,12 @@ uses
 type
   xxx = integer;
 
-type
-  TOurHttp = class(TIdHttp)
-  public
-    procedure Get(aUrl: String; aRequestBody, aResponseContent: TStream);
-  end;
 
 function doHTTPPutString(sJSON: string; Url: string; slDebug: TStringList): integer;
 function doHTTPDeleteString(sJSON: string; Url: string; slDebug: TStringList): integer;
 function doHTTPDelete(Url: string): integer;
 function doHTTPPutMemoryStream(mStream: TMemoryStream; Url: string; slDebug: TStringList): integer;
-function doHTTPGetByteArraySL(Url: string; sl: TStringList): byteArray;
+function doHTTPGetByteArraySL(Url: string;sl: TStringList): byteArray;
 
 implementation
 
@@ -28,12 +23,8 @@ const
   IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SETPEFLAGS IMAGE_FILE_LARGE_ADDRESS_AWARE}
 
-procedure TOurHttp.Get(aUrl: String; aRequestBody, aResponseContent: TStream);
-begin
-  DoRequest(Id_HttpMethodGet, aUrl, aRequestBody, aResponseContent, []);
-end;
 
-function doHTTPGetByteArraySL(Url: string; sl: TStringList): byteArray;
+function doHTTPGetByteArraySL(Url: string;sl: TStringList): byteArray;
 
 var
   HTTP: TIdHttp;
@@ -77,6 +68,7 @@ begin
         mStream.Free;
       end;
     except
+    //dieser Teil wird vermutlich nie ausgeführt
       on E: EIdHTTPProtocolException do
       begin
         sl.Add(E.Message + #13#10#13#10 + E.ErrorMessage);

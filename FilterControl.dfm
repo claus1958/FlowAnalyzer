@@ -31,7 +31,8 @@ object FilterElemente: TFilterElemente
       'Profit'
       'Volume'
       'MarginRate'
-      'AccountCurrency')
+      'AccountCurrency'
+      'CloseDateTime OR Open')
   end
   object cbOperator: TComboBox
     Left = 163

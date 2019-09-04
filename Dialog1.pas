@@ -57,7 +57,6 @@ begin
   for i := 0 to myDG.sg.colcount - 1 do
   begin
     chkLB1.Checked[i] := true;
-
   end;
 
 end;
@@ -154,6 +153,8 @@ begin
         myDG.sg.ColWidths[i] := -1;
     end;
   end;
+  for i := 0 to myDG.sg.colcount - 1 do
+    myDG.sgsum.colwidths[i]:=myDG.sg.colwidths[i];
 end;
 
 procedure TForm5.Timer1Timer(Sender: TObject);

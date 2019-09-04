@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
   RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
-  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes;
+  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,System.NetEncoding;
 
 const
   BoolStr: Array [Boolean] of AnsiString = ('False', 'True');
@@ -17,8 +17,10 @@ const
   LWA_ALPHA = 2;
   WS_EX_LAYERED = $80000;
   cCachefile = 'Actions';
-  cCacheFolder='cache';
-  const  cUpdateTimerInterval=600000;
+  cCacheFolder = 'cache';
+  cUpdateTimerInterval = 600000;
+  cServerPort = '8081';
+
 type
 
   // das ist wohl ein Trick wie man nichts umbenennen muss, wenn man eine neue Klasse von einer anderen Klasse ableitet.
@@ -31,14 +33,18 @@ type
     created when the program loads - if it is declared "locally"
     it is not created until the procedure requests it. }
 
-  tExport= record
-    fileName:string;
-    separator:string;
-    sl:TStringList;
+  TOurHttp = class(TIdHttp)
+  public
+    procedure Get(aUrl: String; aRequestBody, aResponseContent: TStream);
   end;
 
-  pExport=^tExport;
+  tExport = record
+    fileName: string;
+    separator: string;
+    sl: TStringList;
+  end;
 
+  pExport = ^tExport;
 
   tInfo = record
     usersOnline: integer;
@@ -59,9 +65,10 @@ type
     profit1w: double;
     profit1m: double;
     profit1y: double;
-    ctHWMY:string;
-    lastUpdateOnServer:TDateTime;//letzte Serverupdate-Zeit mit kompletten Daten = die Startzeit der Verarbeitung FTCOll->Server - geschrieben wenn Upload fertig ist
-    lastUpdateOnClient:TDateTime;//letzte Serverupdate-Zeit die vom Client verarbeitet wurde
+    ctHWMY: string;
+    lastUpdateOnServer: TDateTime;
+    // letzte Serverupdate-Zeit mit kompletten Daten = die Startzeit der Verarbeitung FTCOll->Server - geschrieben wenn Upload fertig ist
+    lastUpdateOnClient: TDateTime; // letzte Serverupdate-Zeit die vom Client verarbeitet wurde
   end;
 
   TPieParameters = Packed record
@@ -179,10 +186,22 @@ type
 
   DACwAction = array of cwAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
+  cwOpenAction = packed record
+    actionId: int64;
+    userId: integer;
+    swap: double;
+    profit: double;
+
+  end;
+
+  DACwOpenAction = array of cwOpenAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
+
   cwActionPlus = packed Record
     userIndex: integer; // für die schnellere Suche !
     openProfit: double;
     openSwap: double;
+    openProfitStart:double;//Am Beginn des Zeitraums
+    openSwapStart:double;//Am Beginn des Zeitraums
   End;
 
   DACwActionPlus = array of cwActionPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -314,7 +333,8 @@ type
 
   // byteArray = array of byte;
 
-function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: Integer): Boolean;
+function getSessionKey(var key: string): integer;
+function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: integer): Boolean;
 function DateTimeToUnix(ConvDate: TDateTime): Longint;
 function UnixToDateTime(UnixTime: dword): TDateTime;
 function doHTTPGetByteArray(Url: string; lbHTTP: TListBox): byteArray;
@@ -482,6 +502,7 @@ var
   brokerShort: array [1 .. 2] of string;
   accountShort: array [1 .. 7] of string;
   accountCurrency: array [0 .. 4] of string;
+  sessionKey: String;
 
 implementation
 
@@ -490,6 +511,11 @@ uses XFlowAnalyzer;
 const
   IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SETPEFLAGS IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
+procedure TOurHttp.Get(aUrl: String; aRequestBody, aResponseContent: TStream);
+begin
+  DoRequest(Id_HttpMethodGet, aUrl, aRequestBody, aResponseContent, []);
+end;
 
 function cwRating.getJSON(): string;
 // wird aber nicht gebraucht
@@ -518,7 +544,7 @@ end;
 function doHTTPGetByteArray(Url: string; lbHTTP: TListBox): byteArray;
 
 var
-  HTTP: TIdHTTP;
+  HTTP: TIdHttp;
   p: integer;
   b: byteArray;
   // stream:TStream;
@@ -526,7 +552,7 @@ var
 
 begin
   // test HTTP Get
-  HTTP := TIdHTTP.Create;
+  HTTP := TIdHttp.Create;
   HTTP.ConnectTimeout := 400000;
   HTTP.ReadTimeout := 400000;
   mStream := TMemoryStream.Create;
@@ -1334,7 +1360,7 @@ begin
     begin
       SG.Rows[0].BeginUpdate;
       SG.cells[SGFieldCol[0], 0] := 'actionId';
-//      SG.ColWidths[SGFieldCol[0]] := 140;
+      // SG.ColWidths[SGFieldCol[0]] := 140;
       SG.cells[SGFieldCol[1], 0] := 'userId';
       SG.cells[SGFieldCol[2], 0] := 'accountId';
       SG.cells[SGFieldCol[3], 0] := 'symbol';
@@ -1365,10 +1391,10 @@ begin
       // Ausblenden was nicht erwünscht ist
       for k := 0 to 26 do
       begin
-//        if (claus = false) then
-//          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
-//            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
-//            SG.ColWidths[SGFieldCol[k]] := -1;
+        // if (claus = false) then
+        // if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
+        // 'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
+        // SG.ColWidths[SGFieldCol[k]] := -1;
       end;
       SG.Rows[0].endUpdate;
     end;
@@ -1452,7 +1478,7 @@ begin
       if (toSL = false) then
       begin
         SG.Rows[0].BeginUpdate;
-//        SG.ColWidths[SGFieldCol[0]] := 140;
+        // SG.ColWidths[SGFieldCol[0]] := 140;
       end;
       // SG.cells[SGFieldCol[0], 0] := 'actionId';
 
@@ -1484,13 +1510,13 @@ begin
       lines[SGFieldCol[25]] := 'openProfit';
       lines[SGFieldCol[26]] := 'openSwap';
 
-//      for k := 0 to 26 do
-//      begin
-//        if (claus = false) then
-//          if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
-//            'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
-//            SG.ColWidths[SGFieldCol[k]] := -1;
-//      end;
+      // for k := 0 to 26 do
+      // begin
+      // if (claus = false) then
+      // if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
+      // 'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
+      // SG.ColWidths[SGFieldCol[k]] := -1;
+      // end;
 
       if (toSL = false) then
       begin
@@ -1564,7 +1590,7 @@ begin
         end
         else
         begin
-          line:='';
+          line := '';
           for l := 0 to 26 do
           begin
             if (linesHide[SGFieldCol[l]] = false) then
@@ -1759,7 +1785,7 @@ begin
     begin
       SG.Rows[0].BeginUpdate;
       SG.cells[SGFieldCol[0], 0] := 'userId';
-    //  SG.ColWidths[SGFieldCol[0]] := 100;
+      // SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'accountId';
       SG.cells[SGFieldCol[2], 0] := 'name';
       SG.cells[SGFieldCol[3], 0] := 'group';
@@ -1849,7 +1875,7 @@ begin
     begin
       SG.Rows[0].BeginUpdate;
       SG.cells[SGFieldCol[0], 0] := 'symbolId';
-   //   SG.ColWidths[SGFieldCol[0]] := 100;
+      // SG.ColWidths[SGFieldCol[0]] := 100;
       SG.cells[SGFieldCol[1], 0] := 'brokerId';
       SG.cells[SGFieldCol[2], 0] := 'name';
       SG.cells[SGFieldCol[3], 0] := 'description';
@@ -1992,7 +2018,7 @@ begin
       SG.FixedRows := 1;
     SG.Rows[0].BeginUpdate;
     SG.cells[SGFieldCol[0], 0] := 'actionId';
-//    SG.ColWidths[SGFieldCol[0]] := 100;
+    // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'userId';
     SG.cells[SGFieldCol[2], 0] := 'accountId';
     SG.cells[SGFieldCol[3], 0] := 'symbol';
@@ -2162,7 +2188,7 @@ begin
       SG.FixedRows := 1;
 
     SG.cells[SGFieldCol[0], 0] := 'userId';
- //   SG.ColWidths[SGFieldCol[0]] := 100;
+    // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'accountId';
     SG.cells[SGFieldCol[2], 0] := 'group';
     SG.cells[SGFieldCol[3], 0] := 'enable';
@@ -2291,9 +2317,9 @@ begin
       SG.FixedRows := 1;
 
     SG.cells[SGFieldCol[0], 0] := 'commentId';
- //   SG.ColWidths[SGFieldCol[0]] := 100;
+    // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'comment';
- //   SG.ColWidths[SGFieldCol[1]] := 300;
+    // SG.ColWidths[SGFieldCol[1]] := 300;
 
     // merkSeparator:=FormatSettings.DecimalSeparator;
     // FormatSettings.DecimalSeparator:='.';
@@ -2358,7 +2384,7 @@ begin
       SG.FixedRows := 1;
 
     SG.cells[SGFieldCol[0], 0] := 'symbolId';
- //   SG.ColWidths[SGFieldCol[0]] := 100;
+    // SG.ColWidths[SGFieldCol[0]] := 100;
     SG.cells[SGFieldCol[1], 0] := 'brokerId';
     SG.cells[SGFieldCol[2], 0] := 'name';
     SG.cells[SGFieldCol[3], 0] := 'description';
@@ -2628,7 +2654,7 @@ begin
   finally
     fstream.Free;
   end;
-  lb.items.add('Zeit SaveCacheFile:' + inttostr(GetTickCount() - gt));  //1.5 sec
+  lb.items.add('Zeit SaveCacheFile:' + inttostr(GetTickCount() - gt)); // 1.5 sec
 end;
 
 procedure QuicksortVUAS(low, high: integer; var dbla: StringArray; var inta: intArray);
@@ -3437,7 +3463,7 @@ var
   c, R, w, ColWidthMax: integer;
   header: string;
 begin
-  exit; //vorläufig abgeschaltet, da manuell einstellbar !
+  exit; // vorläufig abgeschaltet, da manuell einstellbar !
 
   for c := 0 to Grid.ColCount - 1 do
   begin
@@ -3494,7 +3520,7 @@ var
   res: string;
   suchtyp: integer;
 label weiter;
-//ganz schlecht über eine Spalte über den Index zu suchen ...
+// ganz schlecht über eine Spalte über den Index zu suchen ...
 
 begin
   suchtyp := 0; // normal ab Anfang
@@ -4085,58 +4111,112 @@ begin
 
 end;
 
-function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: Integer): Boolean;
+function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: integer): Boolean;
 var
-    fileInformation: PVSFIXEDFILEINFO;
-    verlen: Cardinal;
-    rs: TResourceStream;
-    m: TMemoryStream;
-    resource: HRSRC;
+  fileInformation: PVSFIXEDFILEINFO;
+  verlen: Cardinal;
+  rs: TResourceStream;
+  M: TMemoryStream;
+  resource: HRSRC;
 begin
-    //You said zero, but you mean "us"
-    if Instance = 0 then
-        Instance := HInstance;
+  // You said zero, but you mean "us"
+  if Instance = 0 then
+    Instance := HInstance;
 
-    //UPDATE: Workaround bug in Delphi if resource doesn't exist
-    resource := FindResource(Instance, pwidechar(1), RT_VERSION);
-    if resource = 0 then
-    begin
-       iMajor := 0;
-       iMinor := 0;
-       iRelease := 0;
-       iBuild := 0;
-       Result := False;
-       Exit;
-    end;
+  // UPDATE: Workaround bug in Delphi if resource doesn't exist
+  resource := FindResource(Instance, PWideChar(1), RT_VERSION);
+  if resource = 0 then
+  begin
+    iMajor := 0;
+    iMinor := 0;
+    iRelease := 0;
+    iBuild := 0;
+    result := false;
+    exit;
+  end;
 
-    m := TMemoryStream.Create;
+  M := TMemoryStream.Create;
+  try
+    rs := TResourceStream.CreateFromID(Instance, 1, RT_VERSION);
     try
-        rs := TResourceStream.CreateFromID(Instance, 1, RT_VERSION);
-        try
-            m.CopyFrom(rs, rs.Size);
-        finally
-            rs.Free;
-        end;
-
-        m.Position:=0;
-        if not VerQueryValue(m.Memory, '\', (*var*)Pointer(fileInformation), (*var*)verlen) then
-        begin
-            iMajor := 0;
-            iMinor := 0;
-            iRelease := 0;
-            iBuild := 0;
-            Exit;
-        end;
-
-        iMajor := fileInformation.dwFileVersionMS shr 16;
-        iMinor := fileInformation.dwFileVersionMS and $FFFF;
-        iRelease := fileInformation.dwFileVersionLS shr 16;
-        iBuild := fileInformation.dwFileVersionLS and $FFFF;
+      M.CopyFrom(rs, rs.Size);
     finally
-        m.Free;
+      rs.Free;
     end;
 
-    Result := True;
+    M.Position := 0;
+    if not VerQueryValue(M.Memory, '\', (* var *) Pointer(fileInformation), (* var *) verlen) then
+    begin
+      iMajor := 0;
+      iMinor := 0;
+      iRelease := 0;
+      iBuild := 0;
+      exit;
+    end;
+
+    iMajor := fileInformation.dwFileVersionMS shr 16;
+    iMinor := fileInformation.dwFileVersionMS and $FFFF;
+    iRelease := fileInformation.dwFileVersionLS shr 16;
+    iBuild := fileInformation.dwFileVersionLS and $FFFF;
+  finally
+    M.Free;
+  end;
+
+  result := true;
+end;
+
+procedure SetFileCreationTime(const fileName: string; const DateTime: TDateTime);
+var
+  Handle: THandle;
+  SystemTime: TSystemTime;
+  FileTime: TFileTime;
+begin
+  Handle := CreateFile(PChar(fileName), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING,
+    FILE_ATTRIBUTE_NORMAL, 0);
+  if Handle = INVALID_HANDLE_VALUE then
+    RaiseLastOSError;
+  try
+    DateTimeToSystemTime(DateTime, SystemTime);
+    if not SystemTimeToFileTime(SystemTime, FileTime) then
+      RaiseLastOSError;
+    if not SetFileTime(Handle, @FileTime, nil, nil) then
+      RaiseLastOSError;
+  finally
+    CloseHandle(Handle);
+  end;
+end;
+
+function getSessionKey(var key: string): integer;
+var
+  HTTP: TOurHttp; // kann get und post
+  Url: string;
+  body: string;
+  tbody: TStringStream;
+  tresult: TStringStream;
+  res: string;
+  ret: integer;
+  ansistr: string;
+  bytes: byteArray;
+  sErr: string;
+
+  //
+begin
+  result := 0;
+  try
+    HTTP := TOurHttp.Create();
+    Url := 'http://h2827643.stratoserver.net:'+cserverport+'/login';
+    body := TNetEncoding.Base64.Encode('flow_collector') + ':' + TNetEncoding.Base64.Encode('f9#w01*F21b/dQ');
+    tbody := TStringStream.Create(body);
+    tbody.Position := 0;
+    tresult := TStringStream.Create();
+    HTTP.post(Url, tbody, tresult);
+    key := tresult.datastring;
+    result := 0; // OK
+  except
+    key := '';
+    result := 1; // Fehler
+  end;
+  // showmessage('res:' + res);
 end;
 
 end.
