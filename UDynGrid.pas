@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Clipbrd, Vcl.Grids, StringGridSorted,
   Vcl.ExtCtrls, MMSystem,
-  FTCommons, FTTypes, System.strutils, Vcl.Menus, Vcl.Buttons,ShellApi;
+  FTCommons, FTTypes, System.strutils, Vcl.Menus, Vcl.Buttons, ShellApi;
 
 type
   TDynGrid = class(TFrame)
@@ -197,13 +197,16 @@ var
   sumi: integer;
   sume: extended;
   typ: integer;
+  sump: array [0 .. 4] of double;
   summe: string;
   i: integer;
+  hc: integer; // Height count bei Profit
 begin
   summe := '';
   if (source = 'cwsummaries') then
   begin
-    if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal', 'tradesSwapTotal','tradesProfitSwapTotal']) > -1) then
+    if (ansiindextext(header, ['tradesCount', 'tradesVolumeTotal', 'tradesProfitTotal', 'tradesSwapTotal',
+      'tradesProfitSwapTotal']) > -1) then
     begin
       sumi := 0;
       sumd := 0;
@@ -232,7 +235,7 @@ begin
             end;
           2:
             begin
-              sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal;
+              sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal; //das sind gemischte Währungen
             end;
           3:
             begin
@@ -276,6 +279,9 @@ begin
     begin
       sumi := 0;
       sumd := 0;
+      for i := 0 to 4 do
+        sump[i] := 0;
+      hc := 1;
       // Wert berechnen
       if (header = 'profit') then
         typ := 0;
@@ -289,6 +295,10 @@ begin
           0:
             begin
               sumd := sumd + cwfilteredactions[ixSorted[i]].profit;
+              // Profit ist immer in Account-Währung Swap ist in Euro
+              sump[cwusersplus[cwfilteredactionsplus[ixSorted[i]].userindex].accountcurrency] :=
+                sump[cwusersplus[cwfilteredactionsplus[ixSorted[i]].userindex].accountcurrency] + cwfilteredactions
+                [ixSorted[i]].profit;
             end;
           1:
             begin
@@ -300,10 +310,36 @@ begin
             end;
         end;
       end;
+
       case typ of
         0:
           begin
             summe := FormatFloat(',#0.00', sumd);
+            if (sump[2] + sump[3] + sump[4]) <> 0 then
+            begin
+              summe:='';
+              if (sump[1] <> 0) then
+              begin
+                summe := summe + ' EUR:' + FormatFloat(',#0.00', sump[1]);
+                hc := 1;
+              end;
+              if (sump[2] <> 0) then
+              begin
+                summe := summe + #13#10+ ' USD:' + FormatFloat(',#0.00', sump[2]);
+                hc := hc + 1;
+              end;
+              if (sump[3] <> 0) then
+              begin
+                summe := summe + #13#10 + ' CHF:' + FormatFloat(',#0.00', sump[3]);
+                hc := hc + 1;
+              end;
+              if (sump[4] <> 0) then
+              begin
+                summe := summe + #13#10 + ' GBP:' + FormatFloat(',#0.00', sump[4]);
+                hc := hc + 1;
+              end;
+
+            end;
           end;
         1:
           begin
@@ -314,7 +350,14 @@ begin
             summe := FormatFloat(',#0.00', sumd);
           end;
       end;
+
       SGSum.Cells[mdcol, mdrow] := summe;
+      if typ=0 then
+      //nur bei Profit wird die Höhe verändert
+      begin
+      SGSum.rowheights[0] := 6+(hc *( SGSum.defaultrowheight-6));
+      SGSum.Height:=SGSum.rowheights[0]+2;
+      end;
     end
     else
       SGSum.Cells[mdcol, mdrow] := '';
@@ -655,7 +698,7 @@ begin
   if source = 'cwsymbols' then
     sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
-    sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwUsersplus);
+    sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwusersplus);
   if source = 'cwcomments' then
     sortGridCwComments(source, sortcol, sortdir, cwComments);
   if source = 'cwsymbolsgroups' then
@@ -1146,7 +1189,7 @@ begin
         end;
         if scol = 29 then
         begin
-          dSort[i] := usersplus[i].accountCurrency;
+          dSort[i] := usersplus[i].accountcurrency;
           continue;
         end;
 
@@ -1178,16 +1221,19 @@ end;
 procedure TDynGrid.SpeedButton1Click(Sender: TObject);
 var
   p: TPoint;
-  m:integer;
+  m: integer;
 begin
   p := SpeedButton1.ClientToScreen(point(0, SpeedButton1.height));
-  m:=0;
-  if source = 'cwactions' then m:=1;
-  if source = 'cwfilteredactions' then m:=1;
-  if source = 'cwsingleuseractions' then m:=1;
-  if(m=1) then
+  m := 0;
+  if source = 'cwactions' then
+    m := 1;
+  if source = 'cwfilteredactions' then
+    m := 1;
+  if source = 'cwsingleuseractions' then
+    m := 1;
+  if (m = 1) then
     PopupMenu1.Popup(p.X, p.Y);
-  if(m=0) then
+  if (m = 0) then
     PopupMenu0.Popup(p.X, p.Y);
 
 end;
@@ -1475,7 +1521,7 @@ begin
     if sortcol = 'tradesProfitSwapTotal' then
       scol := 10;
 
-    if ((scol > 6)and(scol<10))then
+    if ((scol > 6) and (scol < 10)) then
     begin
       setlength(sSort, dl);
       smethode := 2;
@@ -1533,7 +1579,7 @@ begin
           sSort[i] := symbolsGroups[i].sourceIds;
           continue;
         end;
-        if scol =10 then
+        if scol = 10 then
         begin
           dSort[i] := symbolsGroups[i].TradesProfitSwapTotal;
           continue;
@@ -1904,7 +1950,7 @@ begin
   if source = 'cwsymbols' then
     doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
-    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwUsersplus, vScrollvon, vscrollbis - 1);
+    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwusersplus, vScrollvon, vscrollbis - 1);
   if source = 'cwcomments' then
     doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, vScrollvon, vscrollbis - 1);
   if source = 'cwsymbolsgroups' then
@@ -1922,6 +1968,7 @@ begin
     // die sl ist nun bereits erzeugt worden
     sl.SaveToFile(exp.fileName);
     showmessage(inttostr(vscrollbis - vScrollvon + 1) + ' lines successfully exported to:' + exp.fileName);
+    sl.Free;
   end;
 
   // hier kann auch ein Col resized worden sein! Das kann man merken, wenn SG nicht mehr dieselbe ColsWidth hat wie SGSUm
@@ -1987,7 +2034,7 @@ begin
           if source = 'cwsymbols' then
             sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
           if ((source = 'cwusers') or (source = 'cwusers2')) then
-            sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwUsersplus);
+            sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwusersplus);
           if source = 'cwcomments' then
             sortGridCwComments(source, sortcol, sortdir, cwComments);
           if source = 'cwsymbolsgroups' then
@@ -2100,15 +2147,15 @@ begin
               suchfound := false;
               gt := gettickcount;
               i := scrollPosition;
-              //der Parameter mucol ist hier falsch
-              //wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
-              //string wäre leichter umzusetzen ist aber in der Suche langsam !
+              // der Parameter mucol ist hier falsch
+              // wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
+              // string wäre leichter umzusetzen ist aber in der Suche langsam !
               if source = 'cwactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, sgcolfield[mucol], such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, SGColField[mucol], such)
               else if source = 'cwfilteredactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwfilteredactions, i,sgcolfield[mucol], such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwfilteredactions, i, SGColField[mucol], such)
               else if source = 'cwsingleuseractions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, sgcolfield[mucol], such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, SGColField[mucol], such)
               else if source = 'cwsymbols' then
                 found := -2
               else if ((source = 'cwusers') or (source = 'cwusers2')) then
@@ -2120,12 +2167,12 @@ begin
               else if source = 'cwfilteredsymbolsgroups' then
                 found := -2;
               if found > -1 then
-              //todo das ist natürlich bei DynGrid Quatsch !
+                // todo das ist natürlich bei DynGrid Quatsch !
                 ScrollBar1.Position := found;
               if (found = -1) then
                 showmessage('z:' + inttostr(gettickcount - gt));
               if (found = -2) then
-                showmessage('Funktion in'+source+' noch nicht implementiert');
+                showmessage('Funktion in' + source + ' noch nicht implementiert');
 
             end;
           end;

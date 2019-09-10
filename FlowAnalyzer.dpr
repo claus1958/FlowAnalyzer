@@ -12,7 +12,6 @@ uses
   FilterControl in 'FilterControl.pas' {FilterElemente: TFrame},
   HTTPWorker in 'HTTPWorker.pas',
   FTTypes in 'FTTypes.pas',
-  FTCollector in 'FTCollector.pas',
   UDynGrid in 'UDynGrid.pas' {DynGrid: TFrame},
   GroupControl in 'GroupControl.pas' {GroupControl: TFrame},
   Dialog1 in 'Dialog1.pas' {Form5},

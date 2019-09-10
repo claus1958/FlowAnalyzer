@@ -165,7 +165,7 @@ object DynGrid: TDynGrid
         Font.Color = clWindowText
         Font.Height = -11
         Font.Name = 'Tahoma'
-        Font.Style = [fsBold, fsItalic]
+        Font.Style = [fsBold]
         Options = [goVertLine, goHorzLine, goRangeSelect, goColSizing, goFixedColClick, goFixedRowClick]
         ParentDoubleBuffered = False
         ParentFont = False
@@ -175,6 +175,7 @@ object DynGrid: TDynGrid
         OnDrawCell = SGDrawCell
         OnMouseDown = SGSumMouseDown
         OnRowMoved = SGRowMoved
+        ExplicitTop = 526
       end
     end
   end

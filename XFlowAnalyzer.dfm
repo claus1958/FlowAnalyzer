@@ -46,10 +46,6 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object btnLadeDialog: TButton
         Left = 604
         Top = 671
@@ -1165,6 +1161,15 @@ object Form2: TForm2
                 TabOrder = 4
                 OnClick = btnSampleClick
               end
+              object btnSample6: TButton
+                Left = 156
+                Top = 108
+                Width = 140
+                Height = 25
+                Caption = 'Open Actions'
+                TabOrder = 5
+                OnClick = btnSampleClick
+              end
             end
           end
         end
@@ -1195,7 +1200,7 @@ object Form2: TForm2
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 6
+              Width = 995
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -1206,6 +1211,7 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
+              ExplicitWidth = 6
             end
           end
           inline DynGrid2: TDynGrid
@@ -1360,10 +1366,6 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 3
       ParentFont = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 8
         Top = 24
@@ -1887,10 +1889,6 @@ object Form2: TForm2
       Caption = 'TabSheet8'
       ImageIndex = 7
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Button9: TButton
         Left = 36
         Top = 76
@@ -1898,16 +1896,22 @@ object Form2: TForm2
         Height = 29
         Caption = 'Button9'
         TabOrder = 0
+        Visible = False
         OnClick = Button9Click
+      end
+      object Button8: TButton
+        Left = 452
+        Top = 320
+        Width = 409
+        Height = 157
+        Caption = 'Clear Cache and Load all Data'
+        TabOrder = 1
+        OnClick = Button8Click
       end
     end
     object TabSheet9: TTabSheet
       Caption = 'Gelber Sack'
       ImageIndex = 8
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel21: TPanel
         Left = 120
         Top = 12
@@ -1996,10 +2000,6 @@ object Form2: TForm2
     object TabSheet10: TTabSheet
       Caption = 'Data Loading'
       ImageIndex = 9
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel10: TPanel
         AlignWithMargins = True
         Left = 216
@@ -2188,6 +2188,24 @@ object Form2: TForm2
           ParentFont = False
           TabOrder = 14
           OnClick = lbCSVErrorClick
+        end
+        object Button10: TButton
+          Left = 313
+          Top = 42
+          Width = 161
+          Height = 25
+          Caption = 'Test getOpenActions'
+          TabOrder = 15
+          OnClick = Button10Click
+        end
+        object Button11: TButton
+          Left = 316
+          Top = 16
+          Width = 157
+          Height = 21
+          Caption = 'Button11'
+          TabOrder = 16
+          OnClick = Button11Click
         end
       end
     end
@@ -2784,6 +2802,7 @@ object Form2: TForm2
       Width = 77
       Height = 121
       GroupIndex = 1
+      Caption = 'Reload Data'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clSilver
       Font.Height = -11
@@ -2954,7 +2973,6 @@ object Form2: TForm2
         0707070707070707070707070707070707070707070707070707}
       Layout = blGlyphTop
       ParentFont = False
-      Visible = False
       StyleElements = []
       OnClick = SpeedButton5Click
     end
@@ -3134,7 +3152,6 @@ object Form2: TForm2
         0707070707070707070707070707070707070707070707070707}
       Layout = blGlyphTop
       ParentFont = False
-      Visible = False
       StyleElements = []
       OnClick = SpeedButton6Click
     end

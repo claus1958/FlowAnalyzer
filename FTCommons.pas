@@ -122,6 +122,16 @@ type
 
   DAInteger = array of integer;
 
+    //die offenen Orders in Kompaktform
+  cwOpenAction=packed record
+    actionId: int64;
+    userId:integer;
+    swap:double;
+    profit:double;
+  end;
+  DACwOpenAction = array of cwOpenAction;
+
+
   cwTick = packed record // für die Übertragung an den Server. Sowohl über JSON als auch bin möglich
     time: integer; // 4    reicht bis 2030  -  sonst 8 dword Unix Sekunden seit 1970
     bid: double; // 8
@@ -186,15 +196,7 @@ type
 
   DACwAction = array of cwAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
-  cwOpenAction = packed record
-    actionId: int64;
-    userId: integer;
-    swap: double;
-    profit: double;
 
-  end;
-
-  DACwOpenAction = array of cwOpenAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
   cwActionPlus = packed Record
     userIndex: integer; // für die schnellere Suche !
@@ -4203,6 +4205,7 @@ var
 begin
   result := 0;
   try
+  try
     HTTP := TOurHttp.Create();
     Url := 'http://h2827643.stratoserver.net:'+cserverport+'/login';
     body := TNetEncoding.Base64.Encode('flow_collector') + ':' + TNetEncoding.Base64.Encode('f9#w01*F21b/dQ');
@@ -4215,6 +4218,11 @@ begin
   except
     key := '';
     result := 1; // Fehler
+  end;
+  finally
+    http.free;
+    tbody.free;
+    tresult.free;
   end;
   // showmessage('res:' + res);
 end;

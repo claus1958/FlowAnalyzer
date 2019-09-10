@@ -193,6 +193,15 @@ type
     lblUpdateRest: TLabel;
     btnSample5: TButton;
     Label13: TLabel;
+    Button8: TButton;
+    btnSample6: TButton;
+    Button10: TButton;
+    Button11: TButton;
+    procedure doLoadAllData();
+
+    procedure getOpenActions(dt:TDateTime;serverTyp:integer;doAppend:boolean);
+
+    procedure GetLastServerUnixTime();
     function checkLastUpdate(): TDatetime;
     procedure AppOnMessage(var Msg: TMsg; var Handled: Boolean);
     procedure MyExceptionHandler(Sender: TObject; E: Exception);
@@ -209,7 +218,7 @@ type
     procedure btnCwCommentsToGridClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnGetBinDataClick(Sender: TObject);
-    function GetBinData(url, typ: string; lb: TListBox; append: Boolean): integer;
+    function GetBinData(url, typ: string; lb: TListBox; append: Boolean = false; maxadd: integer = 0): integer;
     procedure btnLoadCacheFileCwClick(Sender: TObject);
     procedure doCacheGridCwInfo;
     procedure btnShowCacheCwClick(Sender: TObject);
@@ -311,6 +320,9 @@ type
     procedure lblUpdateRestClick(Sender: TObject);
     procedure lblUpdateRestDblClick(Sender: TObject);
     procedure DynGrid9SpeedButton1Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -349,6 +361,8 @@ var
   getAppOnMessage: Boolean;
   lastUserActivity: cardinal;
   askFinishUpdate: Boolean; //
+  lastServerUnixTime: cardinal; // die ermittelte Serverzeit - meist 2 Stunden vor meiner Zeit
+  lastUpdateServerUnixTime: cardinal; // die gemerkte ServerZeit des letzten vom Server angeforderten (vollen) Updates
   // (now-updateTimeStarted)*86400=Sekunden seit Start. Rest:  timer.Interval/1000-x in Sekunden
 
 implementation
@@ -389,7 +403,7 @@ begin
   GetBinData(edGetUrlBin.text, typ, lbCSVError, chkGetBinAppend.Checked);
 end;
 
-function TForm2.GetBinData(url, typ: string; lb: TListBox; append: Boolean): integer;
+function TForm2.GetBinData(url, typ: string; lb: TListBox; append: Boolean = false; maxadd: integer = 0): integer;
 // kann actions symbols und ticks binär abrufen
 // die users symbols gibt es noch nicht !
 var
@@ -408,21 +422,54 @@ var
   alt: integer;
   aneu: DACwAction;
   sErr: string;
+  openActions: DACwOpenAction;
+  tb:TBytes;
 begin
   gt := GetTickCount;
   // bytes := doHTTPGetByteArray(url, lb);
   // über einen zweiten Thread werden die Daten abgerufen
   res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
   lbDebug2.Items.Add('Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  if typ = 'lastServerUnixTime' then
+  begin
 
+    SetString(s, PAnsiChar(@bytes[0]), high(bytes) + 1);
+    lastServerUnixTime := strtoint(s);
+
+  end;
+
+  if typ = 'openActions' then
+  begin
+    // der verkürzte Datentyp
+    //body := TNetEncoding.Base64.Encode
+    //tb:=TNetEncoding.Base64.Decode(bytes);
+    i := SizeOf(cwOpenAction);
+    sz := trunc(length(bytes) / i);
+    setlength(openActions, sz);
+    move(bytes[0], openActions[0], length(tb));
+    // was nun damit passiert ... fehlt noch
+
+  end;
   if typ = 'actions' then
   begin
     // nur wenn es sich um binäre actions handelt !
     // Bytes->cwActions
     i := SizeOf(cwAction);
     sz := trunc(length(bytes) / i);
+    if (append = true) then
+      if (maxadd > 0) then
+        if (sz > maxadd) then
+        // nur bei manuellem Update wird dieser Parameter gesetzt ! Der normale Erstabruf braucht ebenfalls append und darf nicht abweisen
+        begin
+          lbDebug2.Items.Add('Too many new actions to append:' + inttostr(sz));
+          showmessage('Too many new actions to append:' + inttostr(sz) + '(max.' + inttostr(maxadd) + ')');
+          result := -1;
+          exit;
+        end;
     // Problem: es gibt bei den CloseTime Abrufen leider ca 11 Actions deren Datum in der Zukunft liegt
     // und die deshalb in Wahrheit gar nicht neu sind !
+    LoadInfo(inttostr(sz) + ' new actions');
+
     if ((sz > 0) and (sz < 20)) then
     begin
       gt := GetTickCount;
@@ -431,6 +478,7 @@ begin
       alt := 0;
       for i := 0 to sz - 1 do
       begin
+        // die wenigen neuen actions in den alten actions suchen
         for l := 0 to length(cwActions) - 1 do
         begin
           if (aneu[i].actionId = cwActions[l].actionId) then
@@ -442,6 +490,7 @@ begin
         end;
       end;
       lbCSVError.Items.Add('Check:' + inttostr(GetTickCount - gt));
+      // wenn keine neuen darin waren wird sz->0 gesetzt . Also nix zu tun
       if (alt = sz) then
         sz := 0
       else
@@ -555,7 +604,7 @@ begin
   //
   // end;
 
-  setlength(bytes, 0)
+  setlength(bytes, 0);
 end;
 
 procedure TForm2.btnGetCsvClick(Sender: TObject);
@@ -684,6 +733,7 @@ begin
       sl.DelimitedText := s; // ohne den Delimiter sl[0] = 'total;366;27.08.2019'
       // so jetzt sl[0]=total sl[1]=355
       info.lastUpdateOnServer := strtodatetime(sl[1]);
+      sl.free;
     end;
 
     if typ = 'usersOnline' then
@@ -703,6 +753,7 @@ begin
       sl.DelimitedText := s; // ohne den Delimiter sl[0] = 'total;366;27.08.2019'
       // so jetzt sl[0]=total sl[1]=355
       info.usersonline := strtoint(sl[1]);
+      sl.free;
     end;
 
     if typ = 'symbols' then
@@ -998,11 +1049,11 @@ function TForm2.checkLastUpdate(): TDatetime;
 var
   dt: TDatetime;
 begin
-
-  edGetUrlCSV.text := 'http://www.stonedcompany.de/FTServer/lastUpdate'+cServerPort+'.csv';
+  // in dieser Form nicht mehr notwendig da auf Server modified Daten abgelegt werden
+  edGetUrlCSV.text := 'http://www.stonedcompany.de/FTServer/lastUpdate' + cServerPort + '.csv';
   LoadInfo('Load LastUpdate...');
   info.lastUpdateOnServer := 0; // -> wird nun gesetzt oder auch nicht
-  GetCsv(edGetUrlCSV.text, 'lastUpdate'+cServerPort, lbCSVError, false, false); // hier keinen Cache verwenden !
+  GetCsv(edGetUrlCSV.text, 'lastUpdate' + cServerPort, lbCSVError, false, false); // hier keinen Cache verwenden !
   if (info.lastUpdateOnServer <> 0) then
   begin
     dt := info.lastUpdateOnServer;
@@ -1022,7 +1073,7 @@ begin
   if (dt = 0) then
     dt := now - 7; // 7 Tage default wenn nix geht
   result := dt;
-  LoadInfo('');
+  LoadInfo('...');
 end;
 
 procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
@@ -1140,6 +1191,7 @@ begin
 
   t.free;
   t2.free;
+
   found := -1;
   for i := 0 to cwsymbolsct - 1 do
   begin
@@ -1296,6 +1348,19 @@ begin
   end;
 end;
 
+procedure TForm2.getOpenActions(dt:TDateTime;serverTyp:integer;doAppend:boolean);
+var
+  pstring: string;
+  httpFehler:integer;
+  begin
+  pstring := '?year=' + FormatDateTime('YYYY', dt ) + '&month=' + FormatDateTime('MM', dt ) + '&day=' +
+    FormatDateTime('DD', dt ) + '&accountId=' + inttostr(serverTyp);
+//  httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
+
+  GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit'+pstring, 'openActions', lbCSVError, doAppend);
+
+end;
+
 procedure TForm2.btnLoadDataClick(Sender: TObject);
 var
   all: Boolean;
@@ -1335,10 +1400,16 @@ begin
     if ((cbLoadActionsFromCache.Checked = false) or (length(cwActions) = 0)) then
     begin
       getSymbolsUsersComments(false); // holt vom Server
+      GetLastServerUnixTime; // -> lastServerUnixTime
+      lastUpdateServerUnixTime := lastServerUnixTime;
+      faIni.WriteInteger('lastUpdateServerUnixTime:', 'unixTime', lastUpdateServerUnixTime);
+
       LoadInfo('Load All Actions (wait!) ...');
       GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions', 'actions', lbCSVError, false);
+      // false=nicht anhängen
       btnSaveCacheFileCwClick(nil);
       LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Server');
+
     end;
     LoadInfo('Loading data finished');
     whichAccounts := 'All accounts/';
@@ -1363,6 +1434,13 @@ begin
 
     appendBinActions := false;
     appendCSVUsers := false;
+
+    GetLastServerUnixTime;
+    lastUpdateServerUnixTime := lastServerUnixTime;
+    faIni.WriteInteger('lastUpdateServerUnixTime:', 'unixTime', lastUpdateServerUnixTime);
+
+    // kann ich hier schon merken da ja sowieso ALLE Daten der Accounts abgerufen werden
+
     for i := 0 to clbBrokers.Count - 1 do
     begin
       if clbBrokers.Checked[i] = true then
@@ -1374,12 +1452,13 @@ begin
         appendCSVUsers := true; // ab dem 2.mal anhängen !
         LoadInfo(inttostr(length(cwUsers)) + ' Users');
 
-        edGetUrlBin.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' +
-          inttostr(i + 1);
+        // edGetUrlBin.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' +
+        // inttostr(i + 1);  unnötig
         LoadInfo('Load Actions...');
         GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' + inttostr(i + 1),
           'actions', lbCSVError, appendBinActions);
-        appendBinActions := true; // ab dem 2.mal anhängen !
+        appendBinActions := true;
+        // ab dem 2.mal anhängen . Die Actions des erste Accounts werden natürlich nicht angehängt aber dann die folgenden schon !
 
         LoadInfo(inttostr(length(cwActions)) + ' Actions');
 
@@ -1698,7 +1777,38 @@ end;
 
 procedure TForm2.Button10Click(Sender: TObject);
 begin
-  btnSaveCacheFileCwClick(nil);
+//  btnSaveCacheFileCwClick(nil);
+getopenactions(now,1,false);
+end;
+
+procedure TForm2.Button11Click(Sender: TObject);
+var gt:cardinal;
+i,ct:integer;
+a:DAcwaction;
+begin
+  ct:=0;
+  gt:=gettickcount;
+  for i := 0 to length(cwactions)-1 do
+    begin
+      if(cwactions[i].actionid<>0) then
+        inc(ct);
+    end;
+    showmessage(inttostr(gettickcount-gt)+' '+inttostr(ct));
+      ct:=0;
+  gt:=gettickcount;
+  setlength(a,length(cwactions));
+  for i := 0 to length(cwactions)-1 do
+    begin
+      if(cwactions[i].actionid<>0) then
+        a[i]:=cwactions[i];
+    end;
+    showmessage(inttostr(gettickcount-gt)+' '+inttostr(ct));
+end;
+
+procedure TForm2.Button12Click(Sender: TObject);
+begin
+      lastUpdateServerUnixTime:=faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
+
 end;
 
 procedure TForm2.Button2Click(Sender: TObject);
@@ -1768,10 +1878,14 @@ begin
 end;
 
 procedure TForm2.btnDoFilterClick(Sender: TObject);
+var
+  gt: cardinal;
+  i, index: integer;
 begin
   mynow := monthof(now) + 12 * yearof(now); // viel gebraucht und aus Speedgründen hier einmalig belegt
   FilterTopic := 'manual';
   doFilter();
+
   // -> cwFilteredActions cwFilteredActionsCt
   // nun geht es weiter mit dem Gruppieren
   machUserSelection();
@@ -1845,6 +1959,7 @@ begin
   total := 0;
   for i := 0 to cwusersct - 1 do
   begin
+    // jeder User hat eine Kontowährung . Innerhalb des Users kommt nur eine Währung in diesen 4 Summen vor
     cwUsersPlus[i].totaltrades := 0;
     cwUsersPlus[i].totalprofit := 0;
     cwUsersPlus[i].totalsymbols := 0;
@@ -1856,7 +1971,7 @@ begin
     inc(cwSymbolsPlus[cwActions[i].symbolId].TradesCount);
     cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal +
       cwActions[i].volume;
-
+    // Die profits und swaps sind GEMISCHT in der Währung ! Hier werden über alle Symbole Summen gebildet
     cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal +
       cwActions[i].profit;
     cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal +
@@ -1872,12 +1987,14 @@ begin
     begin
       // cwusersplus[index].totalSymbols:=0;
       inc(cwUsersPlus[index].totaltrades);
-      if (cwActions[i].typeId = 7) or (cwActions[i].typeId = 8) then // balance und credit
+      if (cwActions[i].typeId = 7) or (cwActions[i].typeId = 8) then
+      // balance und credit werden als Balance aufsummiert
       begin
         cwUsersPlus[index].totalbalance := cwUsersPlus[index].totalbalance + cwActions[i].profit;
       end
       else
       begin
+        // der Rest zählt zum Profit. Das ist je User in einer Kontowährung und somit innerhalb des Users nicht gemischt
         cwUsersPlus[index].totalprofit := cwUsersPlus[index].totalprofit + cwActions[i].profit;
         // evtl auch noch swap aber nicht Balance
         cwUsersPlus[index].totalSwap := cwUsersPlus[index].totalSwap + cwActions[i].swap;
@@ -2250,7 +2367,7 @@ end;
 
 procedure TForm2.doFilter();
 var
-  i, j: integer;
+  i, index, j: integer;
   r: Boolean;
   fz: integer;
   max, fzmax: integer;
@@ -2365,6 +2482,14 @@ weiter1:
   // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
   // autosizegrid(SGCacheCwSearch, nil);
   // end;
+
+  gt := GetTickCount;
+  for i := 0 to length(cwFilteredActions) - 1 do
+  begin
+    index := finduserindex(cwFilteredActions[i].userId);
+    cwFilteredActionsPlus[i].userIndex := index;
+  end;
+
   doCacheGridCwInfo;
   Screen.Cursor := Cursor;
   DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
@@ -2495,9 +2620,35 @@ begin
   DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
 end;
 
+procedure TForm2.Button8Click(Sender: TObject);
+var
+  merk: Boolean;
+begin
+  // Clear cache and load all data
+  Button8.enabled := false;
+  merk := cbLoadActionsFromCache.Checked;
+  cbLoadActionsFromCache.Checked := false;
+
+  doLoadAllData();
+  cbLoadActionsFromCache.Checked := merk;
+  Button8.enabled := true;
+  // wieder die Startseite anzeigen
+  setPageIndex(1); // 0;
+
+end;
+
 procedure TForm2.btnUpdateDataClick(Sender: TObject);
 begin
   doUpdate();
+end;
+
+procedure TForm2.GetLastServerUnixTime();
+var
+  a: integer;
+begin
+  a := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/time', 'lastServerUnixTime', lbCSVError,
+    false, 0);
+  // schreibt den Wert direkt in die Variable lastServerUnixTime
 end;
 
 procedure TForm2.doUpdate(dt: TDatetime = 0);
@@ -2521,57 +2672,58 @@ begin
   Dialog2.fdialog2.Show; // Modal;
   Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height;
   Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width;
-
   Dialog2.fdialog2.info('Getting data ...');
   gtall := GetTickCount;
   gt := GetTickCount;
 
   if (dt = 0) then // 0=keine Zeitvorgabe aus Dialogfenster
   begin
+    // Alte Variante
+    // dtt := checkLastUpdate(); // -> info.lastUpdateOnServer bzw info.lastUpdateOnClient jeweils das ältere von beiden
+    // tt := datetimetounix(dtt);
+      lastUpdateServerUnixTime:=faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
 
-    dtt := checkLastUpdate(); // -> info.lastUpdateOnServer bzw info.lastUpdateOnClient jeweils das ältere von beiden
-    tt := datetimetounix(dtt);
-    // merkOpenTime := 0;
-    // merkCloseTime := 0;
-    // tnow := datetimetounix(now);
-    // // feststellen, wie weit die 'alten' actions zeitlich reichen
-    // // falsches Vorgehen !
-    // for i := 0 to length(cwActions) - 1 do
-    // begin
-    // if cwActions[i].typeId <> 7 then
-    // begin
-    // if cwActions[i].openTime > merkOpenTime then
-    // if cwActions[i].openTime < tnow then
-    // merkOpenTime := cwActions[i].openTime;
-    // if cwActions[i].closeTime > merkCloseTime then
-    // if cwActions[i].closeTime < tnow then
-    // merkCloseTime := cwActions[i].closeTime;
-    //
-    // end
-    // else
-    // begin
-    // end;
-    // tt := merkOpenTime;
-    // if merkCloseTime > tt then
-    // tt := merkCloseTime;
-    // tt := tt - 0; // 5 Minuten zurück ???
-    // end;
-    // tt := tt - (43200 * 1000); // 12 Stunden zurück
+    tt := lastUpdateServerUnixTime;
   end
   else
     tt := datetimetounix(dt); // das ist die Vorgabe per Inputbox
-
+  LoadInfo('Sort Actions ...');
   lold := length(cwActions);
   lbCSVError.Items.Add('[Vorbereitung]' + inttostr(GetTickCount - gt));
+
+  // Neue Variante: fromModified
   gt := GetTickCount;
+  GetLastServerUnixTime;
+
+  // append=true Die Actions werden angehängt
   // showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
-  a1 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromOpen=' + inttostr(tt),
-    'actions', lbCSVError, true);
-  // showmessage(' Actions:' + inttostr(length(cwActions)));
-  a2 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromClose=' + inttostr(tt),
-    'actions', lbCSVError, true);
-  // a1 > 0 bedeutet es sind neue Openings vorhanden
-  // a2 > 0 muss nix bedeuten da es momentan 11 mit CloseTime in der Zukunft gibt
+  a1 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromModified=' + inttostr(tt),
+    'actions', lbCSVError, true, 500000);
+  if (a1 <> -1) then
+  begin
+    //
+    lastUpdateServerUnixTime := lastServerUnixTime;
+    faIni.WriteInteger('lastUpdateServerUnixTime:', 'unixTime', lastUpdateServerUnixTime);
+
+    // kann ich hier schon merken da ja sowieso ALLE Daten der Accounts abgerufen werden
+    // andernfalls wurden keine Daten geholt !!
+  end;
+
+  // gt := GetTickCount;
+  // // append=true Die Actions werden angehängt
+  // // showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
+  // a1 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromOpen=' + inttostr(tt),
+  // 'actions', lbCSVError, true, 300000);
+  // if (a1 <> -1) then
+  // // bei Abbruch wegen zu vieler Actions in a1 nicht weiter abrufen
+  // begin
+  // // showmessage(' Actions:' + inttostr(length(cwActions)));
+  // a2 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromClose=' + inttostr(tt),
+  // 'actions', lbCSVError, true, 300000);
+  // // a1 > 0 bedeutet es sind neue Openings vorhanden
+  // // a2 > 0 muss nix bedeuten da es momentan 11 mit CloseTime in der Zukunft gibt
+  // end;
+
   lbCSVError.Items.Add('[Daten laden]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
 
@@ -2598,6 +2750,7 @@ begin
   end;
 
   // end;
+  // IntArray und Int64Array
   setlength(na2, cnew);
   setlength(na, cnew);
   p := -1;
@@ -2609,7 +2762,8 @@ begin
   end;
 
   dosleep(CSleep);
-
+  // na2 enthält die neuen ActionIds und na die Indexe in cwactions
+  // nun werden diese Arrays sortiert
   fastsort2arrayInt64Int(na2, na, 'VUI'); // VDI
   lbCSVError.Items.Add('[sort1]' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
@@ -2618,6 +2772,7 @@ begin
 
   // doppelte daraus entfernen
   for i := 1 to cnew - 1 do
+  // Absichtlich ab i=1 !
   begin
     if na2[i] = na2[i - 1] then
       cwActions[na[i - 1]].actionId := 0;
@@ -2656,7 +2811,7 @@ begin
       begin
         // die geänderte Action wurde in den alten Actions gefunden - nun austauschen
         cwActions[ia[n]] := cwActions[i];
-        // und den neuen Eintrag löschen
+        // und den neuen Eintrag 'löschen'
         cwActions[i].actionId := 0;
       end;
     end;
@@ -2688,7 +2843,8 @@ begin
 
   // Zeiten hier sind TDateTime
   faIni.WriteDateTime('updateOnClient:', 'dateTime', info.lastUpdateOnServer);
-
+  faIni.WriteInteger('lastUpdateServerUnixTime:', 'unixTime', lastUpdateServerUnixTime);
+  // lastUpdateServerUnixTime
   exit;
 
   // // -> nach finishUpdate verschoben
@@ -2925,6 +3081,7 @@ begin
     fe.operator := '=';
     fe.values := 'BALANCE';
     Filter[1].setValues(fe);
+    Grouping[1].cbTopic.text := 'yearsOpen';
   end;
 
   if (Sender = btnSample2) then
@@ -2940,6 +3097,7 @@ begin
     fe.operator := '<>';
     fe.values := 'BALANCE';
     Filter[2].setValues(fe);
+    Grouping[1].cbTopic.text := 'yearsOpen';
 
   end;
 
@@ -2962,6 +3120,7 @@ begin
     fe.operator := '>';
     fe.values := '0';
     Filter[3].setValues(fe);
+    Grouping[1].cbTopic.text := 'yearsOpen';
 
   end;
 
@@ -2985,6 +3144,7 @@ begin
     fe.values := '0';
     Filter[3].setValues(fe);
 
+    Grouping[1].cbTopic.text := 'yearsOpen';
   end;
 
   if (Sender = btnSample5) then
@@ -3006,7 +3166,18 @@ begin
     fe.operator := '<';
     fe.values := '1567209600';
     Filter[3].setValues(fe);
+    Grouping[1].cbTopic.text := 'yearsOpen';
 
+  end;
+
+  if (Sender = btnSample6) then
+  begin
+    fe.Active := true;
+    fe.topic := 'CloseDateTime';
+    fe.operator := '=';
+    fe.values := '0';
+    Filter[1].setValues(fe);
+    Grouping[1].cbTopic.text := 'brokerAccount';
   end;
 
   FilterTopic := (Sender as TButton).Caption;
@@ -3014,7 +3185,6 @@ begin
   Grouping[1].chkActive.Checked := true;
   Grouping[2].chkActive.Checked := false;
   Grouping[3].chkActive.Checked := false;
-  Grouping[1].cbTopic.text := 'yearsOpen';
   Form2.Refresh;
 
   doFilter();
@@ -3185,9 +3355,9 @@ begin
 end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
+var gt:cardinal;
 begin
   if (length(cwActions) > 0) then
-
     btnSaveCacheFileCwClick(nil);
   Application.OnMessage := nil;
   DynGrid1.saveInit;
@@ -3201,6 +3371,11 @@ begin
   DynGrid9.saveInit;
   DynGrid10.saveInit;
 
+  faIni.WriteInteger('closetick:', 'tick', gettickcount);
+  gt:=faIni.ReadInteger('closetick:', 'tick',0);
+
+
+  faini.UpdateFile;
   freeandnil(faIni);
   if HTTPWorker1.Finished = false then
   begin
@@ -3235,14 +3410,16 @@ var
   pwct: integer;
   pwok: Boolean;
   s: string;
-
+  gt:cardinal;
 begin
-  sessionkey:='';
+  sessionkey := '';
   askFinishUpdate := false; // Button drücken Update
   getAppOnMessage := true;
   Application.OnMessage := AppOnMessage;
   Application.OnException := MyExceptionHandler;
   faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
+  faIni.AutoSave:=true;
+
   pwct := 0;
   updateGoing := false;
   pwok := false;
@@ -3571,8 +3748,8 @@ begin
   setlength(cwActionsPlus, ct);
   showmessage('jetzt im Cache:' + inttostr(ct) + ' Zeit:' + inttostr(timegettime - gt));
 
-  sl.clear;
-  slweg.clear;
+  sl.free;
+  slweg.free;
   btnShowCacheCwClick(nil); // darstellen
 end;
 
@@ -3632,7 +3809,7 @@ begin
 
   // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt, 1);
   // lblCacheCwSearchResult.Caption := inttostr(cwFilteredActionCt);
-  sl.clear;
+  sl.free;
   doCacheGridCwInfo;
 end;
 
@@ -3912,13 +4089,13 @@ begin
 
   procedure TForm2.SpeedButton5Click(Sender: TObject);
   begin
-    setPageIndex(4); // 4;
+    setPageIndex(7); // Data Loading
 
   end;
 
   procedure TForm2.SpeedButton6Click(Sender: TObject);
   begin
-    setPageIndex(4); // 4;
+    setPageIndex(9); // 4;
 
   end;
 
@@ -4001,7 +4178,14 @@ begin
   begin
     // Starttimer
     StartTimer.enabled := false;
+    doLoadAllData;
+    updateTimer.Interval := 1000; // gleich nach dem Start ein Update durchführen
 
+    // Form2.Width := Form2.Width + 1;
+  end;
+
+  procedure TForm2.doLoadAllData();
+  begin
     Dialog2.fdialog2.Button2.Visible := false;
     askFinishUpdate := false;
     Dialog2.fdialog2.Show; // Modal;
@@ -4009,11 +4193,7 @@ begin
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
     Form2.Repaint;
     btnLoadDataClick(nil);
-    updateTimer.Interval := 1000; // gleich nach dem Start ein Update durchführen
-
-    // Form2.Width := Form2.Width + 1;
   end;
-
   // procedure TForm2.TrackBar1Change(Sender: TObject);
   // begin
   // SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or WS_EX_LAYERED);
@@ -4025,7 +4205,11 @@ begin
     k: integer;
   begin
     k := finduserindex(id);
+
     lb.Items.clear;
+
+    if (k < 0) then
+      exit;
 
     lb.Items.Add('userId' + #9 + inttostr(cwUsers[k].userId));
     lb.Items.Add('accountId' + #9 + inttostr(cwUsers[k].accountId));
@@ -4154,7 +4338,7 @@ begin
     dt: TDatetime;
   begin
     // Update timer
-    s := inputbox('Manual update', 'Time to update from', datetimetostr((now - 0.25))); // 6 Stunden zurück));
+    s := inputbox('Manual update', 'Time to update from', datetimetostr((now - 0.25)));
     if (s = '') then
       exit;
     dt := strtodatetime(s);
@@ -4197,7 +4381,7 @@ begin
     HTTPWorker1.url := url;
     HTTPWorker1.SendString := ''; // hier nicht
     HTTPWorker1.HError := 0;
-    HTTPWorker1.SendType := 3; // String  2=MemoryStream     3=get ByteArray
+    HTTPWorker1.SendType := 3; // 1=Put String  2=Put MemoryStream     3=Get ByteArray
     HTTPWorker1.RequestBusy := true;
     HTTPWorker1.Caption := 'HTTPWorker1';
     HTTPWorker1.bArray := bArray;
