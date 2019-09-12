@@ -259,21 +259,21 @@ begin
   topic := vorQuote(cbTopic.Text);
   lb1flag := false;
   setlength(chkLB1Selected, 0);
-  // BrokerId
-  // AccountId
-  // UserId
-  // UserName
-  // ActionType
-  // Profit
-  // AccountDate
-  // OpenDateTimeUnix
-  // OpenDateTime
-  // CloseDateTimeUnix
-  // CloseDateTime
-  // OpenPrice
-  // Symbol
-  // SymbolId
-  // Lotsize
+//BrokerId
+//AccountId
+//SymbolId'Suche aus Liste
+//Symbol'Texteingabe
+//UserId
+//UserName
+//ActionType
+//OpenDateTime
+//CloseDateTime
+//OpenPrice
+//Profit
+//Volume
+//MarginRate
+//AccountCurrency
+//CloseDateTime OR Open
 
   typ := 1; // 1=nur edit text  2=edit mit comboboxListe  3=dtPicker
   if topic = 'BrokerId' then
@@ -1018,7 +1018,7 @@ begin
   if topic = 'AccountCurrency' then
     ctopic := fltTopicAccountCurrency; // = 18;
   if topic = 'CloseDateTime OR Open' then
-    ctopic := fltTopicCloseDateTimeOrOpen; // = 13;
+    ctopic := fltTopicCloseDateTimeOrOpen; // = 19;
 
   // Rest passiert beim Aufrufer
 end;
@@ -1251,9 +1251,12 @@ begin
       // ist zusammen einfach open ja - close nein
 
       // wenn > vergleich
-      if (coperator = fltOpGroesser) then
+      if (coperator = fltOpGrGleich) then
         if (a.openTime <> 0) then
+        //wenn es eine opentime gibt
           if (a.closeTime = 0) then
+          //und nicht geschlossen dann -> true
+          if(result=false) then
             result := true;
 
       // wenn < vergleich

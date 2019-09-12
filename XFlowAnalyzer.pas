@@ -199,26 +199,26 @@ type
     Button11: TButton;
     procedure doLoadAllData();
 
-    procedure getOpenActions(dt:TDateTime;serverTyp:integer;doAppend:boolean);
+    procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean);
 
     procedure GetLastServerUnixTime();
-    function checkLastUpdate(): TDatetime;
-    procedure AppOnMessage(var Msg: TMsg; var Handled: Boolean);
+    function checkLastUpdate(): TDateTime;
+    procedure AppOnMessage(var Msg: TMsg; var Handled: boolean);
     procedure MyExceptionHandler(Sender: TObject; E: Exception);
-    procedure doUpdate(dt: TDatetime = 0);
-    procedure doLockWindowUpdate(yn: Boolean);
+    procedure doUpdate(dt: TDateTime = 0);
+    procedure doLockWindowUpdate(yn: boolean);
     procedure setPageIndex(i: integer);
-    procedure getSymbolsUsersComments(useCache: Boolean);
+    procedure getSymbolsUsersComments(useCache: boolean);
     procedure finishUpdate();
     procedure btnGetCsvClick(Sender: TObject);
-    procedure GetCsv(url, typ: string; lb: TListBox; append: Boolean; tryCache: Boolean);
+    procedure GetCsv(url, typ: string; lb: TListBox; append: boolean; tryCache: boolean);
     procedure btnCwSymbolsToGridClick(Sender: TObject);
     procedure btnCwactionsToGridClick(Sender: TObject);
     procedure btnCwusersToGridClick(Sender: TObject);
     procedure btnCwCommentsToGridClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure btnGetBinDataClick(Sender: TObject);
-    function GetBinData(url, typ: string; lb: TListBox; append: Boolean = false; maxadd: integer = 0): integer;
+    function GetBinData(url, typ: string; lb: TListBox; append: boolean = false; maxadd: integer = 0): integer;
     procedure btnLoadCacheFileCwClick(Sender: TObject);
     procedure doCacheGridCwInfo;
     procedure btnShowCacheCwClick(Sender: TObject);
@@ -344,23 +344,23 @@ var
   SGColField: DAInteger;
   maxActionsPerGrid: integer;
   HTTPWorker1: THTTPWorker;
-  HTTPWorker1Aktiv: Boolean; // wenn create->true wenn terminate -> false
+  HTTPWorker1Aktiv: boolean; // wenn create->true wenn terminate -> false
   HTTPWorkCriticalSection: TRTLCriticalSection;
-  gridsortmethode2: Boolean;
+  gridsortmethode2: boolean;
   info: TInfo;
-  firstSampleDone: Boolean;
-  makeLabelsDone: Boolean;
+  firstSampleDone: boolean;
+  makeLabelsDone: boolean;
   nextUpdateTicks: integer;
-  claus: Boolean;
+  claus: boolean;
   CSleep: integer;
   pw: string;
-  updateGoing: Boolean;
+  updateGoing: boolean;
   mynow: integer; // month year *12 (now)
   updateStatus: integer; // 0=nix zu tun 1=schnell ohne Actions Update 2=mit Actions
-  updateTimerStarted: TDatetime;
-  getAppOnMessage: Boolean;
+  updateTimerStarted: TDateTime;
+  getAppOnMessage: boolean;
   lastUserActivity: cardinal;
-  askFinishUpdate: Boolean; //
+  askFinishUpdate: boolean; //
   lastServerUnixTime: cardinal; // die ermittelte Serverzeit - meist 2 Stunden vor meiner Zeit
   lastUpdateServerUnixTime: cardinal; // die gemerkte ServerZeit des letzten vom Server angeforderten (vollen) Updates
   // (now-updateTimeStarted)*86400=Sekunden seit Start. Rest:  timer.Interval/1000-x in Sekunden
@@ -403,7 +403,7 @@ begin
   GetBinData(edGetUrlBin.text, typ, lbCSVError, chkGetBinAppend.Checked);
 end;
 
-function TForm2.GetBinData(url, typ: string; lb: TListBox; append: Boolean = false; maxadd: integer = 0): integer;
+function TForm2.GetBinData(url, typ: string; lb: TListBox; append: boolean = false; maxadd: integer = 0): integer;
 // kann actions symbols und ticks binär abrufen
 // die users symbols gibt es noch nicht !
 var
@@ -423,7 +423,7 @@ var
   aneu: DACwAction;
   sErr: string;
   openActions: DACwOpenAction;
-  tb:TBytes;
+  tb: TBytes;
 begin
   gt := GetTickCount;
   // bytes := doHTTPGetByteArray(url, lb);
@@ -441,12 +441,12 @@ begin
   if typ = 'openActions' then
   begin
     // der verkürzte Datentyp
-    //body := TNetEncoding.Base64.Encode
-    //tb:=TNetEncoding.Base64.Decode(bytes);
+    // body := TNetEncoding.Base64.Encode
+    // tb:=TNetEncoding.Base64.Decode(bytes);
     i := SizeOf(cwOpenAction);
     sz := trunc(length(bytes) / i);
     setlength(openActions, sz);
-    move(bytes[0], openActions[0], length(tb));
+    move(bytes[0], openActions[0], length(bytes));
     // was nun damit passiert ... fehlt noch
 
   end;
@@ -468,7 +468,7 @@ begin
         end;
     // Problem: es gibt bei den CloseTime Abrufen leider ca 11 Actions deren Datum in der Zukunft liegt
     // und die deshalb in Wahrheit gar nicht neu sind !
-    LoadInfo(inttostr(sz) + ' new actions');
+    LoadInfo(inttostr(sz) + ' new or changed actions');
 
     if ((sz > 0) and (sz < 20)) then
     begin
@@ -610,7 +610,7 @@ end;
 procedure TForm2.btnGetCsvClick(Sender: TObject);
 var
   typ: string;
-  tryCache: Boolean;
+  tryCache: boolean;
 begin
   tryCache := true;
   if containstext(edGetUrlCSV.text, '/symbols') then
@@ -626,7 +626,7 @@ begin
 
 end;
 
-procedure TForm2.GetCsv(url, typ: string; lb: TListBox; append: Boolean; tryCache: Boolean);
+procedure TForm2.GetCsv(url, typ: string; lb: TListBox; append: boolean; tryCache: boolean);
 // die Routine gibt nichts zurück und behandelt die Ergebnisse selbst
 // Fehler werden in die lb geschrieben
 var
@@ -638,7 +638,7 @@ var
   ms: TMemoryStream;
   bpms: integer;
   Stream: TFileStream;
-  ok: Boolean;
+  ok: boolean;
   res: integer;
   i, j: integer;
   sl: TStringList;
@@ -891,7 +891,7 @@ procedure TForm2.gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, r
 var
   colHeader: string;
   i: integer;
-  b: Boolean;
+  b: boolean;
 begin
   // showmessage('Grid:' + grid.name + ' cell:' + sCell + ' col:' + sCol + ' row:' + sRow);
   colHeader := grid.Cells[col, 0];
@@ -1019,7 +1019,7 @@ begin
   getSymbolsUsersComments(true);
 end;
 
-procedure TForm2.getSymbolsUsersComments(useCache: Boolean);
+procedure TForm2.getSymbolsUsersComments(useCache: boolean);
 var
   gt: cardinal;
 begin
@@ -1045,9 +1045,9 @@ begin
 
 end;
 
-function TForm2.checkLastUpdate(): TDatetime;
+function TForm2.checkLastUpdate(): TDateTime;
 var
-  dt: TDatetime;
+  dt: TDateTime;
 begin
   // in dieser Form nicht mehr notwendig da auf Server modified Daten abgelegt werden
   edGetUrlCSV.text := 'http://www.stonedcompany.de/FTServer/lastUpdate' + cServerPort + '.csv';
@@ -1348,25 +1348,26 @@ begin
   end;
 end;
 
-procedure TForm2.getOpenActions(dt:TDateTime;serverTyp:integer;doAppend:boolean);
+procedure TForm2.getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean);
 var
   pstring: string;
-  httpFehler:integer;
-  begin
-  pstring := '?year=' + FormatDateTime('YYYY', dt ) + '&month=' + FormatDateTime('MM', dt ) + '&day=' +
-    FormatDateTime('DD', dt ) + '&accountId=' + inttostr(serverTyp);
-//  httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
+  httpFehler: integer;
+begin
+  pstring := '?year=' + FormatDateTime('YYYY', dt) + '&month=' + FormatDateTime('MM', dt) + '&day=' +
+    FormatDateTime('DD', dt) + '&accountId=' + inttostr(serverTyp);
+  // httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
 
-  GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit'+pstring, 'openActions', lbCSVError, doAppend);
+  GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit' + pstring, 'openActions', lbCSVError,
+    doAppend);
 
 end;
 
 procedure TForm2.btnLoadDataClick(Sender: TObject);
 var
-  all: Boolean;
+  all: boolean;
   i: integer;
-  appendCSVUsers: Boolean;
-  appendBinActions: Boolean;
+  appendCSVUsers: boolean;
+  appendBinActions: boolean;
   whichAccounts: string;
   p: integer;
   gt: cardinal;
@@ -1386,16 +1387,23 @@ begin
       break;
     end;
   end;
+
+  lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
+
   if all = true then
   // wenn alle Broker angehakelt sind - was eigentlich sowieso immer der Fall sein dürfte
   begin
-    if cbLoadActionsFromCache.Checked = true then
-    begin
-      // holt Symbols Users und Comments vom Cache oder wenn noch nicht vorhanden vom Server
-      getSymbolsUsersComments(true);
-      btnLoadCacheFileCwClick(nil);
-      LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
-    end;
+    // man könnte auch sagen wenn der Cache älter ist als 10 Tage alles neu laden !
+
+    if (lastUpdateServerUnixTime <> 0) and((datetimetounix(now)-lastUpdateServerUnixTime)<(10*86400)) then
+    // wenn cache da ist aber noch keine Serverzeit nochmal den ganzen Pack laden
+      if cbLoadActionsFromCache.Checked = true then
+      begin
+        // holt Symbols Users und Comments vom Cache oder wenn noch nicht vorhanden vom Server
+        getSymbolsUsersComments(true);
+        btnLoadCacheFileCwClick(nil);
+        LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
+      end;
 
     if ((cbLoadActionsFromCache.Checked = false) or (length(cwActions) = 0)) then
     begin
@@ -1524,7 +1532,7 @@ begin
 
 end;
 
-procedure TForm2.doLockWindowUpdate(yn: Boolean);
+procedure TForm2.doLockWindowUpdate(yn: boolean);
 // Klappt alles nicht richtig !
 begin
   if (yn = true) then
@@ -1777,37 +1785,38 @@ end;
 
 procedure TForm2.Button10Click(Sender: TObject);
 begin
-//  btnSaveCacheFileCwClick(nil);
-getopenactions(now,1,false);
+  // btnSaveCacheFileCwClick(nil);
+  getOpenActions(now, 1, false);
 end;
 
 procedure TForm2.Button11Click(Sender: TObject);
-var gt:cardinal;
-i,ct:integer;
-a:DAcwaction;
+var
+  gt: cardinal;
+  i, ct: integer;
+  a: DACwAction;
 begin
-  ct:=0;
-  gt:=gettickcount;
-  for i := 0 to length(cwactions)-1 do
-    begin
-      if(cwactions[i].actionid<>0) then
-        inc(ct);
-    end;
-    showmessage(inttostr(gettickcount-gt)+' '+inttostr(ct));
-      ct:=0;
-  gt:=gettickcount;
-  setlength(a,length(cwactions));
-  for i := 0 to length(cwactions)-1 do
-    begin
-      if(cwactions[i].actionid<>0) then
-        a[i]:=cwactions[i];
-    end;
-    showmessage(inttostr(gettickcount-gt)+' '+inttostr(ct));
+  ct := 0;
+  gt := GetTickCount;
+  for i := 0 to length(cwActions) - 1 do
+  begin
+    if (cwActions[i].actionId <> 0) then
+      inc(ct);
+  end;
+  showmessage(inttostr(GetTickCount - gt) + ' ' + inttostr(ct));
+  ct := 0;
+  gt := GetTickCount;
+  setlength(a, length(cwActions));
+  for i := 0 to length(cwActions) - 1 do
+  begin
+    if (cwActions[i].actionId <> 0) then
+      a[i] := cwActions[i];
+  end;
+  showmessage(inttostr(GetTickCount - gt) + ' ' + inttostr(ct));
 end;
 
 procedure TForm2.Button12Click(Sender: TObject);
 begin
-      lastUpdateServerUnixTime:=faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
+  lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
 
 end;
 
@@ -2368,11 +2377,11 @@ end;
 procedure TForm2.doFilter();
 var
   i, index, j: integer;
-  r: Boolean;
+  r: boolean;
   fz: integer;
   max, fzmax: integer;
   gt: cardinal;
-  chk: array of Boolean;
+  chk: array of boolean;
   faktivCt: integer;
 
 label weiter, weiter1;
@@ -2505,7 +2514,7 @@ var
   gt, tg: cardinal;
   fz, max, fzmax: integer;
 
-  function vergleichInteger(was, mit: integer; op: integer): Boolean;
+  function vergleichInteger(was, mit: integer; op: integer): boolean;
   // var oben bringt nix
   begin
     result := false;
@@ -2622,7 +2631,7 @@ end;
 
 procedure TForm2.Button8Click(Sender: TObject);
 var
-  merk: Boolean;
+  merk: boolean;
 begin
   // Clear cache and load all data
   Button8.enabled := false;
@@ -2651,7 +2660,7 @@ begin
   // schreibt den Wert direkt in die Variable lastServerUnixTime
 end;
 
-procedure TForm2.doUpdate(dt: TDatetime = 0);
+procedure TForm2.doUpdate(dt: TDateTime = 0);
 var
   i, lold, lnew: integer;
   merkOpenTime, merkCloseTime: integer;
@@ -2664,7 +2673,7 @@ var
   n: integer;
   a1, a2: integer;
   tt: cardinal;
-  dtt: TDatetime;
+  dtt: TDateTime;
   // label rest;
 begin
   // update data
@@ -2681,7 +2690,7 @@ begin
     // Alte Variante
     // dtt := checkLastUpdate(); // -> info.lastUpdateOnServer bzw info.lastUpdateOnClient jeweils das ältere von beiden
     // tt := datetimetounix(dtt);
-      lastUpdateServerUnixTime:=faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
+    lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
 
     tt := lastUpdateServerUnixTime;
   end
@@ -3095,7 +3104,7 @@ begin
     fe.Active := true;
     fe.topic := 'ActionType';
     fe.operator := '<>';
-    fe.values := 'BALANCE';
+    fe.values := 'BALANCE,CREDIT';
     Filter[2].setValues(fe);
     Grouping[1].cbTopic.text := 'yearsOpen';
 
@@ -3355,7 +3364,8 @@ begin
 end;
 
 procedure TForm2.FormClose(Sender: TObject; var Action: TCloseAction);
-var gt:cardinal;
+var
+  gt: cardinal;
 begin
   if (length(cwActions) > 0) then
     btnSaveCacheFileCwClick(nil);
@@ -3371,11 +3381,9 @@ begin
   DynGrid9.saveInit;
   DynGrid10.saveInit;
 
-  faIni.WriteInteger('closetick:', 'tick', gettickcount);
-  gt:=faIni.ReadInteger('closetick:', 'tick',0);
+  faIni.WriteInteger('closetick:', 'tick', GetTickCount);
 
-
-  faini.UpdateFile;
+  faIni.UpdateFile;
   freeandnil(faIni);
   if HTTPWorker1.Finished = false then
   begin
@@ -3389,7 +3397,7 @@ begin
   DeleteCriticalSection(HTTPWorkCriticalSection);
 end;
 
-procedure TForm2.AppOnMessage(var Msg: TMsg; var Handled: Boolean);
+procedure TForm2.AppOnMessage(var Msg: TMsg; var Handled: boolean);
 begin
   if getAppOnMessage then
     case Msg.Message of
@@ -3408,17 +3416,17 @@ var
   folder, fileName: string;
   style: string;
   pwct: integer;
-  pwok: Boolean;
+  pwok: boolean;
   s: string;
-  gt:cardinal;
+  gt: cardinal;
 begin
   sessionkey := '';
   askFinishUpdate := false; // Button drücken Update
   getAppOnMessage := true;
   Application.OnMessage := AppOnMessage;
   Application.OnException := MyExceptionHandler;
-  faIni := TMemIniFile.Create(ChangeFileExt(Application.ExeName, '.ini'));
-  faIni.AutoSave:=true;
+  faIni := TMemIniFile.Create(leftstr(Application.ExeName, length(Application.ExeName) - 4) + '2.ini');
+  faIni.AutoSave := true;
 
   pwct := 0;
   updateGoing := false;
@@ -3910,7 +3918,7 @@ var
   i: integer;
   grid: FTCommons.TStringGridSorted;
   col, row: integer;
-  fixedCol, fixedRow: Boolean;
+  fixedCol, fixedRow: boolean;
   gt: cardinal;
   Cursor: TCursor;
   header: string;
@@ -4335,7 +4343,7 @@ begin
   procedure TForm2.lblUpdateRestDblClick(Sender: TObject);
   var
     s: string;
-    dt: TDatetime;
+    dt: TDateTime;
   begin
     // Update timer
     s := inputbox('Manual update', 'Time to update from', datetimetostr((now - 0.25)));
@@ -4545,7 +4553,7 @@ begin
 
   var
     i: integer;
-    t: TDatetime;
+    t: TDateTime;
     ut: integer;
     dt: integer;
     gt: cardinal;

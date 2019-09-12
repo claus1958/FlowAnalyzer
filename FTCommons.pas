@@ -1345,111 +1345,6 @@ begin
   end;
 end;
 
-procedure doActionsGridCWDyn2(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
-  justone: Boolean = false);
-var
-  k: integer;
-  row: integer;
-  fehler: string;
-  v: integer;
-  gt: Cardinal;
-begin
-  gt := GetTickCount;
-  v := SG.visiblerowcount;
-  try
-    if (justone = false) then
-    begin
-      SG.Rows[0].BeginUpdate;
-      SG.cells[SGFieldCol[0], 0] := 'actionId';
-      // SG.ColWidths[SGFieldCol[0]] := 140;
-      SG.cells[SGFieldCol[1], 0] := 'userId';
-      SG.cells[SGFieldCol[2], 0] := 'accountId';
-      SG.cells[SGFieldCol[3], 0] := 'symbol';
-      SG.cells[SGFieldCol[4], 0] := 'symbolId';
-      SG.cells[SGFieldCol[5], 0] := 'comment';
-      SG.cells[SGFieldCol[6], 0] := 'typeId';
-      SG.cells[SGFieldCol[7], 0] := 'sourceId';
-      SG.cells[SGFieldCol[8], 0] := 'openTime';
-      SG.cells[SGFieldCol[9], 0] := 'closeTime';
-      SG.cells[SGFieldCol[10], 0] := 'openTimeUnix';
-      SG.cells[SGFieldCol[11], 0] := 'closeTimeUnix';
-      SG.cells[SGFieldCol[12], 0] := 'expirationTime';
-      SG.cells[SGFieldCol[13], 0] := 'openPrice';
-      SG.cells[SGFieldCol[14], 0] := 'closePrice';
-      SG.cells[SGFieldCol[15], 0] := 'stopLoss';
-      SG.cells[SGFieldCol[16], 0] := 'takeProfit';
-      SG.cells[SGFieldCol[17], 0] := 'swap';
-      SG.cells[SGFieldCol[18], 0] := 'profit';
-      SG.cells[SGFieldCol[19], 0] := 'volume';
-      SG.cells[SGFieldCol[20], 0] := 'precision';
-      SG.cells[SGFieldCol[21], 0] := 'conversionRate0';
-      SG.cells[SGFieldCol[22], 0] := 'conversionRate1';
-      SG.cells[SGFieldCol[23], 0] := 'marginRate';
-      SG.cells[SGFieldCol[24], 0] := 'symGroupId';
-      SG.cells[SGFieldCol[25], 0] := 'openProfit';
-      SG.cells[SGFieldCol[26], 0] := 'openSwap';
-
-      // Ausblenden was nicht erwünscht ist
-      for k := 0 to 26 do
-      begin
-        // if (claus = false) then
-        // if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
-        // 'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
-        // SG.ColWidths[SGFieldCol[k]] := -1;
-      end;
-      SG.Rows[0].endUpdate;
-    end;
-    row := 0;
-    for k := datafrom to datato do
-
-    begin
-      row := row + 1;
-      SG.Rows[row].BeginUpdate;
-      SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
-      SG.cells[SGFieldCol[1], row] := inttostr(actions[sort[k]].userId);
-      SG.cells[SGFieldCol[2], row] := accountShort[actions[sort[k]].accountId];
-      SG.cells[SGFieldCol[3], row] := getCwSymbol(actions[sort[k]].symbolId);
-      SG.cells[SGFieldCol[4], row] := inttostr(actions[sort[k]].symbolId);
-      SG.cells[SGFieldCol[5], row] := getCwComment(actions[sort[k]].commentId);
-      SG.cells[SGFieldCol[6], row] := OrderTypes(actions[sort[k]].typeId - 1) + ' ' + inttostr(actions[sort[k]].typeId);
-      // cw statt 0..7ist 1..8
-      SG.cells[SGFieldCol[7], row] := inttostr(actions[sort[k]].sourceId);
-      SG.cells[SGFieldCol[8], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].openTime));
-      SG.cells[SGFieldCol[9], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].closeTime));
-      SG.cells[SGFieldCol[10], row] := inttostr(actions[sort[k]].openTime);
-      SG.cells[SGFieldCol[11], row] := inttostr(actions[sort[k]].closeTime);
-      SG.cells[SGFieldCol[12], row] := DateTimeToStr(UnixToDateTime(actions[sort[k]].expirationTime));
-      SG.cells[SGFieldCol[13], row] := floattostr(actions[sort[k]].openPrice);
-      SG.cells[SGFieldCol[14], row] := floattostr(actions[sort[k]].closePrice);
-      SG.cells[SGFieldCol[15], row] := floattostr(actions[sort[k]].stopLoss);
-      SG.cells[SGFieldCol[16], row] := floattostr(actions[sort[k]].takeProfit);
-      SG.cells[SGFieldCol[17], row] := floattostr(actions[sort[k]].swap);
-      SG.cells[SGFieldCol[18], row] := floattostr(actions[sort[k]].profit);
-      SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
-      SG.cells[SGFieldCol[20], row] := inttostr(actions[sort[k]].precision);
-      SG.cells[SGFieldCol[21], row] := floattostr(actions[sort[k]].conversionRate0);
-      SG.cells[SGFieldCol[22], row] := floattostr(actions[sort[k]].conversionRate0);
-      SG.cells[SGFieldCol[23], row] := floattostr(actions[sort[k]].marginRate);
-      if cwSymbolsGroupsCt > 0 then
-        SG.cells[SGFieldCol[24], row] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
-      SG.cells[SGFieldCol[25], row] := floattostr(actionsPlus[sort[k]].openProfit);
-      SG.cells[SGFieldCol[26], row] := floattostr(actionsPlus[sort[k]].openSwap);
-
-      SG.Rows[row].endUpdate;
-    end;
-    // evtl noch was löschen ?
-    v := v;
-  except
-    on E: Exception do
-    begin
-      fehler := E.Message;
-    end;
-
-  end;
-  gt := GetTickCount - gt;
-
-end;
 
 procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
@@ -1509,8 +1404,8 @@ begin
       lines[SGFieldCol[22]] := 'conversionRate1';
       lines[SGFieldCol[23]] := 'marginRate';
       lines[SGFieldCol[24]] := 'symGroupId';
-      lines[SGFieldCol[25]] := 'openProfit';
-      lines[SGFieldCol[26]] := 'openSwap';
+      lines[SGFieldCol[25]] := '';//'openProfit';
+      lines[SGFieldCol[26]] := '';//'openSwap';
 
       // for k := 0 to 26 do
       // begin
@@ -1581,8 +1476,8 @@ begin
         lines[SGFieldCol[23]] := floattostr(actions[sort[k]].marginRate);
         if cwSymbolsGroupsCt > 0 then
           lines[SGFieldCol[24]] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
-        lines[SGFieldCol[25]] := floattostr(actionsPlus[sort[k]].openProfit);
-        lines[SGFieldCol[26]] := floattostr(actionsPlus[sort[k]].openSwap);
+        //lines[SGFieldCol[25]] := floattostr(actionsPlus[sort[k]].openProfit);
+        //lines[SGFieldCol[26]] := floattostr(actionsPlus[sort[k]].openSwap);
         if (toSL = false) then
         begin
           SG.Rows[row].BeginUpdate;

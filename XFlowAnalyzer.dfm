@@ -3152,6 +3152,7 @@ object Form2: TForm2
         0707070707070707070707070707070707070707070707070707}
       Layout = blGlyphTop
       ParentFont = False
+      Visible = False
       StyleElements = []
       OnClick = SpeedButton6Click
     end
