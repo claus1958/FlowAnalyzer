@@ -6,7 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
   RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
-  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,System.NetEncoding;
+  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,
+  System.NetEncoding;
 
 const
   BoolStr: Array [Boolean] of AnsiString = ('False', 'True');
@@ -36,6 +37,21 @@ type
   TOurHttp = class(TIdHttp)
   public
     procedure Get(aUrl: String; aRequestBody, aResponseContent: TStream);
+  end;
+
+  profitSwapZ12 = record
+    z1: TDateTime;
+    z2: TDateTime;
+    Profit1: array [1 .. 4] of double; // ungewöhnlich 1..4 da die Währungen so laufen !
+    Profit: array [1 .. 4] of double;
+    Profit2: array [1 .. 4] of double;
+    Swap1: double;
+    Swap: double;
+    Swap2: double;
+    Volume1: integer;
+    Volume: integer;
+    Volume2: integer;
+    procedure clear;
   end;
 
   tExport = record
@@ -122,15 +138,15 @@ type
 
   DAInteger = array of integer;
 
-    //die offenen Orders in Kompaktform
-  cwOpenAction=packed record
+  // die offenen Orders in Kompaktform
+  cwOpenAction = packed record
     actionId: int64;
-    userId:integer;
-    swap:double;
-    profit:double;
+    userId: integer;
+    Swap: double;
+    Profit: double;
   end;
-  DACwOpenAction = array of cwOpenAction;
 
+  DACwOpenActions = array of cwOpenAction;
 
   cwTick = packed record // für die Übertragung an den Server. Sowohl über JSON als auch bin möglich
     time: integer; // 4    reicht bis 2030  -  sonst 8 dword Unix Sekunden seit 1970
@@ -147,7 +163,7 @@ type
     close: single;
     high: single;
     low: single;
-    volume: integer;
+    Volume: integer;
   end;
 
   DAKursOCHL = array of TKursOCHLV;
@@ -162,7 +178,7 @@ type
     userId: integer;
     balance: double;
     equity: double;
-    volume: integer;
+    Volume: integer;
     margin: double;
     function getJSON(): string;
   end;
@@ -185,9 +201,9 @@ type
     closePrice: double; // 8
     stopLoss: double; // 8
     takeProfit: double; // 8
-    swap: double; // 8
-    profit: double; // 8
-    volume: integer; // 4
+    Swap: double; // 8
+    Profit: double; // 8
+    Volume: integer; // 4
     precision: integer; // 4
     conversionRate0: double; // 8
     conversionRate1: double; // 8
@@ -196,14 +212,12 @@ type
 
   DACwAction = array of cwAction; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
 
-
-
   cwActionPlus = packed Record
     userIndex: integer; // für die schnellere Suche !
     openProfit: double;
     openSwap: double;
-    openProfitStart:double;//Am Beginn des Zeitraums
-    openSwapStart:double;//Am Beginn des Zeitraums
+    openProfitStart: double; // Am Beginn des Zeitraums
+    openSwapStart: double; // Am Beginn des Zeitraums
   End;
 
   DACwActionPlus = array of cwActionPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -229,6 +243,7 @@ type
     TradesProfitTotal: double;
     TradesSwapTotal: double;
     TradesProfitSwapTotal: double;
+    Plus: array [0 .. 12] of double; // Platzhalten erstmal für die zusätzlichen Felder ...
   End;
 
   DACwSummary = array of cwSummary;
@@ -389,7 +404,7 @@ procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; sTyp: string)
 
 function CTime2DateTime(T: time_c): TDateTime;
 function DateTime2CTime(T: TDateTime): time_c;
-procedure swap(var Value1, Value2: string);
+procedure Swap(var Value1, Value2: string);
 procedure SwapDbl(var Value1, Value2: double);
 procedure SwapInt(var Value1, Value2: integer);
 procedure SwapInt64(var Value1, Value2: int64);
@@ -400,6 +415,9 @@ procedure ClearStringGridSorted(const Grid: FTCommons.TStringGridSorted);
 procedure lbDebug(s: string);
 procedure AutoSizeGrid(Grid, Grid2: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
+
+procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DACwOpenActions; datafrom: integer; datato: integer; justone: Boolean = false);
 
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
   total: integer; stp: integer = 1);
@@ -436,6 +454,8 @@ function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: 
 function BinSearchString3(var Index: intArray; var v: integer): integer;
 function BinSearchInt(var Ints: intArray; v: integer): integer;
 function BinSearchInt64(var Ints: int64Array; v: int64): integer;
+function BinSearchOpenActionsInt64(var actions: DACwOpenActions; v: int64): integer;
+
 function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var actions: DACwAction; k: integer; col: integer; such: string): integer;
 function findUserName(userId: integer): string;
@@ -451,6 +471,9 @@ procedure showMemory(lb: TListBox);
 function myStrToInt(AString: string): integer;
 
 var
+
+  cwOpenActionsZ1: DACwOpenActions;
+  cwOpenActionsZ2: DACwOpenActions;
 
   cwSingleUserActions: DACwAction;
   cwSingleUserActionsPlus: DACwActionPlus;
@@ -505,6 +528,8 @@ var
   accountShort: array [1 .. 7] of string;
   accountCurrency: array [0 .. 4] of string;
   sessionKey: String;
+  PSSummaries: profitSwapZ12;
+  PSFilteredActions: profitSwapZ12;
 
 implementation
 
@@ -513,6 +538,26 @@ uses XFlowAnalyzer;
 const
   IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SETPEFLAGS IMAGE_FILE_LARGE_ADDRESS_AWARE}
+
+procedure profitSwapZ12.clear;
+var
+  i: integer;
+begin
+  for i := 1 to 4 do
+  begin
+    Profit1[i] := 0;
+    Profit[i] := 0;
+    Profit2[i] := 0;
+  end;
+  Swap1 := 0;
+  Swap := 0;
+  Swap2 := 0;
+
+  Volume := 0;
+  Volume1 := 0;
+  Volume2 := 0;
+
+end;
 
 procedure TOurHttp.Get(aUrl: String; aRequestBody, aResponseContent: TStream);
 begin
@@ -524,7 +569,7 @@ function cwRating.getJSON(): string;
 begin
   result := '{' + c34 + 'userId' + c34 + ':' + inttostr(userId) + ',' + c34 + 'balance' + c34 + ':' +
     FloatToSQLStr(balance) + ',' + c34 + 'equity' + c34 + ':' + FloatToSQLStr(equity) + ',' + c34 + 'volume' + c34 + ':'
-    + inttostr(volume) + ',' + c34 + 'margin' + c34 + ':' + FloatToSQLStr(margin) + '}';
+    + inttostr(Volume) + ',' + c34 + 'margin' + c34 + ':' + FloatToSQLStr(margin) + '}';
 end;
 
 procedure lbDebug(s: string);
@@ -1345,7 +1390,6 @@ begin
   end;
 end;
 
-
 procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
   justone: Boolean = false; sl: TStringList = nil);
@@ -1404,8 +1448,8 @@ begin
       lines[SGFieldCol[22]] := 'conversionRate1';
       lines[SGFieldCol[23]] := 'marginRate';
       lines[SGFieldCol[24]] := 'symGroupId';
-      lines[SGFieldCol[25]] := '';//'openProfit';
-      lines[SGFieldCol[26]] := '';//'openSwap';
+      lines[SGFieldCol[25]] := ''; // 'openProfit';
+      lines[SGFieldCol[26]] := ''; // 'openSwap';
 
       // for k := 0 to 26 do
       // begin
@@ -1467,17 +1511,17 @@ begin
         lines[SGFieldCol[14]] := floattostr(actions[sort[k]].closePrice);
         lines[SGFieldCol[15]] := floattostr(actions[sort[k]].stopLoss);
         lines[SGFieldCol[16]] := floattostr(actions[sort[k]].takeProfit);
-        lines[SGFieldCol[17]] := floattostr(actions[sort[k]].swap);
-        lines[SGFieldCol[18]] := floattostr(actions[sort[k]].profit);
-        lines[SGFieldCol[19]] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
+        lines[SGFieldCol[17]] := floattostr(actions[sort[k]].Swap);
+        lines[SGFieldCol[18]] := floattostr(actions[sort[k]].Profit);
+        lines[SGFieldCol[19]] := FormatFloat(',#0.00', actions[sort[k]].Volume / 100);
         lines[SGFieldCol[20]] := inttostr(actions[sort[k]].precision);
         lines[SGFieldCol[21]] := floattostr(actions[sort[k]].conversionRate0);
         lines[SGFieldCol[22]] := floattostr(actions[sort[k]].conversionRate0);
         lines[SGFieldCol[23]] := floattostr(actions[sort[k]].marginRate);
         if cwSymbolsGroupsCt > 0 then
           lines[SGFieldCol[24]] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
-        //lines[SGFieldCol[25]] := floattostr(actionsPlus[sort[k]].openProfit);
-        //lines[SGFieldCol[26]] := floattostr(actionsPlus[sort[k]].openSwap);
+        // lines[SGFieldCol[25]] := floattostr(actionsPlus[sort[k]].openProfit);
+        // lines[SGFieldCol[26]] := floattostr(actionsPlus[sort[k]].openSwap);
         if (toSL = false) then
         begin
           SG.Rows[row].BeginUpdate;
@@ -1508,6 +1552,45 @@ begin
 
   end;
   gt := GetTickCount - gt;
+end;
+
+procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DACwOpenActions; datafrom: integer; datato: integer; justone: Boolean = false);
+var
+  k: integer;
+  row: integer;
+  fehler: string;
+begin
+  try
+    sg.ColCount:=4;
+    if (justone = false) then
+    begin
+      SG.Rows[0].BeginUpdate;
+      SG.cells[SGFieldCol[0], 0] := 'actionId';
+      SG.cells[SGFieldCol[1], 0] := 'userId';
+      SG.cells[SGFieldCol[2], 0] := 'profit';
+      SG.cells[SGFieldCol[3], 0] := 'swap';
+      SG.Rows[0].endUpdate;
+    end;
+    row := 0;
+    for k := datafrom to datato do
+
+    begin
+      row := row + 1;
+      SG.Rows[row].BeginUpdate;
+      SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
+      SG.cells[SGFieldCol[1], row] := floattostr(actions[sort[k]].userID);
+      SG.cells[SGFieldCol[2], row] := floattostr(actions[sort[k]].Profit);
+      SG.cells[SGFieldCol[3], row] := floattostr(actions[sort[k]].Swap);
+      SG.Rows[row].endUpdate;
+    end;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
 end;
 
 procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
@@ -1971,9 +2054,9 @@ begin
         SG.cells[SGFieldCol[14], row] := floattostr(actions[k].closePrice);
         SG.cells[SGFieldCol[15], row] := floattostr(actions[k].stopLoss);
         SG.cells[SGFieldCol[16], row] := floattostr(actions[k].takeProfit);
-        SG.cells[SGFieldCol[17], row] := floattostr(actions[k].swap);
-        SG.cells[SGFieldCol[18], row] := floattostr(actions[k].profit);
-        SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[k].volume / 100);
+        SG.cells[SGFieldCol[17], row] := floattostr(actions[k].Swap);
+        SG.cells[SGFieldCol[18], row] := floattostr(actions[k].Profit);
+        SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[k].Volume / 100);
         SG.cells[SGFieldCol[20], row] := inttostr(actions[k].precision);
         SG.cells[SGFieldCol[21], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[22], row] := floattostr(actions[k].conversionRate0);
@@ -2580,7 +2663,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      swap(dbla[Left], dbla[Right]);
+      Swap(dbla[Left], dbla[Right]);
       SwapInt(inta[Left], inta[Right]);
       Inc(Left);
       Dec(Right);
@@ -2752,7 +2835,7 @@ begin
     if (Left <= Right) then
     begin
       SwapInt(inta[Left], inta[Right]);
-      swap(stra[Left], stra[Right]);
+      Swap(stra[Left], stra[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -2931,7 +3014,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      swap(dbla[Left], dbla[Right]);
+      Swap(dbla[Left], dbla[Right]);
       SwapInt(inta[Left], inta[Right]);
       Inc(Left);
       Dec(Right);
@@ -2976,7 +3059,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      swap(Ordliste[Left], Ordliste[Right]);
+      Swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3020,7 +3103,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      swap(Ordliste[Left], Ordliste[Right]);
+      Swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3064,7 +3147,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      swap(Ordliste[Left], Ordliste[Right]);
+      Swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3108,7 +3191,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      swap(Ordliste[Left], Ordliste[Right]);
+      Swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3253,7 +3336,7 @@ begin
   end;
 end;
 
-procedure swap(var Value1, Value2: string);
+procedure Swap(var Value1, Value2: string);
 var
   temp: string; // Integer;
 begin
@@ -3531,17 +3614,17 @@ begin
       end;
       if (col = 17) then
       begin
-        res := floattostr(actions[sort[l]].swap);
+        res := floattostr(actions[sort[l]].Swap);
         goto weiter;
       end;
       if (col = 18) then
       begin
-        res := floattostr(actions[sort[l]].profit);
+        res := floattostr(actions[sort[l]].Profit);
         goto weiter;
       end;
       if (col = 19) then
       begin
-        res := FormatFloat(',#0.00', actions[sort[l]].volume / 100);
+        res := FormatFloat(',#0.00', actions[sort[l]].Volume / 100);
         goto weiter;
       end;
       if (col = 20) then
@@ -3781,6 +3864,32 @@ begin
   end;
 end;
 
+function BinSearchOpenActionsInt64(var actions: DACwOpenActions; v: int64): integer;
+var
+  first: integer;
+  Last: integer;
+  Pivot: integer;
+  Found: Boolean;
+begin
+  first := Low(actions); // Sets the first item of the range
+  Last := High(actions); // Sets the last item of the range
+  Found := false; // Initializes the Found flag (Not found yet)
+  result := -1; // Initializes the Result
+  while (first <= Last) and (not Found) do
+  begin
+    Pivot := (first + Last) div 2;
+    if actions[Pivot].actionId = v then
+    begin
+      Found := true;
+      result := Pivot;
+    end
+    else if actions[Pivot].actionId > v then
+      Last := Pivot - 1
+    else
+      first := Pivot + 1;
+  end;
+end;
+
 function findUserName(userId: integer): string;
 var
   i: integer;
@@ -3896,12 +4005,12 @@ begin
     // direkt nach Symbolen(ohne Gruppe) wäre hier symbolId zu verwenden und cwSymbolsCt wäre die Größe der 'group'
     Inc(groups[groupId].TradesCount);
     Inc(TradesCount);
-    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
-    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
-    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].profit;
-    groups[groupId].TradesSwapTotal := groups[groupId].TradesSwapTotal + actions[i].swap;
-    TradesProfitTotal := TradesProfitTotal + actions[i].profit;
-    TradesSwapTotal := TradesSwapTotal + actions[i].swap;
+    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].Volume;
+    TradesVolumeTotal := TradesVolumeTotal + actions[i].Volume;
+    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].Profit;
+    groups[groupId].TradesSwapTotal := groups[groupId].TradesSwapTotal + actions[i].Swap;
+    TradesProfitTotal := TradesProfitTotal + actions[i].Profit;
+    TradesSwapTotal := TradesSwapTotal + actions[i].Swap;
   end;
 
   lb.items.clear;
@@ -4100,24 +4209,24 @@ var
 begin
   result := 0;
   try
-  try
-    HTTP := TOurHttp.Create();
-    Url := 'http://h2827643.stratoserver.net:'+cserverport+'/login';
-    body := TNetEncoding.Base64.Encode('flow_collector') + ':' + TNetEncoding.Base64.Encode('f9#w01*F21b/dQ');
-    tbody := TStringStream.Create(body);
-    tbody.Position := 0;
-    tresult := TStringStream.Create();
-    HTTP.post(Url, tbody, tresult);
-    key := tresult.datastring;
-    result := 0; // OK
-  except
-    key := '';
-    result := 1; // Fehler
-  end;
+    try
+      HTTP := TOurHttp.Create();
+      Url := 'http://h2827643.stratoserver.net:' + cServerPort + '/login';
+      body := TNetEncoding.Base64.Encode('flow_collector') + ':' + TNetEncoding.Base64.Encode('f9#w01*F21b/dQ');
+      tbody := TStringStream.Create(body);
+      tbody.Position := 0;
+      tresult := TStringStream.Create();
+      HTTP.post(Url, tbody, tresult);
+      key := tresult.datastring;
+      result := 0; // OK
+    except
+      key := '';
+      result := 1; // Fehler
+    end;
   finally
-    http.free;
-    tbody.free;
-    tresult.free;
+    HTTP.Free;
+    tbody.Free;
+    tresult.Free;
   end;
   // showmessage('res:' + res);
 end;

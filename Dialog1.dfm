@@ -29,25 +29,25 @@ object Form5: TForm5
   object Button1: TButton
     Left = 10
     Top = 4
-    Width = 107
+    Width = 87
     Height = 21
     Caption = 'select all'
     TabOrder = 1
     OnClick = Button1Click
   end
   object Button2: TButton
-    Left = 130
-    Top = 4
-    Width = 107
+    Left = 103
+    Top = 5
+    Width = 78
     Height = 21
     Caption = 'deselect all'
     TabOrder = 2
     OnClick = Button2Click
   end
   object Button3: TButton
-    Left = 244
+    Left = 268
     Top = 4
-    Width = 97
+    Width = 73
     Height = 21
     Caption = 'OK'
     TabOrder = 3
@@ -69,6 +69,15 @@ object Form5: TForm5
     Height = 445
     ItemHeight = 13
     TabOrder = 5
+  end
+  object Button5: TButton
+    Left = 188
+    Top = 5
+    Width = 73
+    Height = 21
+    Caption = 'Reset'
+    TabOrder = 6
+    OnClick = Button5Click
   end
   object Timer1: TTimer
     Enabled = False

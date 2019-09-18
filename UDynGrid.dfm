@@ -175,7 +175,6 @@ object DynGrid: TDynGrid
         OnDrawCell = SGDrawCell
         OnMouseDown = SGSumMouseDown
         OnRowMoved = SGRowMoved
-        ExplicitTop = 526
       end
     end
   end

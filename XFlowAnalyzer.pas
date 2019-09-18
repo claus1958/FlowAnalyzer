@@ -34,7 +34,6 @@ type
     lblFilterResult: TLabel;
     btnDoubleRemoveCw: TButton;
     btnSelectClearCw: TButton;
-    Button5: TButton;
     pnlFilter: TPanel;
     Panel4: TPanel;
     Panel5: TPanel;
@@ -75,8 +74,6 @@ type
     cbStyles: TComboBox;
     TabSheet3: TTabSheet;
     Panel12: TPanel;
-    DynGrid1: TDynGrid;
-    Button7: TButton;
     DynGrid2: TDynGrid;
     DynGrid3: TDynGrid;
     DynGrid4: TDynGrid;
@@ -197,9 +194,16 @@ type
     btnSample6: TButton;
     Button10: TButton;
     Button11: TButton;
+    btnSample7: TButton;
+    Panel23: TPanel;
+    chkFilterWithOpenActions: TCheckBox;
+    btnShowEvaluation: TButton;
+    DynGrid11: TDynGrid;
+    DynGrid12: TDynGrid;
     procedure doLoadAllData();
 
-    procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean);
+    procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
+      var openActions: DACwOpenActions);
 
     procedure GetLastServerUnixTime();
     function checkLastUpdate(): TDateTime;
@@ -239,7 +243,6 @@ type
     procedure TabSheet2Resize(Sender: TObject);
     procedure btnDoFilterClick(Sender: TObject);
 
-    procedure Button5Click(Sender: TObject);
     procedure edSingleUserActionsIdChange(Sender: TObject);
     procedure CategoryPanel1Collapse(Sender: TObject);
     procedure CategoryPanel1Expand(Sender: TObject);
@@ -257,8 +260,6 @@ type
     procedure Button2Click(Sender: TObject);
     procedure lbCSVErrorClick(Sender: TObject);
     procedure cbStylesChange(Sender: TObject);
-    // procedure gridHandler(Sender: TObject);
-    procedure Button7Click(Sender: TObject);
     procedure btnUpdateDataClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
     procedure btnDoUsersAndSymbolsPlusClick(Sender: TObject);
@@ -322,7 +323,14 @@ type
     procedure DynGrid9SpeedButton1Click(Sender: TObject);
     procedure Button8Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
-    procedure Button12Click(Sender: TObject);
+    procedure btnShowEvaluationClick(Sender: TObject);
+    function GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions;
+      append: boolean = false): integer;
+    procedure getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions);
+    function doHttpPutMemoryStreamToWorker(mStream: TMemoryStream; url: string): integer;
+    procedure chkFilterWithOpenActionsClick(Sender: TObject);
+    procedure makePS(var ps: ProfitSwapZ12; source: string);
+
   private
     { Private-Deklarationen }
     FColorKey: TCOLOR;
@@ -369,7 +377,7 @@ implementation
 
 {$R *.dfm}
 
-uses doHTTP, Dialog1, Dialog2;
+uses doHTTP, Dialog1, Dialog2, Unit10;
 
 const
   IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
@@ -403,9 +411,61 @@ begin
   GetBinData(edGetUrlBin.text, typ, lbCSVError, chkGetBinAppend.Checked);
 end;
 
+function TForm2.GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions;
+  append: boolean = false): integer;
+var
+  ret: String;
+  gt: cardinal;
+  i, l: integer;
+  j: integer;
+  bytes: Bytearray;
+  s: AnsiString;
+  s1: AnsiString;
+  ss: String;
+  ms: TMemoryStream;
+  sz: integer;
+  oldlen: integer;
+  res: integer;
+  alt: integer;
+  sErr: string;
+begin
+  gt := GetTickCount;
+  // bytes := doHTTPGetByteArray(url, lb);
+  // über einen zweiten Thread werden die Daten abgerufen
+  res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
+  lbDebug2.Items.Add('Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+
+  if (typ = 'openActions1') or (typ = 'openActions2') then
+  // ist ja sowieso nichts anderes ...
+  begin
+    // der verkürzte Datentyp
+    // body := TNetEncoding.Base64.Encode
+    // tb:=TNetEncoding.Base64.Decode(bytes);
+    i := SizeOf(cwOpenAction);
+    sz := trunc(length(bytes) / i);
+    if (sz = 0) then
+      exit; // wenn es keine Daten gegeben hat ...
+    if append = true then
+    begin
+      // die neuen Actions an die alten anhängen
+      oldlen := length(actions);
+      setlength(actions, length(actions) + sz);
+      move(bytes[0], actions[oldlen], length(bytes));
+    end
+    else
+    begin
+      setlength(actions, sz);
+      move(bytes[0], actions[0], length(bytes));
+    end;
+    // sz := trunc(length(bytes) / i);
+
+  end;
+
+end;
+
 function TForm2.GetBinData(url, typ: string; lb: TListBox; append: boolean = false; maxadd: integer = 0): integer;
 // kann actions symbols und ticks binär abrufen
-// die users symbols gibt es noch nicht !
+// die users symbols gibt es nicht !
 var
   ret: String;
   gt: cardinal;
@@ -422,7 +482,7 @@ var
   alt: integer;
   aneu: DACwAction;
   sErr: string;
-  openActions: DACwOpenAction;
+
   tb: TBytes;
 begin
   gt := GetTickCount;
@@ -438,18 +498,6 @@ begin
 
   end;
 
-  if typ = 'openActions' then
-  begin
-    // der verkürzte Datentyp
-    // body := TNetEncoding.Base64.Encode
-    // tb:=TNetEncoding.Base64.Decode(bytes);
-    i := SizeOf(cwOpenAction);
-    sz := trunc(length(bytes) / i);
-    setlength(openActions, sz);
-    move(bytes[0], openActions[0], length(bytes));
-    // was nun damit passiert ... fehlt noch
-
-  end;
   if typ = 'actions' then
   begin
     // nur wenn es sich um binäre actions handelt !
@@ -526,16 +574,6 @@ begin
       lbCSVError.Items.Add('No new actions');
       result := 0;
     end;;
-    // for j := 0 to sz - 1 do
-    // begin
-    // lbDebug2.Items.Add(inttostr(j) + ' ' + inttostr(cwActions[j].actionId) + ' ' + inttostr(cwActions[j].userId) + ' '
-    // + inttostr(cwActions[j].symbolId));
-    // if j > 100 then
-    // break;
-    // end;
-    // lbDebug2.Items.Add('...');
-    // // ss := byteArrayToString(bytes);
-
   end;
 
   // die folgenden Routinen sind nicht anwendbar da durch dieVerwendung von Strings kein bin-Lesen mehr möglich ist
@@ -820,6 +858,7 @@ begin
   if typ = 'users' then
   begin
     // und hier die accountCurrency setzen !
+    // !! die Werte 1-4 sind Euro Dollar Sfr und GBP Die 0 ist unbelegt
     gt := GetTickCount;
     for i := 0 to cwusersct - 1 do
     begin
@@ -1074,6 +1113,11 @@ begin
     dt := now - 7; // 7 Tage default wenn nix geht
   result := dt;
   LoadInfo('...');
+end;
+
+procedure TForm2.chkFilterWithOpenActionsClick(Sender: TObject);
+begin
+  //
 end;
 
 procedure TForm2.btnSymbolGroupsClick(Sender: TObject);
@@ -1348,20 +1392,6 @@ begin
   end;
 end;
 
-procedure TForm2.getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean);
-var
-  pstring: string;
-  httpFehler: integer;
-begin
-  pstring := '?year=' + FormatDateTime('YYYY', dt) + '&month=' + FormatDateTime('MM', dt) + '&day=' +
-    FormatDateTime('DD', dt) + '&accountId=' + inttostr(serverTyp);
-  // httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
-
-  GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit' + pstring, 'openActions', lbCSVError,
-    doAppend);
-
-end;
-
 procedure TForm2.btnLoadDataClick(Sender: TObject);
 var
   all: boolean;
@@ -1395,8 +1425,8 @@ begin
   begin
     // man könnte auch sagen wenn der Cache älter ist als 10 Tage alles neu laden !
 
-    if (lastUpdateServerUnixTime <> 0) and((datetimetounix(now)-lastUpdateServerUnixTime)<(10*86400)) then
-    // wenn cache da ist aber noch keine Serverzeit nochmal den ganzen Pack laden
+    if (lastUpdateServerUnixTime <> 0) and ((datetimetounix(now) - lastUpdateServerUnixTime) < (10 * 86400)) then
+      // wenn cache da ist aber noch keine Serverzeit nochmal den ganzen Pack laden
       if cbLoadActionsFromCache.Checked = true then
       begin
         // holt Symbols Users und Comments vom Cache oder wenn noch nicht vorhanden vom Server
@@ -1783,10 +1813,70 @@ begin
 
 end;
 
+procedure TForm2.getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
+  var openActions: DACwOpenActions);
+var
+  pstring: string;
+  httpFehler: integer;
+begin
+  // sZeit='1' oder '2'
+  pstring := '?year=' + FormatDateTime('YYYY', dt) + '&month=' + FormatDateTime('MM', dt) + '&day=' +
+    FormatDateTime('DD', dt) + '&accountId=' + inttostr(serverTyp);
+  // httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
+
+  GetBinDataOpenActions('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit' + pstring,
+    'openActions' + sZeit, lbCSVError, openActions, doAppend);
+
+end;
+
 procedure TForm2.Button10Click(Sender: TObject);
 begin
+  getAndSortOpenActions(now - 7, cwOpenActionsZ1);
+  getAndSortOpenActions(now, cwOpenActionsZ2);
+
+end;
+
+procedure TForm2.getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions);
+var
+  i: integer;
+  actionId: int64Array;
+  ix: intarray;
+  ct: integer;
+var
+  openActions: DACwOpenActions;
+begin
   // btnSaveCacheFileCwClick(nil);
-  getOpenActions(now, 1, false);
+  setlength(openActions, 0);
+
+  getOpenActions(dt, 1, false, '1', openActions);
+  for i := 2 to 7 do
+    getOpenActions(dt, i, true, '1', openActions);
+  //showmessage('Actions:' + inttostr(length(openActions)));
+
+  ct := length(openActions);
+  if (ct > 0) then
+  begin
+    setlength(actionId, ct);
+    setlength(ix, ct);
+    for i := 0 to ct - 1 do
+    begin
+      actionId[i] := openActions[i].actionId;
+      ix[i] := i;
+    end;
+
+    fastsort2arrayInt64Int(actionId, ix, 'VUI'); // VDI
+    setlength(openActionsz, ct);
+    for i := 0 to ct - 1 do
+    begin
+      openActionsz[i] := openActions[ix[i]];
+    end;
+
+  end
+  else
+    // keine Daten an diesem Tag vorhanden
+    setlength(openActionsz, 0);
+
+  // nun ist bereits alles sortiert und zusammengefasst in EINEM array statt 6(7)
 end;
 
 procedure TForm2.Button11Click(Sender: TObject);
@@ -1814,11 +1904,19 @@ begin
   showmessage(inttostr(GetTickCount - gt) + ' ' + inttostr(ct));
 end;
 
-procedure TForm2.Button12Click(Sender: TObject);
+procedure TForm2.btnShowEvaluationClick(Sender: TObject);
 begin
-  lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
+  // lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
+  // Show Evaluation
+  form10.show;
+  form10.zeigen;
+  DynGrid11.initGrid('cwopenactions1', 'actionId', 1, length(cwOpenActionsZ1), 4);
+  DynGrid12.initGrid('cwopenactions2', 'actionId', 1, length(cwOpenActionsZ2), 4);
 
-end;
+  DynGrid11.lblHeader.Caption := 'OpenActions:' + inttostr(length(cwOpenActionsZ1));
+  DynGrid12.lblHeader.Caption := 'OpenActions:' + inttostr(length(cwOpenActionsZ2));
+
+  end;
 
 procedure TForm2.Button2Click(Sender: TObject);
 var
@@ -2212,6 +2310,7 @@ begin
       cw3summaries[p[0], p[1], p[2]].TradesCount := cw3summaries[p[0], p[1], p[2]].TradesCount + 1;
       cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal := cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal +
         cwFilteredActions[i].volume;
+
       cw3summaries[p[0], p[1], p[2]].TradesProfitTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitTotal +
         cwFilteredActions[i].profit;
       cw3summaries[p[0], p[1], p[2]].TradesSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesSwapTotal +
@@ -2387,6 +2486,8 @@ var
 label weiter, weiter1;
 begin
 
+  screen.Cursor:= crHourGlass;
+
   faktivCt := 0;
   for i := 1 to FilterCt do
   begin
@@ -2501,132 +2602,243 @@ weiter1:
 
   doCacheGridCwInfo;
   Screen.Cursor := Cursor;
+
+  // if (source = 'cwsummaries') then
+  // begin
+  // //PSSummaries
+  // makePS(PSSummaries,source);
+  // end;
+  // if (source = 'cwfilteredactions') then
+  // begin
+  // //PSFilteredActions
+  // end;
+
+  if (chkFilterWithOpenActions.Checked = true) then
+  begin
+    screen.Cursor:= crHourGlass;
+    makePS(PSFilteredActions, 'cwfilteredactions');
+    btnShowEvaluation.Visible := true;
+  end;
+
   DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
     ' of ' + inttostr(length(cwActions));
 
   DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
+  screen.Cursor := crDefault;
 end;
 
-procedure TForm2.Button5Click(Sender: TObject);
-// Balance direkt filtern (zum Geschwindigkeitsvergleich die der Filtersuche)
+procedure TForm2.makePS(var ps: ProfitSwapZ12; source: string);
 var
-  i: integer;
-  gt, tg: cardinal;
-  fz, max, fzmax: integer;
-
-  function vergleichInteger(was, mit: integer; op: integer): boolean;
-  // var oben bringt nix
-  begin
-    result := false;
-    if op = 1 then // '=' then
-    begin
-      if was = mit then
-        result := true;
-      exit;
-    end;
-    if op = 2 then // '>' then
-    begin
-      if was > mit then
-        result := true;
-      exit;
-    end;
-    if op = 3 then // '<' then
-    begin
-      if was < mit then
-        result := true;
-      exit;
-    end;
-    if op = 4 then // '>=' then
-    begin
-      if was >= mit then
-        result := true;
-      exit;
-    end;
-    if op = 5 then // '<=' then
-    begin
-      if was <= mit then
-        result := true;
-      exit;
-    end;
-    if op = 6 then // '<>' then
-    begin
-      if was <> mit then
-        result := true;
-      exit;
-    end;
-
-  end;
-
+  z1, z2: TDateTime;
+  u1, u2: integer;
+  i, j, v: integer;
 begin
-  gt := timegettime;
-  tg := timegettime;
-  fz := -1;
-  fzmax := -1;
-  for i := 0 to length(cwActions) - 1 do
-  begin
+  //
+  // die beiden Zeiten für Start und Ende des Betrachtungszeitraums werden aus den ersten beiden Filtern entnommen
+  // aber nur wenn diese auch die richtigen Filter beinhalten. Open und Close
+  // Dann müssen die OpenProfit-Dateien auch für diese beiden Zeiträume vorhanden sein
+  // Was ist wenn nicht - man könnte eventuell einen etwas älteren Open und einen etwas jüngeren Close Zeitpunkt vorschlagen
+  // Dann werden die OpenProfit Dateien eingelesen. Um den Zugriff über die ActionID schnell zu achen wäre es vorteilhaft, wenn
+  // diese Actions sortiert wären. Entweder man sortiert far nicht, sortiert 'on Demand' oder sortiert einmalig und speichert dies
+  // Eigentlich genügt das on demand Sortieren vor der Verwendung , da sich diese OpenProfit-Tage nicht allzuoft wiederholen dürften
 
-    if (cwActions[i].accountId = 4) then
-      if (cwActions[i].typeId = 7) then
+  // dSort sind die Werte der ActionIds
+  // fastsort2arrayInt64Int(ids,sorted, 'VUI'); // VDI
+  if (source = 'cwfilteredactions') then
+  begin
+    ps.clear;
+
+    u1 := 0;
+    u2 := 0;
+    for i := 1 to FilterCt do
+    begin
+      if Filter[i].chkActive.Checked = true then
       begin
-
-        // if vergleichInteger(cwActions[i].typeId, 7, 1) = true then
-        // begin
-        // hinzufügen
+        if (Filter[i].cbTopic.text = 'CloseDateTime') then
         begin
-          fz := fz + 1;
-          if (fz > fzmax) then
-          begin
-            fzmax := fzmax + 50000;
-            setlength(cwFilteredActions, fzmax);
-            setlength(cwFilteredActionsPlus, fzmax);
-          end;
-          cwFilteredActions[fz] := cwActions[i];
+          u1 := strtoint(Filter[i].edValue.text);
+          z1 := unixtodatetime(u1) - 1; // < 23.9 = OpenProfit von Ende 22.9
         end;
-
-        // end;
+        if (Filter[i].cbTopic.text = 'OpenDateTime') then
+        begin
+          u2 := strtoint(Filter[i].edValue.text);
+          z2 := unixtodatetime(u2) - 1; // >= 16.9 = OpenProfit von Ende 15.9
+        end;
       end;
+    end;
+    ps.z1 := z1;
+    ps.z2 := z2;
+    getAndSortOpenActions(z1, cwOpenActionsZ1);
+    getAndSortOpenActions(z2, cwOpenActionsZ2);
+    // nun aus cwFilteredActions, cwOpenActionsZ1 und cwOpenActionsZ2 die ps füllen !
+    for i := 0 to length(cwFilteredActions) - 1 do
+    // die Fälle A=alles vor Z1 und F alles nach Z2 sind bereits entsprechend der Filter entfernt worden
+    //
+    begin
+      if (cwFilteredActions[i].openTime < u1) then
+      begin
+        // B und C bekommen profit1 aus cwOpenActionsZ1
+        j := BinSearchOpenActionsInt64(cwOpenActionsZ1, cwFilteredActions[i].actionId);
+        if (j > -1) then
+        begin
+          ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
+            ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwOpenActionsZ1[j].profit;
+          ps.swap1 := ps.swap1 + cwOpenActionsZ1[j].swap;
+          ps.volume1 := ps.volume1 + cwFilteredActions[i].volume;
+
+        end;
+      end
+      else
+      begin
+        // D und E haben kein profit1
+      end;
+
+      if ((cwFilteredActions[i].closeTime <= u2) and (cwFilteredActions[i].closeTime <> 0)) then
+      begin
+        // B und D bekommen profit aus cwFilteredActions
+        ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
+          ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwFilteredActions[i].profit;
+        ps.swap := ps.swap + cwFilteredActions[i].swap;
+        ps.volume := ps.volume + cwFilteredActions[i].volume;
+      end
+      else
+      begin
+        // C und E bekommen profit2 aus cwOpenActionsZ2
+        j := BinSearchOpenActionsInt64(cwOpenActionsZ2, cwFilteredActions[i].actionId);
+        if (j > -1) then
+        begin
+          ps.profit2[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
+            ps.profit2[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwOpenActionsZ2[j].profit;
+          ps.swap2 := ps.swap2 + cwOpenActionsZ2[j].swap;
+          ps.volume2 := ps.volume2 + cwFilteredActions[i].volume;
+
+        end;
+      end;
+
+    end;
+
   end;
-
-  showmessage('z:' + inttostr(timegettime - gt) + ' ' + inttostr(timegettime - tg));
-  cwFilteredActionCt := fz + 1;
-  setlength(cwFilteredActions, fz + 1); // vergessen
-  setlength(cwFilteredActionsPlus, fz + 1); // vergessen
-
-  max := maxActionsPerGrid;
-  if cwFilteredActionCt < max then
-    max := cwFilteredActionCt;
-
-  // if cwFilteredActionCt > 50 then
-  // begin
-  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
-  // SGCacheCwSearch.Repaint;
-  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
-  // autosizegrid(SGCacheCwSearch, nil);
-  // end
-  // else
-  // begin
-  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
-  // autosizegrid(SGCacheCwSearch, nil);
-  // end;
-  doCacheGridCwInfo;
-  Screen.Cursor := Cursor;
-  DynGrid2.lblHeader.Caption := 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' +
-    inttostr(length(cwActions));
-  if max < cwFilteredActionCt then
+  if (source = 'cwsummaries') then
   begin
-    DynGrid2.lblHeader.Caption := DynGrid2.lblHeader.Caption + ' Grid:' + inttostr(max);
-  end;
 
+  end;
 end;
+
+// procedure TForm2.Button5Click(Sender: TObject);
+/// / Balance direkt filtern (zum Geschwindigkeitsvergleich die der Filtersuche)
+// var
+// i: integer;
+// gt, tg: cardinal;
+// fz, max, fzmax: integer;
+//
+// function vergleichInteger(was, mit: integer; op: integer): boolean;
+// // var oben bringt nix
+// begin
+// result := false;
+// if op = 1 then // '=' then
+// begin
+// if was = mit then
+// result := true;
+// exit;
+// end;
+// if op = 2 then // '>' then
+// begin
+// if was > mit then
+// result := true;
+// exit;
+// end;
+// if op = 3 then // '<' then
+// begin
+// if was < mit then
+// result := true;
+// exit;
+// end;
+// if op = 4 then // '>=' then
+// begin
+// if was >= mit then
+// result := true;
+// exit;
+// end;
+// if op = 5 then // '<=' then
+// begin
+// if was <= mit then
+// result := true;
+// exit;
+// end;
+// if op = 6 then // '<>' then
+// begin
+// if was <> mit then
+// result := true;
+// exit;
+// end;
+//
+// end;
+//
+// begin
+// gt := timegettime;
+// tg := timegettime;
+// fz := -1;
+// fzmax := -1;
+// for i := 0 to length(cwActions) - 1 do
+// begin
+//
+// if (cwActions[i].accountId = 4) then
+// if (cwActions[i].typeId = 7) then
+// begin
+//
+// // if vergleichInteger(cwActions[i].typeId, 7, 1) = true then
+// // begin
+// // hinzufügen
+// begin
+// fz := fz + 1;
+// if (fz > fzmax) then
+// begin
+// fzmax := fzmax + 50000;
+// setlength(cwFilteredActions, fzmax);
+// setlength(cwFilteredActionsPlus, fzmax);
+// end;
+// cwFilteredActions[fz] := cwActions[i];
+// end;
+//
+// // end;
+// end;
+// end;
+//
+// showmessage('z:' + inttostr(timegettime - gt) + ' ' + inttostr(timegettime - tg));
+// cwFilteredActionCt := fz + 1;
+// setlength(cwFilteredActions, fz + 1); // vergessen
+// setlength(cwFilteredActionsPlus, fz + 1); // vergessen
+//
+// max := maxActionsPerGrid;
+// if cwFilteredActionCt < max then
+// max := cwFilteredActionCt;
+//
+// // if cwFilteredActionCt > 50 then
+// // begin
+// // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
+// // SGCacheCwSearch.Repaint;
+// // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
+// // autosizegrid(SGCacheCwSearch, nil);
+// // end
+// // else
+// // begin
+// // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
+// // autosizegrid(SGCacheCwSearch, nil);
+// // end;
+// doCacheGridCwInfo;
+// Screen.Cursor := Cursor;
+// DynGrid2.lblHeader.Caption := 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' +
+// inttostr(length(cwActions));
+// if max < cwFilteredActionCt then
+// begin
+// DynGrid2.lblHeader.Caption := DynGrid2.lblHeader.Caption + ' Grid:' + inttostr(max);
+// end;
+//
+// end;
 
 procedure TForm2.Button6Click(Sender: TObject);
 begin
   TabSheet4.TabVisible := true;
-end;
-
-procedure TForm2.Button7Click(Sender: TObject);
-begin
-  DynGrid1.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
 end;
 
 procedure TForm2.Button8Click(Sender: TObject);
@@ -2667,9 +2879,9 @@ var
   gt, gtall, tnow: cardinal;
   p, cnew, cold: integer;
   ia: intarray;
-  ia2: int64array;
+  ia2: int64Array;
   na: intarray;
-  na2: int64array;
+  na2: int64Array;
   n: integer;
   a1, a2: integer;
   tt: cardinal;
@@ -2678,7 +2890,7 @@ var
 begin
   // update data
   updateGoing := true;
-  Dialog2.fdialog2.Show; // Modal;
+  Dialog2.fdialog2.show; // Modal;
   Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height;
   Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width;
   Dialog2.fdialog2.info('Getting data ...');
@@ -3189,6 +3401,29 @@ begin
     Grouping[1].cbTopic.text := 'brokerAccount';
   end;
 
+  if (Sender = btnSample7) then
+  begin
+    fe.Active := true;
+    fe.topic := 'ActionType';
+    fe.operator := '<>';
+    fe.values := 'BALANCE,CREDIT';
+    Filter[1].setValues(fe);
+
+    fe.Active := true;
+    fe.topic := 'CloseDateTime';
+    fe.operator := '>= or 0';
+    fe.values := inttostr(datetimetounix(now));
+    Filter[2].setValues(fe);
+
+    fe.Active := true;
+    fe.topic := 'OpenDateTime';
+    fe.operator := '<';
+    fe.values := inttostr(datetimetounix(now+1));
+    Filter[3].setValues(fe);
+
+    exit; // nur ausfüllen aber nicht ausführen
+  end;
+
   FilterTopic := (Sender as TButton).Caption;
 
   Grouping[1].chkActive.Checked := true;
@@ -3370,7 +3605,6 @@ begin
   if (length(cwActions) > 0) then
     btnSaveCacheFileCwClick(nil);
   Application.OnMessage := nil;
-  DynGrid1.saveInit;
   DynGrid2.saveInit;
   DynGrid3.saveInit;
   DynGrid4.saveInit;
@@ -3380,6 +3614,8 @@ begin
   DynGrid8.saveInit;
   DynGrid9.saveInit;
   DynGrid10.saveInit;
+  DynGrid11.saveInit;
+  DynGrid12.saveInit;
 
   faIni.WriteInteger('closetick:', 'tick', GetTickCount);
 
@@ -4074,19 +4310,19 @@ begin
 
   procedure TForm2.SpeedButton1Click(Sender: TObject);
   begin
-    setPageIndex(1); // 0;
+    setPageIndex(1); // TabSheet2   Start/Info
 
   end;
 
   procedure TForm2.SpeedButton2Click(Sender: TObject);
   begin
-    setPageIndex(0); // 3;
+    setPageIndex(0); // TabSheet 1 Data Inspector
 
   end;
 
   procedure TForm2.SpeedButton3Click(Sender: TObject);
   begin
-    setPageIndex(4); // 2;
+    setPageIndex(4); // TabSheet5 User
 
   end;
 
@@ -4103,8 +4339,8 @@ begin
 
   procedure TForm2.SpeedButton6Click(Sender: TObject);
   begin
-    setPageIndex(9); // 4;
 
+    setPageIndex(2);// OpenActions
   end;
 
   procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
@@ -4196,7 +4432,7 @@ begin
   begin
     Dialog2.fdialog2.Button2.Visible := false;
     askFinishUpdate := false;
-    Dialog2.fdialog2.Show; // Modal;
+    Dialog2.fdialog2.show; // Modal;
     Dialog2.fdialog2.Top := Form2.Top + Form2.Height - fdialog2.Height - 4;
     Dialog2.fdialog2.Left := Form2.Left + Form2.Width - fdialog2.Width - 4;
     Form2.Repaint;
@@ -4366,6 +4602,41 @@ begin
       doUpdate(dt);
       // btnUpdateDataClick(nil);
     end;
+  end;
+
+  function TForm2.doHttpPutMemoryStreamToWorker(mStream: TMemoryStream; url: string): integer;
+  // hier muss einfach zwangsweise gewartet werden bis der Thread seine Arbeit beendet hat
+  begin
+
+    // wenn der Worker bereits arbeitet dann warten ..
+    while (HTTPWorker1.RequestBusy = true) do
+    begin
+      dosleep(100);
+    end;
+
+    // und nun Vorbereitungen treffen
+    EnterCriticalSection(HTTPWorkCriticalSection);
+    HTTPWorker1.ct := HTTPWorker1.ct + 1;
+    // debugThread(inttostr(HTTPWorker1.ct) + ' HTTPWorker1. MS Request Start:' + Url);
+    HTTPWorker1.url := url;
+    HTTPWorker1.SendString := '';
+    HTTPWorker1.HError := 0;
+    HTTPWorker1.SendType := 2; // 1=JSONString  2=MemoryStream  3=get(todo)
+    HTTPWorker1.RequestBusy := true;
+    HTTPWorker1.MemoryStream := mStream;
+    HTTPWorker1.Caption := 'HTTPWorker1';
+    // HTTPWorker1.bArray hier nicht benötigt - wäre beim Abruf von Daten notwendig
+    leaveCriticalSection(HTTPWorkCriticalSection);
+    // damit sind die Variablen gesetzt und der Thread kann ab jetzt arbeiten
+    while (HTTPWorker1.RequestBusy = true) do
+    begin
+      // an dieser Stelle könnte da eventgesteuert ein Actionupdate erfolgen und damit wird nochmals hier reingesprungen !
+      // ansonsten einfach warten und zB weiterhin Ticks empfangen (dehalb ja der ganze Threadaufwand)
+      dosleep(100);
+    end;
+    // debugThread(inttostr(HTTPWorker1.ct) + ' HTTPWorker1. MS Request Ende:' + Url);
+    // in HTTWorkerResultList stehen die Meldungen
+    result := HTTPWorker1.HError; // hier noch was anders machen !
   end;
 
   function TForm2.doHttpGetByteArrayFromWorker(var bArray: Bytearray; url: string; var sErr: string): integer;

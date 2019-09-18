@@ -17,7 +17,8 @@ uses
   Dialog1 in 'Dialog1.pas' {Form5},
   uTwoLabel in 'uTwoLabel.pas' {twoLabel: TFrame},
   Dialog2 in 'Dialog2.pas' {Dialog2},
-  ChangeLog in 'ChangeLog.pas';
+  ChangeLog in 'ChangeLog.pas',
+  Unit10 in 'Unit10.pas' {Form10};
 
 {$R *.res}
 
@@ -29,5 +30,6 @@ begin
   Application.CreateForm(TForm2, Form2);
   Application.CreateForm(TDialog2, FDialog2);
   Application.CreateForm(TForm5, Form5);
+  Application.CreateForm(TForm10, Form10);
   Application.Run;
 end.

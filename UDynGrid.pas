@@ -30,6 +30,8 @@ type
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
+    procedure sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer; var actions: DACwOpenActions);
+
     procedure sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
     procedure sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;
       var usersplus: DACwUserPlus);
@@ -61,6 +63,7 @@ type
     procedure SpeedButton1Click(Sender: TObject);
     procedure Selectcolumns1Click(Sender: TObject);
     procedure CSVExport1Click(Sender: TObject);
+
   private
     { Private-Deklarationen }
   public
@@ -164,6 +167,7 @@ var
   Cursor: TCursor;
   header: string;
 begin
+  // SUmmen werden gebildet nach Rechtsclick in den Spaltenheader
   gt := timegettime();
   grid := Sender as FTCommons.TStringGridSorted;
   // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
@@ -181,9 +185,11 @@ begin
 end;
 
 procedure TDynGrid.makeSummaries();
+// es geht natürlich nicht an, dass diese Routine bei jedem Resize usw aufgerufen wird, obwohl sich die Werte überhaupt nicht ändern
 var
   i: integer;
 begin
+
   for i := 0 to SG.colcount - 1 do
   begin
     makeSummary(i, 0, SG.Cells[i, 0]);
@@ -192,6 +198,7 @@ begin
 end;
 
 procedure TDynGrid.makeSummary(mdcol, mdrow: integer; header: string);
+// diese Routine wird für jede Spalte getrennt aufgerufen und berechnet je nach source (cwsummaries oder cwfilteredactions) bestimmte Summen
 var
   sumd: double;
   sumi: integer;
@@ -235,7 +242,7 @@ begin
             end;
           2:
             begin
-              sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal; //das sind gemischte Währungen
+              sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal; // das sind Werte in gemischten Währungen
             end;
           3:
             begin
@@ -289,22 +296,26 @@ begin
         typ := 1;
       if (header = 'swap') then
         typ := 2;
+      // hier erst werden die ganzen gefiltereten Actions durchlaufen und die Summen gebildet
+      // warum ixsorted ? Die Sortierung ist hier eigentlich ganz egal
       for i := 0 to length(ixSorted) - 1 do
       begin
         case typ of
-          0:
+          0: // profit
             begin
+              // unterscheiden: wenn ClosedTime<>0 ist es echter Profit - sonst OpenProfit 'jetzt'
               sumd := sumd + cwfilteredactions[ixSorted[i]].profit;
+
               // Profit ist immer in Account-Währung Swap ist in Euro
               sump[cwusersplus[cwfilteredactionsplus[ixSorted[i]].userindex].accountcurrency] :=
                 sump[cwusersplus[cwfilteredactionsplus[ixSorted[i]].userindex].accountcurrency] + cwfilteredactions
                 [ixSorted[i]].profit;
             end;
-          1:
+          1: // volume
             begin
               sumi := sumi + cwfilteredactions[ixSorted[i]].volume;
             end;
-          2:
+          2: // swap
             begin
               sumd := sumd + cwfilteredactions[ixSorted[i]].swap;
             end;
@@ -317,7 +328,7 @@ begin
             summe := FormatFloat(',#0.00', sumd);
             if (sump[2] + sump[3] + sump[4]) <> 0 then
             begin
-              summe:='';
+              summe := '';
               if (sump[1] <> 0) then
               begin
                 summe := summe + ' EUR:' + FormatFloat(',#0.00', sump[1]);
@@ -325,7 +336,7 @@ begin
               end;
               if (sump[2] <> 0) then
               begin
-                summe := summe + #13#10+ ' USD:' + FormatFloat(',#0.00', sump[2]);
+                summe := summe + #13#10 + ' USD:' + FormatFloat(',#0.00', sump[2]);
                 hc := hc + 1;
               end;
               if (sump[3] <> 0) then
@@ -352,11 +363,11 @@ begin
       end;
 
       SGSum.Cells[mdcol, mdrow] := summe;
-      if typ=0 then
-      //nur bei Profit wird die Höhe verändert
+      if typ = 0 then
+      // nur bei Profit wird die Höhe verändert
       begin
-      SGSum.rowheights[0] := 6+(hc *( SGSum.defaultrowheight-6));
-      SGSum.Height:=SGSum.rowheights[0]+2;
+        SGSum.rowheights[0] := 6 + (hc * (SGSum.defaultrowheight - 6));
+        SGSum.Height := SGSum.rowheights[0] + 2;
       end;
     end
     else
@@ -456,7 +467,7 @@ begin
   grid := Sender as FTCommons.TStringGridSorted;
   col := grid.col;
   row := grid.row;
-  visibleRows := trunc(((SG.height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
+  visibleRows := trunc(((SG.Height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
   btn := mbleft;
   // col row ist die Zelle in welcher die Taste gedrückt wurde und nicht die Zielzelle !
   case Key of
@@ -516,7 +527,7 @@ var
 begin
   // neu Einstellen der Grenzen
   // ! defaultrowheight=24  - es werden aber 25 dargestellt
-  visibleRows := trunc(((SG.height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
+  visibleRows := trunc(((SG.Height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
   // visibleRows := trunc((SG.height / SG.rowheights[0])) + 1;
 
   // visibleRows := SG.VisibleRowCount + 1; // damit halbe auch mitgenommen werden  FALSCHER WERT - oft nur 2 statt zB 15
@@ -616,7 +627,7 @@ begin
   self.sortcol := sortcol;
   self.sortdir := sortdir;
   maxDataRows := 0;
-  visibleRows := trunc(((SG.height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
+  visibleRows := trunc(((SG.Height - 20) / (1 + SG.defaultrowheight))); // 20 für hor.Scroll
   mrows := visibleRows;
   SG.test := 1;
   if rows < mrows then
@@ -689,6 +700,10 @@ begin
   // sortdir  1  und -1
   // und das array
 
+  if source = 'cwopenactions1' then
+    sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
+  if source = 'cwopenactions2' then
+    sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
   if source = 'cwactions' then
     sortGridCwactions(source, sortcol, sortdir, cwactions);
   if source = 'cwfilteredactions' then
@@ -720,6 +735,87 @@ end;
 
 // es geht hier nur um die Überschrift der Column um das Grid zu sortieren
 // die Reihenfolge der Columns spielt keine Rolle !
+
+procedure TDynGrid.sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer;
+  var actions: DACwOpenActions);
+var
+  dl, i, scol, smethode: integer;
+  gt: cardinal;
+begin
+  gt := gettickcount;
+
+  dl := length(actions);
+  if (dl = 0) then
+    exit;
+
+  setlength(ixSorted, dl);
+  smethode := 1; // double  2=String
+  scol := 1;
+  if ((source = 'cwopenactions1') or (source = 'cwopenactions2')) then
+  begin
+    if sortcol = 'actionId' then
+      scol := 1;
+
+    if sortcol = 'userId' then
+      scol := 2;
+
+    if sortcol = 'profit' then
+      scol := 3;
+
+    if sortcol = 'swap' then
+      scol := 4;
+
+    setlength(dSort, dl);
+
+    begin
+      for i := 0 to dl - 1 do
+      begin
+        ixSorted[i] := i;
+        if scol = 1 then
+        begin
+          dSort[i] := actions[i].actionId;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          dSort[i] := actions[i].userId;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          dSort[i] := actions[i].profit;
+          continue;
+        end;
+        if scol = 4 then
+        begin
+          dSort[i] := actions[i].swap;
+          continue;
+        end;
+      end;
+    end;
+    // nun sortieren
+    if smethode = 1 then
+    // double
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    // String
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
+  end;
+  Panel2Resize(self);
+end;
 
 procedure TDynGrid.sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
 var
@@ -938,6 +1034,7 @@ begin
     end;
     // nun sortieren
     if smethode = 1 then
+    // double
     begin
       if sortdir = 1 then
         FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
@@ -946,6 +1043,7 @@ begin
     end;
 
     if smethode = 2 then
+    // String
     begin
       if sortdir = 1 then
         FastSort2ArrayString(sSort, ixSorted, 'VUAS')
@@ -1223,7 +1321,7 @@ var
   p: TPoint;
   m: integer;
 begin
-  p := SpeedButton1.ClientToScreen(point(0, SpeedButton1.height));
+  p := SpeedButton1.ClientToScreen(point(0, SpeedButton1.Height));
   m := 0;
   if source = 'cwactions' then
     m := 1;
@@ -1900,6 +1998,10 @@ begin
   vRows := visibleRows;
   vScrollvon := scrollPosition; //
 
+  if source = 'cwopenactions1' then
+    maxDataRows := length(cwOpenActionsZ1);
+  if source = 'cwopenactions2' then
+    maxDataRows := length(cwOpenActionsZ2);
   if source = 'cwactions' then
     maxDataRows := length(cwactions);
   if source = 'cwfilteredactions' then
@@ -1938,6 +2040,10 @@ begin
 
   // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
   // daher wäre es besser das Sortierarray gehört zum Grid
+  if source = 'cwopenactions1' then
+    doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, vScrollvon, vscrollbis - 1, false);
+  if source = 'cwopenactions2' then
+    doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, vScrollvon, vscrollbis - 1, false);
   if source = 'cwactions' then
     doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, cwactionsplus, vScrollvon, vscrollbis - 1, false, sl);
   if source = 'cwfilteredactions' then
@@ -1961,6 +2067,8 @@ begin
     doSummaries3GridCWDyn(SG, SGFieldCol, ixSorted, cw3summaries, vScrollvon, vscrollbis - 1);
   if source = 'cwsummaries' then
     doSummariesGridCWDyn(SG, SGFieldCol, ixSorted, cwsummaries, vScrollvon, vscrollbis - 1);
+
+  // und nun die verschiedenen Summen der Spalten berechnen und eintragen
   makeSummaries;
 
   if (doExport = true) then
@@ -2025,6 +2133,10 @@ begin
           sortcol := grid.Cells[col, 0];
           sortdir := -sortdir;
           grid.Selection := NoSelection;
+          if source = 'cwopenactions1' then
+            sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
+          if source = 'cwopenactions2' then
+            sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
           if source = 'cwactions' then
             sortGridCwactions(source, sortcol, sortdir, cwactions);
           if source = 'cwfilteredactions' then
@@ -2150,6 +2262,12 @@ begin
               // der Parameter mucol ist hier falsch
               // wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
               // string wäre leichter umzusetzen ist aber in der Suche langsam !
+              if source = 'cwopenactions1' then
+                // fehlt
+                  ;
+              if source = 'cwopenactions2' then
+                //fehlt
+                ;
               if source = 'cwactions' then
                 found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, SGColField[mucol], such)
               else if source = 'cwfilteredactions' then

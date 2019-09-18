@@ -16,6 +16,7 @@ type
     Button4: TButton;
     Timer2: TTimer;
     chkLB1: TCheckListBox;
+    Button5: TButton;
     procedure FormCreate(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
@@ -27,6 +28,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
+    procedure Button5Click(Sender: TObject);
 
   private
     chkLB1Selected: array of boolean;
@@ -84,6 +86,19 @@ procedure TForm5.Button4Click(Sender: TObject);
 begin
 dialog1.form5.Close;
 
+end;
+
+procedure TForm5.Button5Click(Sender: TObject);
+var i:integer;
+begin
+  for i := 0 to myDG.sg.colcount - 1 do
+      begin
+        mydg.SGFieldCol[i] := i;
+        mydg.SGColField[i] := i;
+        mydg.SG.ColWidths[i] := 100;
+        mydg.SGSum.ColWidths[i] := 100;
+      end;
+  dialog1.form5.close;
 end;
 
 procedure TForm5.FormCreate(Sender: TObject);

@@ -949,7 +949,7 @@ object Form2: TForm2
             Left = 8
             Top = 30
             Width = 513
-            Height = 775
+            Height = 851
             Color = clGray
             ParentBackground = False
             TabOrder = 0
@@ -960,8 +960,8 @@ object Form2: TForm2
               Height = 14
             end
             object btnDoubleRemoveCw: TButton
-              Left = 409
-              Top = 722
+              Left = 419
+              Top = 814
               Width = 82
               Height = 25
               Caption = 'DblRemove'
@@ -971,32 +971,22 @@ object Form2: TForm2
             end
             object btnSelectClearCw: TButton
               Left = 419
-              Top = 726
-              Width = 91
+              Top = 783
+              Width = 82
               Height = 25
               Caption = 'Clear all'
               TabOrder = 1
               Visible = False
               OnClick = btnSelectClearCwClick
             end
-            object Button5: TButton
-              Left = 385
-              Top = 711
-              Width = 133
-              Height = 25
-              Caption = 'Balance direkt filtern'
-              TabOrder = 2
-              Visible = False
-              OnClick = Button5Click
-            end
             object pnlFilter: TPanel
-              Left = 5
+              Left = 6
               Top = 8
               Width = 505
               Height = 337
               Color = clGray
               ParentBackground = False
-              TabOrder = 3
+              TabOrder = 2
               object Label5: TLabel
                 Left = 15
                 Top = 6
@@ -1048,12 +1038,12 @@ object Form2: TForm2
             end
             object pnlGrouping: TPanel
               Left = 5
-              Top = 351
+              Top = 387
               Width = 505
               Height = 154
               Color = clGray
               ParentBackground = False
-              TabOrder = 4
+              TabOrder = 3
               object Label3: TLabel
                 Left = 16
                 Top = 6
@@ -1084,9 +1074,9 @@ object Form2: TForm2
             end
             object btnDoFilter: TButton
               Left = 4
-              Top = 507
+              Top = 544
               Width = 506
-              Height = 81
+              Height = 72
               Caption = 'Filter and Group'
               Font.Charset = DEFAULT_CHARSET
               Font.Color = clWindowText
@@ -1094,15 +1084,15 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
-              TabOrder = 5
+              TabOrder = 4
               OnClick = btnDoFilterClick
             end
             object Panel22: TPanel
-              Left = 5
-              Top = 594
+              Left = 4
+              Top = 618
               Width = 501
               Height = 151
-              TabOrder = 6
+              TabOrder = 5
               object Label11: TLabel
                 Left = 16
                 Top = 16
@@ -1169,6 +1159,41 @@ object Form2: TForm2
                 Caption = 'Open Actions'
                 TabOrder = 5
                 OnClick = btnSampleClick
+              end
+              object btnSample7: TButton
+                Left = 302
+                Top = 46
+                Width = 140
+                Height = 25
+                Caption = 'Evaluation'
+                TabOrder = 6
+                OnClick = btnSampleClick
+              end
+            end
+            object Panel23: TPanel
+              Left = 5
+              Top = 348
+              Width = 505
+              Height = 37
+              TabOrder = 6
+              object chkFilterWithOpenActions: TCheckBox
+                Left = 9
+                Top = 11
+                Width = 193
+                Height = 17
+                Caption = 'with Evaluation of OpenActions'
+                TabOrder = 0
+                OnClick = chkFilterWithOpenActionsClick
+              end
+              object btnShowEvaluation: TButton
+                Left = 288
+                Top = 4
+                Width = 201
+                Height = 29
+                Caption = 'Show Evaluation'
+                TabOrder = 1
+                Visible = False
+                OnClick = btnShowEvaluationClick
               end
             end
           end
@@ -1591,7 +1616,7 @@ object Form2: TForm2
       end
     end
     object TabSheet3: TTabSheet
-      Caption = 'Speed-Grid'
+      Caption = 'Open Actions'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
@@ -1608,17 +1633,17 @@ object Form2: TForm2
         Align = alClient
         Caption = 'Panel12'
         TabOrder = 0
-        inline DynGrid1: TDynGrid
+        inline DynGrid11: TDynGrid
           Left = 1
           Top = 1
           Width = 1523
-          Height = 903
-          Align = alClient
+          Height = 450
+          Align = alTop
           TabOrder = 0
           ExplicitLeft = 1
           ExplicitTop = 1
           ExplicitWidth = 1523
-          ExplicitHeight = 903
+          ExplicitHeight = 450
           inherited Panel1: TPanel
             Width = 1523
             Align = alTop
@@ -1640,47 +1665,103 @@ object Form2: TForm2
             Left = 0
             Top = 41
             Width = 1523
-            Height = 862
+            Height = 409
             Align = alClient
             ExplicitLeft = 0
             ExplicitTop = 41
             ExplicitWidth = 1523
-            ExplicitHeight = 862
+            ExplicitHeight = 409
             inherited ScrollBar1: TScrollBar
               Left = 1506
-              Height = 860
+              Height = 407
               ExplicitLeft = 1506
-              ExplicitHeight = 860
+              ExplicitHeight = 407
             end
             inherited Panel3: TPanel
               Width = 1505
-              Height = 860
+              Height = 407
               ExplicitWidth = 1505
-              ExplicitHeight = 860
+              ExplicitHeight = 407
               inherited SG: TStringGridSorted
                 Width = 1503
-                Height = 828
+                Height = 375
                 ExplicitWidth = 1503
-                ExplicitHeight = 828
+                ExplicitHeight = 375
               end
               inherited SGSum: TStringGridSorted
-                Top = 829
+                Top = 376
                 Width = 1503
                 Font.Height = -12
-                ExplicitTop = 829
+                ExplicitTop = 376
                 ExplicitWidth = 1503
               end
             end
           end
         end
-        object Button7: TButton
-          Left = 2
-          Top = 10
-          Width = 69
-          Height = 25
-          Caption = 'Show Grid'
+        inline DynGrid12: TDynGrid
+          Left = 1
+          Top = 451
+          Width = 1523
+          Height = 453
+          Align = alClient
           TabOrder = 1
-          OnClick = Button7Click
+          ExplicitLeft = 1
+          ExplicitTop = 451
+          ExplicitWidth = 1523
+          ExplicitHeight = 453
+          inherited Panel1: TPanel
+            Width = 1523
+            Align = alTop
+            ExplicitWidth = 1523
+            inherited lblTime: TLabel
+              Width = 4
+              Height = 14
+              ExplicitWidth = 4
+              ExplicitHeight = 14
+            end
+            inherited lblSelection: TLabel
+              Width = 4
+              Height = 14
+              ExplicitWidth = 4
+              ExplicitHeight = 14
+            end
+          end
+          inherited Panel2: TPanel
+            Left = 0
+            Top = 41
+            Width = 1523
+            Height = 412
+            Align = alClient
+            ExplicitLeft = 0
+            ExplicitTop = 41
+            ExplicitWidth = 1523
+            ExplicitHeight = 412
+            inherited ScrollBar1: TScrollBar
+              Left = 1506
+              Height = 410
+              ExplicitLeft = 1506
+              ExplicitHeight = 410
+            end
+            inherited Panel3: TPanel
+              Width = 1505
+              Height = 410
+              ExplicitWidth = 1505
+              ExplicitHeight = 410
+              inherited SG: TStringGridSorted
+                Width = 1503
+                Height = 378
+                ExplicitWidth = 1503
+                ExplicitHeight = 378
+              end
+              inherited SGSum: TStringGridSorted
+                Top = 379
+                Width = 1503
+                Font.Height = -12
+                ExplicitTop = 379
+                ExplicitWidth = 1503
+              end
+            end
+          end
         end
       end
     end
@@ -2351,7 +2432,7 @@ object Form2: TForm2
       OnClick = SpeedButton1Click
     end
     object SpeedButton4: TSpeedButton
-      Left = 1
+      Left = -2
       Top = 117
       Width = 77
       Height = 121
@@ -3152,7 +3233,6 @@ object Form2: TForm2
         0707070707070707070707070707070707070707070707070707}
       Layout = blGlyphTop
       ParentFont = False
-      Visible = False
       StyleElements = []
       OnClick = SpeedButton6Click
     end
@@ -3160,25 +3240,22 @@ object Form2: TForm2
   object ApplicationEvents1: TApplicationEvents
     OnModalBegin = ApplicationEvents1ModalBegin
     OnModalEnd = ApplicationEvents1ModalEnd
-    Left = 282
-    Top = 38
+    Left = 310
+    Top = 2
   end
   object StartTimer: TTimer
     Enabled = False
     OnTimer = StartTimerTimer
-    Left = 328
-    Top = 40
+    Left = 416
   end
   object updateTimer: TTimer
     Enabled = False
     Interval = 900000
     OnTimer = updateTimerTimer
-    Left = 392
-    Top = 36
+    Left = 476
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer
-    Left = 440
-    Top = 40
+    Left = 536
   end
 end
