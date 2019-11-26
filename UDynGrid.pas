@@ -20,17 +20,22 @@ type
     SGSum: TStringGridSorted;
     lblSelection: TLabel;
     SpeedButton1: TSpeedButton;
-    PopupMenu1: TPopupMenu;
+    PopupMenu1: TPopupMenu; // ColumnSelection und CSV-Export
     Selectcolumns1: TMenuItem;
     CSVExport1: TMenuItem;
-    PopupMenu0: TPopupMenu;
+    PopupMenu0: TPopupMenu; // ColumnSelection
     MenuItem1: TMenuItem;
+    PopupMenu2: TPopupMenu;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
+    CSVExportSelection1: TMenuItem;
     constructor Create(AOwner: TComponent); override;
     procedure saveInit();
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
     procedure sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer; var actions: DACwOpenActions);
+    procedure sortGridCwOpenActionsOTR(source: string; sortcol: string; sortdir: integer; var actions: DATradeRecord);
 
     procedure sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
     procedure sortGridCwUsers(source: string; sortcol: string; sortdir: integer; var users: DACwUser;
@@ -67,7 +72,12 @@ type
   private
     { Private-Deklarationen }
   public
-    { Public-Deklarationen }
+  { Public-Deklarationen }
+    const
+    mouseDownPause = 220;
+    iniHeader = 'sfcscf1';
+    // bei jeder Erweiterung der Spalten treten Fehler auf - daher hier einen anderen Header wählen ..
+
   var
 
     SGFieldCol: DAInteger;
@@ -77,7 +87,7 @@ type
     source: string;
     dSort: doubleArray;
     sSort: Stringarray;
-    ixSorted: intarray; // actionindex(sortindex)
+    ixSorted: intarray; // actionindex(sortindex)=nummer der Action in der Zeile sortindex
     selSorted: byteArray;
     selectedCt: integer;
     sorttyp: integer;
@@ -88,6 +98,7 @@ type
     autosized: Boolean;
     scrollBar1RepeatCount: integer;
     topic: string;
+    lastMouseDown: cardinal; // doppelte Ausführung verhindern
   end;
 
 procedure Register;
@@ -118,9 +129,17 @@ var
   expo: TExport;
   fname: string;
   ok: Boolean;
+  mItem: TMenuItem;
+  s: string;
 begin
   // Export test
   fname := 'export.csv';
+  mItem := Sender as TMenuItem;
+  s := mItem.Caption;
+  if (containstext(s, 'Selection')) then
+    expo.onlySelection := true
+  else
+    expo.onlySelection := false;
 
   ok := InputQuery('Export to CSV-File', 'Filename:', fname);
   if (ok = false) then
@@ -440,7 +459,7 @@ begin
     r := Rect;
     r.left := r.left - 4; // -4 wird ganz gefüllt
     Canvas.FillRect(r);
-    // den Text am alten Rect ausrichten sonstzu weit links
+    // den Text am alten Rect ausrichten sonst zu weit links
     Canvas.Pen.Color := clBlue;
     if s = '^' then
     begin
@@ -621,7 +640,7 @@ var
   j, k: integer;
   b: Boolean;
 begin
-  lblSelection.caption := '';
+  lblSelection.Caption := '';
   selectedCt := 0;
   self.source := source;
   self.sortcol := sortcol;
@@ -670,16 +689,15 @@ begin
     setlength(SGFieldCol, cols);
     setlength(SGColField, cols);
     // Einlesen der SGFieldcol... aus der Ini-Datei - es sei denn die Daten fehlen
-    b := faIni.ReadBool('dyngrid:' + source, 'sfcscf', false);
+    b := faIni.ReadBool('dyngrid:' + source, iniHeader, false);
     if (b = true) then
     begin
       for i := 0 to cols - 1 do
       begin
-        SGFieldCol[i] := faIni.ReadInteger('dyngrid:' + source, 'sfc' + inttostr(i), 0);
-        SGColField[i] := faIni.ReadInteger('dyngrid:' + source, 'scf' + inttostr(i), 0);
-        SG.ColWidths[i] := faIni.ReadInteger('dyngrid:' + source, 'cw' + inttostr(i), 100);
+        SGFieldCol[i] := faIni.ReadInteger('dyngrid:' + source, 'sfc' + inttostr(i), 0); // sfc fieldCol
+        SGColField[i] := faIni.ReadInteger('dyngrid:' + source, 'scf' + inttostr(i), 0); // scf colField
+        SG.ColWidths[i] := faIni.ReadInteger('dyngrid:' + source, 'cw' + inttostr(i), 100); // cw colWidths
         SGSum.ColWidths[i] := faIni.ReadInteger('dyngrid:' + source, 'cw' + inttostr(i), 100);
-
       end;
       autosized := true;
     end
@@ -704,6 +722,8 @@ begin
     sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
   if source = 'cwopenactions2' then
     sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
+  if source = 'cwopenactionsOTR' then
+    sortGridCwOpenActionsOTR(source, sortcol, sortdir, cwTradeRecords);
   if source = 'cwactions' then
     sortGridCwactions(source, sortcol, sortdir, cwactions);
   if source = 'cwfilteredactions' then
@@ -741,6 +761,7 @@ procedure TDynGrid.sortGridCwOpenActions(source: string; sortcol: string; sortdi
 var
   dl, i, scol, smethode: integer;
   gt: cardinal;
+  k, found: integer;
 begin
   gt := gettickcount;
 
@@ -750,22 +771,29 @@ begin
 
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
-  scol := 1;
+  scol := 1; // alles undefinierte ist dann die erste Spalte = ActionId
   if ((source = 'cwopenactions1') or (source = 'cwopenactions2')) then
   begin
     if sortcol = 'actionId' then
       scol := 1;
-
     if sortcol = 'userId' then
       scol := 2;
-
     if sortcol = 'profit' then
       scol := 3;
-
     if sortcol = 'swap' then
       scol := 4;
+    if sortcol = 'opentime' then
+      scol := 5;
+    if sortcol = 'closetime' then
+      scol := 6;
+    if sortcol = 'comment' then
+    begin
+      smethode := 2; //2=String
+     scol := 12;
+    end;
 
     setlength(dSort, dl);
+    setlength(sSort, dl);
 
     begin
       for i := 0 to dl - 1 do
@@ -791,6 +819,35 @@ begin
           dSort[i] := actions[i].swap;
           continue;
         end;
+        // !!! ändern
+        if scol = 5 then
+        begin
+          found := findCwactionFromId(actions[i].actionId);
+          if (found > -1) then
+            dSort[i] := cwactions[found].openTime
+          else
+            dSort[i] := -1;
+          continue;
+        end;
+        if scol = 6 then
+        begin
+          found := findCwactionFromId(actions[i].actionId);
+          if (found > -1) then
+            dSort[i] := cwactions[found].CloseTime
+          else
+            dSort[i] := -1;
+          continue;
+        end;
+        if scol = 12 then
+        begin
+          found := findCwactionFromId(actions[i].actionId);
+          if (found > -1) then
+            ssort[i] := getcwcomment(cwactions[found].commentid)
+          else
+            ssort[i] := '';
+          continue;
+        end;
+
       end;
     end;
     // nun sortieren
@@ -816,6 +873,138 @@ begin
   end;
   Panel2Resize(self);
 end;
+
+procedure TDynGrid.sortGridCwOpenActionsOTR(source: string; sortcol: string; sortdir: integer;
+  var actions: DATradeRecord);
+var
+  dl, i, scol, smethode: integer;
+  gt: cardinal;
+  k, found: integer;
+begin
+  gt := gettickcount;
+
+  dl := length(actions);
+  if (dl = 0) then
+    exit;
+
+  setlength(ixSorted, dl);
+  smethode := 1; // double  2=String
+  scol := 1; // alles undefinierte ist dann die erste Spalte = ActionId
+  if (source = 'cwopenactionsOTR') then
+  begin
+    if sortcol = 'actionId' then
+      scol := 1;
+    if sortcol = 'userId' then
+      scol := 2;
+    if sortcol = 'symbol' then
+      scol := 3;
+    if sortcol = 'opentime' then
+      scol := 4;
+    if sortcol = 'closetime' then
+      scol := 5;
+    if sortcol = 'cmd' then
+      scol := 6;
+    if sortcol = 'openprice' then
+      scol := 7;
+    if sortcol = 'closeprice' then
+      scol := 8;
+    if sortcol = 'volume' then
+      scol := 9;
+
+    if sortcol = 'comment' then
+
+    begin
+      smethode := 2; //2=String
+      scol :=10;
+    end;
+
+    setlength(dSort, dl);
+    setlength(sSort, dl);
+
+    begin
+      for i := 0 to dl - 1 do
+      begin
+        ixSorted[i] := i;
+        if scol = 1 then
+        begin
+          dSort[i] := actions[i].order;
+          continue;
+        end;
+        if scol = 2 then
+        begin
+          dSort[i] := actions[i].login;
+          continue;
+        end;
+        if scol = 3 then
+        begin
+          smethode:=2;
+          sSort[i] := actions[i].symbol;
+          continue;
+        end;
+        if scol = 4 then
+        begin
+          dSort[i] := actions[i].open_time;
+          continue;
+        end;
+        // !!! ändern
+        if scol = 5 then
+        begin
+          dsort[i] := actions[i].close_time;
+          continue;
+        end;
+        if scol = 6 then
+        begin
+          dsort[i] := actions[i].cmd;
+          continue;
+        end;
+        if scol = 7 then
+        begin
+          dsort[i] := actions[i].open_price;
+          continue;
+        end;
+        if scol = 8 then
+        begin
+          dsort[i] := actions[i].close_price;
+          continue;
+        end;
+        if scol = 9 then
+        begin
+          dsort[i] := actions[i].volume;
+          continue;
+        end;
+        if scol =10 then
+        begin
+          smethode:=2;
+          ssort[i] := actions[i].comment;
+          continue;
+        end;
+
+      end;
+    end;
+    // nun sortieren
+    if smethode = 1 then
+    // double
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayDouble(dSort, ixSorted, 'VDA')
+      else
+        FastSort2ArrayDouble(dSort, ixSorted, 'VUA');
+    end;
+
+    if smethode = 2 then
+    // String
+    begin
+      if sortdir = 1 then
+        FastSort2ArrayString(sSort, ixSorted, 'VUAS')
+      else
+        FastSort2ArrayString(sSort, ixSorted, 'VDAS')
+
+    end;
+
+  end;
+  Panel2Resize(self);
+end;
+
 
 procedure TDynGrid.sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
 var
@@ -936,7 +1125,7 @@ begin
         end;
         if scol = 5 then
         begin
-          dSort[i] := actions[i].commentId;
+          dSort[i] := actions[i].commentid;
           continue;
         end;
         if scol = 6 then
@@ -956,7 +1145,7 @@ begin
         end;
         if scol = 9 then
         begin
-          dSort[i] := actions[i].closeTime;
+          dSort[i] := actions[i].CloseTime;
           continue;
         end;
         if scol = 10 then
@@ -1027,7 +1216,7 @@ begin
         if scol = 23 then
         begin
           smethode := 2;
-          sSort[i] := getcwcomment(actions[i].commentId);
+          sSort[i] := getcwcomment(actions[i].commentid);
           continue;
         end;
       end;
@@ -1143,6 +1332,7 @@ begin
     begin
       for i := 0 to dl - 1 do
       begin
+        // Grundstellung unsortiert alle ixSorted nacheinander
         ixSorted[i] := i;
 
         if scol = 1 then
@@ -1293,7 +1483,7 @@ begin
 
       end;
     end;
-    // nun sortieren
+    // nun sortieren nach den dSort bzw sSort Dabei wird ixSorted sortiert und -> ixSorted(zeile)=userindex
     if smethode = 1 then
     begin
       if sortdir = 1 then
@@ -1324,15 +1514,24 @@ begin
   p := SpeedButton1.ClientToScreen(point(0, SpeedButton1.Height));
   m := 0;
   if source = 'cwactions' then
-    m := 1;
+    m := 2;
   if source = 'cwfilteredactions' then
-    m := 1;
+    m := 2;
   if source = 'cwsingleuseractions' then
-    m := 1;
+    m := 2;
+  if source = 'cwusers2' then // neu 28.10.19
+    m := 2;
+  if source = 'cwopenactions1' then
+    m := 2;
+  if source = 'cwopenactions2' then
+    m := 2;
+
+  if (m = 2) then
+    PopupMenu2.Popup(p.X, p.Y); // Columnselection und CSV-Export
   if (m = 1) then
-    PopupMenu1.Popup(p.X, p.Y);
+    PopupMenu1.Popup(p.X, p.Y); // Columnselection und CSV-Export
   if (m = 0) then
-    PopupMenu0.Popup(p.X, p.Y);
+    PopupMenu0.Popup(p.X, p.Y); // Columnselection
 
 end;
 
@@ -1371,7 +1570,7 @@ begin
 
         if scol = 1 then
         begin
-          dSort[i] := comments[i].commentId;
+          dSort[i] := comments[i].commentid;
           continue;
         end;
         if scol = 2 then
@@ -1753,6 +1952,7 @@ begin
     else
       setlength(dSort, dls);
     l := -1;
+
     begin
       for i := 0 to dl1 - 1 do
         for j := 0 to dl2 - 1 do
@@ -1890,6 +2090,7 @@ begin
     else
       setlength(dSort, dls);
     l := -1;
+
     begin
       for i := 0 to dls - 1 do
       begin
@@ -1982,7 +2183,8 @@ var
   sl: TStringList;
 begin
   //
-
+  // entweder wird nichts übergeben , dann wird nur das Grid dargestellt
+  // oder es wird im Falle eines Exports ein Zeiger auf
   doExport := false;
   if (pexp <> nil) then
   begin
@@ -2002,6 +2204,8 @@ begin
     maxDataRows := length(cwOpenActionsZ1);
   if source = 'cwopenactions2' then
     maxDataRows := length(cwOpenActionsZ2);
+  if source = 'cwopenactionsOTR' then
+    maxDataRows := length(cwTradeRecords);
   if source = 'cwactions' then
     maxDataRows := length(cwactions);
   if source = 'cwfilteredactions' then
@@ -2040,23 +2244,33 @@ begin
 
   // es könnten mehrere Grids vorhanden sein welche dieselben Daten verwenden
   // daher wäre es besser das Sortierarray gehört zum Grid
+
+  // die Selektion wird hier nicht übergeben obwohl das zB auch einen CSV Export nur der Selektion ermöglichen würde
   if source = 'cwopenactions1' then
-    doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, vScrollvon, vscrollbis - 1, false);
+    doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, selSorted, vScrollvon, vscrollbis - 1, false, sl,
+      exp.onlySelection);
   if source = 'cwopenactions2' then
-    doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, vScrollvon, vscrollbis - 1, false);
+    doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, selSorted, vScrollvon, vscrollbis - 1, false, sl,
+      exp.onlySelection);
+  if source = 'cwopenactionsOTR' then
+    doOpenActionsOTRGridCWDyn(SG, SGFieldCol, ixSorted, cwTradeRecords, selSorted, vScrollvon, vscrollbis - 1, false, sl,
+      exp.onlySelection);
+
   if source = 'cwactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, cwactionsplus, vScrollvon, vscrollbis - 1, false, sl);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, cwactionsplus, selSorted, vScrollvon, vscrollbis - 1, false,
+      sl, exp.onlySelection);
   if source = 'cwfilteredactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwfilteredactions, cwfilteredactionsplus, vScrollvon, vscrollbis - 1,
-      false, sl);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwfilteredactions, cwfilteredactionsplus, selSorted, vScrollvon,
+      vscrollbis - 1, false, sl, exp.onlySelection);
   if source = 'cwsingleuseractions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, cwSingleUserActionsPlus, vScrollvon,
-      vscrollbis - 1, false, sl);
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, cwSingleUserActionsPlus, selSorted, vScrollvon,
+      vscrollbis - 1, false, sl, exp.onlySelection);
 
   if source = 'cwsymbols' then
     doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
-    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwusersplus, vScrollvon, vscrollbis - 1);
+    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwusersplus, selSorted, vScrollvon, vscrollbis - 1, false, sl,
+      exp.onlySelection);
   if source = 'cwcomments' then
     doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, vScrollvon, vscrollbis - 1);
   if source = 'cwsymbolsgroups' then
@@ -2066,7 +2280,7 @@ begin
   if source = 'cw3summaries' then
     doSummaries3GridCWDyn(SG, SGFieldCol, ixSorted, cw3summaries, vScrollvon, vscrollbis - 1);
   if source = 'cwsummaries' then
-    doSummariesGridCWDyn(SG, SGFieldCol, ixSorted, cwsummaries, vScrollvon, vscrollbis - 1);
+    doSummariesGridCWDyn(SG, SGSum, SGFieldCol, ixSorted, cwsummaries, vScrollvon, vscrollbis - 1);
 
   // und nun die verschiedenen Summen der Spalten berechnen und eintragen
   makeSummaries;
@@ -2075,7 +2289,10 @@ begin
   begin
     // die sl ist nun bereits erzeugt worden
     sl.SaveToFile(exp.fileName);
-    showmessage(inttostr(vscrollbis - vScrollvon + 1) + ' lines successfully exported to:' + exp.fileName);
+    if (exp.onlySelection = false) then
+      showmessage(inttostr(vscrollbis - vScrollvon + 1) + ' lines successfully exported to:' + exp.fileName)
+    else
+      showmessage(inttostr(selectedCt) + ' lines successfully exported to:' + exp.fileName);
     sl.Free;
   end;
 
@@ -2093,6 +2310,20 @@ var
   Cursor: TCursor;
   header: string;
 begin
+  if (Button = mbleft) then
+    LbDebug('MD left')
+  else if (Button = mbright) then
+    LbDebug('MD right')
+  else
+    LbDebug('MD wedernoch');
+  gt := gettickcount;
+  LbDebug('Zwischenzeit:' + inttostr(gt - lastMouseDown));
+  if ((gt - lastMouseDown) < mouseDownPause) then
+  begin
+    LbDebug('zu schnell MouseDown - Abbruch');
+    exit;
+  end;
+  lastMouseDown := gt;
   gt := timegettime();
   grid := Sender as FTCommons.TStringGridSorted;
   // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
@@ -2137,6 +2368,8 @@ begin
             sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
           if source = 'cwopenactions2' then
             sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
+          if source = 'cwopenactionsOTR' then
+            sortGridCwOpenActionsOTR(source, sortcol, sortdir, cwTradeRecords);
           if source = 'cwactions' then
             sortGridCwactions(source, sortcol, sortdir, cwactions);
           if source = 'cwfilteredactions' then
@@ -2170,7 +2403,7 @@ begin
     except
       LbDebug('Fehler:');
     end;
-    LbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
+    LbDebug('MD:Zeit Gridsort:' + inttostr(timegettime - gt));
   end;
 end;
 
@@ -2263,11 +2496,15 @@ begin
               // wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
               // string wäre leichter umzusetzen ist aber in der Suche langsam !
               if source = 'cwopenactions1' then
-                // fehlt
-                  ;
+                // fehlt wegen zu viel Aufwand !
+                showmessage('Suchfunktion in' + source + ' noch nicht implementiert');
+
+              // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, i, SGColField[mucol], such)
+              ;
               if source = 'cwopenactions2' then
-                //fehlt
-                ;
+                // fehlt
+                // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
+                showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
               if source = 'cwactions' then
                 found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, SGColField[mucol], such)
               else if source = 'cwfilteredactions' then
@@ -2344,7 +2581,7 @@ var
   i: integer;
 begin
   // hier könnte in INI File gesichert werden
-  faIni.writeBool('dyngrid:' + source, 'sfcscf', true);
+  faIni.writeBool('dyngrid:' + source, iniHeader, true);
   for i := 0 to length(SGFieldCol) - 1 do
   begin
     faIni.writeInteger('dyngrid:' + source, 'sfc' + inttostr(i), SGFieldCol[i]);
@@ -2456,7 +2693,7 @@ begin
         inc(selectedCt);
       end;
     end;
-  lblSelection.caption := inttostr(selectedCt) + ' rows selected';
+  lblSelection.Caption := inttostr(selectedCt) + ' rows selected';
 
 end;
 

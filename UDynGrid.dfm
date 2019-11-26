@@ -191,11 +191,27 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu0: TPopupMenu
-    Left = 664
+    Left = 688
     Top = 8
     object MenuItem1: TMenuItem
       Caption = 'Column Selection'
       OnClick = Selectcolumns1Click
+    end
+  end
+  object PopupMenu2: TPopupMenu
+    Left = 552
+    Top = 8
+    object MenuItem2: TMenuItem
+      Caption = 'Column Selection'
+      OnClick = Selectcolumns1Click
+    end
+    object MenuItem3: TMenuItem
+      Caption = 'CSV-Export'
+      OnClick = CSVExport1Click
+    end
+    object CSVExportSelection1: TMenuItem
+      Caption = 'CSV-Export Selection'
+      OnClick = CSVExport1Click
     end
   end
 end

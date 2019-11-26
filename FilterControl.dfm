@@ -14,6 +14,7 @@ object FilterElemente: TFilterElemente
     Top = 3
     Width = 129
     Height = 21
+    DropDownCount = 20
     TabOrder = 0
     Text = 'BrokerId'
     OnChange = cbTopicChange
@@ -32,7 +33,8 @@ object FilterElemente: TFilterElemente
       'Volume'
       'MarginRate'
       'AccountCurrency'
-      'CloseDateTime OR Open')
+      'CloseDateTime OR Open'
+      'Comment')
   end
   object cbOperator: TComboBox
     Left = 163

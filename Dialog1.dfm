@@ -28,7 +28,7 @@ object Form5: TForm5
   end
   object Button1: TButton
     Left = 10
-    Top = 4
+    Top = 5
     Width = 87
     Height = 21
     Caption = 'select all'
@@ -75,7 +75,7 @@ object Form5: TForm5
     Top = 5
     Width = 73
     Height = 21
-    Caption = 'Reset'
+    Caption = 'reset'
     TabOrder = 6
     OnClick = Button5Click
   end

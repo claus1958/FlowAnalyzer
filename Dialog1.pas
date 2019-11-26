@@ -155,7 +155,10 @@ begin
     if (chkLB1.Checked[i] = true) then
     begin
       if (myDG.sg.ColWidths[i] = -1) then
+      // ausgeblendete Spalten wieder anzeigen
+      begin
         myDG.sg.ColWidths[i] := 100
+      end
       else
         // an bleibt an
       ;
@@ -165,11 +168,16 @@ begin
     begin
       if (myDG.sg.ColWidths[i] = -1) then
       else
+      //ausblenden wenn nicht angehakelt
+      begin
         myDG.sg.ColWidths[i] := -1;
+      end;
     end;
   end;
   for i := 0 to myDG.sg.colcount - 1 do
+  begin
     myDG.sgsum.colwidths[i]:=myDG.sg.colwidths[i];
+  end;
 end;
 
 procedure TForm5.Timer1Timer(Sender: TObject);

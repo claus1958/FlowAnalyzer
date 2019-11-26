@@ -27,6 +27,7 @@ const
   fltTopicMarginRate = 17;
   fltTopicAccountCurrency = 18;
   fltTopicCloseDateTimeOrOpen = 19;
+  fltTopicComment = 20;
 
   fltOpGleich = 1;
   fltOpUnGleich = 2;
@@ -38,6 +39,8 @@ const
   fltOpBegins = 8;
   fltOpGroesserOderNull = 9; // bei Datum wichtig
   fltOpGroesserGleichOderNull = 10; // bei Datum wichtig
+  fltOpKlNotNull = 11; // neuer Operator bei Datum
+  fltOpKlOrNull = 12;
 
 type
   TFilterElemente = class(TFrame)
@@ -143,14 +146,24 @@ end;
 procedure TFilterElemente.edValueChange(Sender: TObject);
 var
   e: TEdit;
+  i: Integer;
+  s: string;
 begin
   e := Sender as TEdit;
   if ((screen.ActiveControl = e) or (Sender <> dtPicker1)) then
   begin
     if dtPicker1.Visible = true then
     begin
-      // den Wert umrechnen und im Picker eintragen
-      dtPicker1.DateTime := (unixtodatetime(strtoint(edValue.Text)));
+      dtPicker1.DateTime:=getDateTimeFromString(edValue.Text);
+
+//      // den Wert umrechnen und im Picker eintragen
+//      if trystrtoint(edValue.Text, i) = true then
+//        dtPicker1.DateTime := (unixtodatetime(i))
+//      else
+//      begin
+//        s := AnsiUpperCase(edValue.Text);
+//        dtPicker1.DateTime := getDateTimeFromString(s);
+//      end;
     end;
 
   end;
@@ -259,21 +272,21 @@ begin
   topic := vorQuote(cbTopic.Text);
   lb1flag := false;
   setlength(chkLB1Selected, 0);
-//BrokerId
-//AccountId
-//SymbolId'Suche aus Liste
-//Symbol'Texteingabe
-//UserId
-//UserName
-//ActionType
-//OpenDateTime
-//CloseDateTime
-//OpenPrice
-//Profit
-//Volume
-//MarginRate
-//AccountCurrency
-//CloseDateTime OR Open
+  // BrokerId
+  // AccountId
+  // SymbolId'Suche aus Liste
+  // Symbol'Texteingabe
+  // UserId
+  // UserName
+  // ActionType
+  // OpenDateTime
+  // CloseDateTime
+  // OpenPrice
+  // Profit
+  // Volume
+  // MarginRate
+  // AccountCurrency
+  // CloseDateTime OR Open
 
   typ := 1; // 1=nur edit text  2=edit mit comboboxListe  3=dtPicker
   if topic = 'BrokerId' then
@@ -399,6 +412,10 @@ begin
   begin
     typ := 3;
   end;
+  if topic = 'Comment' then
+  begin
+    typ := 1;
+  end;
 
   if typ = 1 then
   // reines Editierfeld
@@ -445,8 +462,11 @@ begin
     chkLB1.Visible := false;
     cbOperator.Items.Clear;
     cbOperator.Items.Add('>=');
-    cbOperator.Items.Add('<');
     cbOperator.Items.Add('>= or 0');
+    cbOperator.Items.Add('<');
+    cbOperator.Items.Add('< not 0');
+    cbOperator.Items.Add('< or 0');
+
   end;
   // form2.dolockWindowUpdate(false);
 
@@ -645,11 +665,17 @@ begin
     vString := edValue.Text;
   end;
 
+  if ctopic = fltTopicComment then
+  begin
+    vString := edValue.Text;
+  end;
+
   if (ctopic = fltTopicAccountDate) or (ctopic = fltTopicOpenDateTime) or (ctopic = fltTopicCloseDateTime) or
     (ctopic = fltTopicCloseDateTimeOrOpen)
 
   then
   begin
+//oben:dtPicker1.DateTime:=getDateTimeFromString(edValue.Text); ->
     vString := edValue.Text;
     if (vString = '') then
       vString := '0';
@@ -658,8 +684,8 @@ begin
       if (vString = '') then
         vInteger := 0
       else
-
-        vInteger := strtoint(vString)
+        vinteger:=getUnixTimeFromString(edValue.text);
+        //vInteger := strtoint(vString)
     end
     else
       vInteger := datetimetounix(strtodatetime(vString));
@@ -728,6 +754,18 @@ begin
   if op = fltOpGroesserGleichOderNull then
   begin
     if ((was >= mit) or (was = 0)) then
+      result := true;
+    exit;
+  end;
+  if op = fltOpKlNotNull then
+  begin
+    if ((was < mit) and (was <> 0)) then
+      result := true;
+    exit;
+  end;
+  if op = fltOpKlOrNull then
+  begin
+    if ((was < mit) or (was = 0)) then
       result := true;
     exit;
   end;
@@ -945,6 +983,7 @@ begin
 
 end;
 
+
 procedure TFilterElemente.getValues(f: TFilterParameter);
 var
   s: string;
@@ -969,6 +1008,10 @@ begin
     coperator := fltOpGroesserOderNull;
   if operators = '>= or 0' then
     coperator := fltOpGroesserGleichOderNull;
+  if operators = '< not 0' then
+    coperator := fltOpKlNotNull;
+  if operators = '< or 0' then
+    coperator := fltOpKlOrNull;
 
   if operators = '<' then
     coperator := fltOpKleiner;
@@ -1019,6 +1062,8 @@ begin
     ctopic := fltTopicAccountCurrency; // = 18;
   if topic = 'CloseDateTime OR Open' then
     ctopic := fltTopicCloseDateTimeOrOpen; // = 19;
+  if topic = 'Comment' then
+    ctopic := fltTopicComment; // = 20
 
   // Rest passiert beim Aufrufer
 end;
@@ -1185,6 +1230,13 @@ begin
 
     // Ende der Array Vergleiche
 
+    if ctopic = fltTopicComment then
+    begin
+      s := getcwcomment(a.commentId);
+      result := vergleichString(vString, s, coperator);
+      exit;
+    end;
+
     if ctopic = fltTopicUserName then
     begin
       s := findUserName(a.userId);
@@ -1216,14 +1268,15 @@ begin
     begin
       result := vergleichDouble(vDouble, a.openPrice, coperator);
       exit;
-
     end;
+
     if ctopic = fltTopicProfit then
     begin
       result := vergleichDouble(vDouble, a.profit, coperator);
       exit;
 
     end;
+
     if ctopic = fltTopicVolume then
     begin
       result := vergleichDouble(vDouble, a.profit, coperator);
@@ -1253,11 +1306,11 @@ begin
       // wenn > vergleich
       if (coperator = fltOpGrGleich) then
         if (a.openTime <> 0) then
-        //wenn es eine opentime gibt
+          // wenn es eine opentime gibt
           if (a.closeTime = 0) then
-          //und nicht geschlossen dann -> true
-          if(result=false) then
-            result := true;
+            // und nicht geschlossen dann -> true
+            if (result = false) then
+              result := true;
 
       // wenn < vergleich
       if (coperator = fltOpKleiner) then

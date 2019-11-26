@@ -7,9 +7,11 @@ uses
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
   RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
   psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,
-  System.NetEncoding;
+  System.NetEncoding, DateUtils;
 
 const
+
+  FileNameForbiddenChars: set of Char = ['<', '>', '|', '"', '\', '/', ':', '*', '?'];
   BoolStr: Array [Boolean] of AnsiString = ('False', 'True');
   NoSelection: TGridRect = (Left: - 1; Top: - 1; Right: - 1; Bottom: - 1);
   // Use crKey as the transparency color.
@@ -34,6 +36,42 @@ type
     created when the program loads - if it is declared "locally"
     it is not created until the procedure requests it. }
 
+  TTradeRecord = packed record
+    // Das ist der originale Datentyp aus der API der in diesem Programm eigentlich nicht verwendet wird - nur zur Fehlersuche in den OTR-Files
+    order: integer; // order number
+    login: integer; // account login
+    symbol: TStr12; // symbol
+    digits: integer; // symbol digits
+    cmd: integer; // trade comand
+    volume: integer; // trade volume
+    open_time: time_t; // trade open time
+    open_reserv: integer; // reserved         c:state
+    open_price: double; // trade open price
+    sl, tp: double; // StopLoss,TakeProfit
+    close_time: time_t; // trade close time
+    value_date: time_t; // value date       c:gateway order volume
+    expiration: time_t; // pending order expiration date
+    conv_reserv: integer; // reserved     c:reason  c:conv_reserv[3]
+    conv_rates: array [0 .. 1] of double; // convertation rates
+    commission: double; // commission
+    commission_agent: double; // agent commission
+    storage: double; // swap
+    close_price: double; // trade close price
+    profit: double; // trade profit
+    taxes: double; // taxes
+    magic: integer; // unique magic number
+    comment: TStr32; // comment
+    internal_id: integer; // (internal usage)  -> Gateway Order Ticket
+    activation: integer; // activation type
+    margin_reserved: integer; // reserved          c:gw_open_rice gw_close_price in pips from order open / close price
+    margin_rate: double; // margin convertation rate (rate of convertation from margin currency to deposit one)
+    reserved: array [0 .. 4] of integer; // reserved
+    next: PTradeRecord; // (internal usage)
+    // function getJSON(accountId: integer): string;
+  end;
+
+  DATradeRecord = array of TTradeRecord; // um die OTR Files einzulesen
+
   TOurHttp = class(TIdHttp)
   public
     procedure Get(aUrl: String; aRequestBody, aResponseContent: TStream);
@@ -43,14 +81,21 @@ type
     z1: TDateTime;
     z2: TDateTime;
     Profit1: array [1 .. 4] of double; // ungewöhnlich 1..4 da die Währungen so laufen !
-    Profit: array [1 .. 4] of double;
+    profit: array [1 .. 4] of double;
     Profit2: array [1 .. 4] of double;
     Swap1: double;
     Swap: double;
     Swap2: double;
     Volume1: integer;
-    Volume: integer;
+    volume: integer;
     Volume2: integer;
+    ct1: integer; // Zeit1 Anzahl Orders
+    ct: integer; // innerhalb Z1Z2 realisierte Orders
+    ct2: integer; // Zeit2 Anzahl Orders
+    ct1nix: integer;
+    ctnix: integer;
+    ct2nix: integer;
+
     procedure clear;
   end;
 
@@ -58,6 +103,7 @@ type
     fileName: string;
     separator: string;
     sl: TStringList;
+    onlySelection: Boolean; // 28.10.19 vorgesehen für CSV Export nur die Selektion
   end;
 
   pExport = ^tExport;
@@ -109,8 +155,8 @@ type
     topic: string;
     operator: string;
     values: string;
-    vglI: array of integer;
-    vglS: array of string;
+    // vglI: array of integer;
+    // vglS: array of string;
   end;
 
   TStringGridSorted = class(StringGridSorted.TStringGridSorted)
@@ -143,7 +189,7 @@ type
     actionId: int64;
     userId: integer;
     Swap: double;
-    Profit: double;
+    profit: double;
   end;
 
   DACwOpenActions = array of cwOpenAction;
@@ -163,7 +209,7 @@ type
     close: single;
     high: single;
     low: single;
-    Volume: integer;
+    volume: integer;
   end;
 
   DAKursOCHL = array of TKursOCHLV;
@@ -178,7 +224,7 @@ type
     userId: integer;
     balance: double;
     equity: double;
-    Volume: integer;
+    volume: integer;
     margin: double;
     function getJSON(): string;
   end;
@@ -202,8 +248,8 @@ type
     stopLoss: double; // 8
     takeProfit: double; // 8
     Swap: double; // 8
-    Profit: double; // 8
-    Volume: integer; // 4
+    profit: double; // 8
+    volume: integer; // 4
     precision: integer; // 4
     conversionRate0: double; // 8
     conversionRate1: double; // 8
@@ -350,6 +396,8 @@ type
 
   // byteArray = array of byte;
 
+function findCwactionFromId(id: int64): integer;
+
 function getSessionKey(var key: string): integer;
 function GetModuleVersion(Instance: THandle; out iMajor, iMinor, iRelease, iBuild: integer): Boolean;
 function DateTimeToUnix(ConvDate: TDateTime): Longint;
@@ -417,7 +465,13 @@ procedure AutoSizeGrid(Grid, Grid2: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
 procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwOpenActions; datafrom: integer; datato: integer; justone: Boolean = false);
+  var actions: DACwOpenActions; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
+  sl: TStringList = nil; onlySelection: Boolean = false);
+
+procedure doOpenActionsOTRGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DATradeRecord; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
+  sl: TStringList = nil; onlySelection: Boolean = false);
+
 
 procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
   total: integer; stp: integer = 1);
@@ -433,12 +487,13 @@ procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; sy
   ct, total, stp: integer);
 
 procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
-  justone: Boolean = false; sl: TStringList = nil);
+  var actions: DACwAction; var actionsPlus: DACwActionPlus; var selSorted: byteArray; datafrom: integer;
+  datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var comments: DAcwComment; datafrom: integer; datato: integer; justone: Boolean = false);
 procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var users: DAcwUser; usersPlus: DACwUserPlus; datafrom: integer; datato: integer; justone: Boolean = false);
+  var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer;
+  justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer;
   justone: Boolean = false);
@@ -446,8 +501,8 @@ procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DA
   var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
 procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
-procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGSum: TStringGridSorted; var SGFieldCol: DAInteger;
+  var sort: intArray; var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 
 function BinSearchString(var Strings: StringArray; var v: integer): integer;
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
@@ -469,6 +524,10 @@ function RandomRange(const AFrom, ATo: integer): integer;
 function RGB2TColor(const R, G, b: byte): integer;
 procedure showMemory(lb: TListBox);
 function myStrToInt(AString: string): integer;
+function TestFilename(fileName: String): Boolean;
+function RInstr(const Str: string; const strSuche: string): integer;
+function getDateTimeFromString(s: string): TDateTime;
+function getUnixTimeFromString(s: string): integer;
 
 var
 
@@ -510,12 +569,17 @@ var
 
   cwTicks: DACwTick;
   cwTicksCt: integer;
+  cwTradeRecords: DATradeRecord; // nur für die OTR Files
   cwComments: DAcwComment;
   cwCommentsPlus: DACwCommentPlus;
   cwCommentsCt: integer;
   cwActions: DACwAction; // 'Alle' Actions
   cwActionsPlus: DACwActionPlus; // 'Alle' Actions
   cwActionsCt: integer;
+  cwActionsSorted: Boolean;
+  cwActionsInt: intArray;
+  cwActionsInt64: int64Array;
+
   cwFilteredActions: DACwAction; // die herausgesuchten Actions
   cwFilteredActionsPlus: DACwActionPlus; // die herausgesuchten Actions
   cwFilteredActionCt: integer;
@@ -546,16 +610,20 @@ begin
   for i := 1 to 4 do
   begin
     Profit1[i] := 0;
-    Profit[i] := 0;
+    profit[i] := 0;
     Profit2[i] := 0;
   end;
   Swap1 := 0;
   Swap := 0;
   Swap2 := 0;
 
-  Volume := 0;
+  volume := 0;
   Volume1 := 0;
   Volume2 := 0;
+
+  ct := 0;
+  ct1 := 0;
+  ct2 := 0;
 
 end;
 
@@ -569,7 +637,7 @@ function cwRating.getJSON(): string;
 begin
   result := '{' + c34 + 'userId' + c34 + ':' + inttostr(userId) + ',' + c34 + 'balance' + c34 + ':' +
     FloatToSQLStr(balance) + ',' + c34 + 'equity' + c34 + ':' + FloatToSQLStr(equity) + ',' + c34 + 'volume' + c34 + ':'
-    + inttostr(Volume) + ',' + c34 + 'margin' + c34 + ':' + FloatToSQLStr(margin) + '}';
+    + inttostr(volume) + ',' + c34 + 'margin' + c34 + ':' + FloatToSQLStr(margin) + '}';
 end;
 
 procedure lbDebug(s: string);
@@ -1317,7 +1385,7 @@ begin
 
     end;
 
-    csvReader.Next;
+    csvReader.next;
 
   End;
   csvReader.Free;
@@ -1391,8 +1459,8 @@ begin
 end;
 
 procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; var actionsPlus: DACwActionPlus; datafrom: integer; datato: integer;
-  justone: Boolean = false; sl: TStringList = nil);
+  var actions: DACwAction; var actionsPlus: DACwActionPlus; var selSorted: byteArray; datafrom: integer;
+  datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 var
   k, l: integer;
   row: integer;
@@ -1408,6 +1476,7 @@ begin
   gt := GetTickCount;
   toSL := false;
   if (sl <> nil) then
+  // wenn eine StringList sl übergeben wird dann soll dort auch eingetragen werden
   begin
     toSL := true;
     sep := ';';
@@ -1450,14 +1519,6 @@ begin
       lines[SGFieldCol[24]] := 'symGroupId';
       lines[SGFieldCol[25]] := ''; // 'openProfit';
       lines[SGFieldCol[26]] := ''; // 'openSwap';
-
-      // for k := 0 to 26 do
-      // begin
-      // if (claus = false) then
-      // if (ansiindextext(SG.cells[SGFieldCol[k], 0], ['actionId', 'openTimeUnix', 'closeTimeUnix', 'symbolId',
-      // 'sourceId', 'precision', 'conversionRate0', 'conversionRate1']) > -1) then
-      // SG.ColWidths[SGFieldCol[k]] := -1;
-      // end;
 
       if (toSL = false) then
       begin
@@ -1512,8 +1573,8 @@ begin
         lines[SGFieldCol[15]] := floattostr(actions[sort[k]].stopLoss);
         lines[SGFieldCol[16]] := floattostr(actions[sort[k]].takeProfit);
         lines[SGFieldCol[17]] := floattostr(actions[sort[k]].Swap);
-        lines[SGFieldCol[18]] := floattostr(actions[sort[k]].Profit);
-        lines[SGFieldCol[19]] := FormatFloat(',#0.00', actions[sort[k]].Volume / 100);
+        lines[SGFieldCol[18]] := floattostr(actions[sort[k]].profit);
+        lines[SGFieldCol[19]] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
         lines[SGFieldCol[20]] := inttostr(actions[sort[k]].precision);
         lines[SGFieldCol[21]] := floattostr(actions[sort[k]].conversionRate0);
         lines[SGFieldCol[22]] := floattostr(actions[sort[k]].conversionRate0);
@@ -1531,14 +1592,17 @@ begin
         end
         else
         begin
-          line := '';
-          for l := 0 to 26 do
+          if ((onlySelection = false) or (selSorted[sort[k]] = 1)) then
           begin
-            if (linesHide[SGFieldCol[l]] = false) then
-              line := line + lines[l] + sep;
-          end;
-          sl.add(leftstr(line, length(line) - 1));
+            line := '';
+            for l := 0 to 26 do
+            begin
+              if (linesHide[SGFieldCol[l]] = false) then
+                line := line + lines[l] + sep;
+            end;
+            sl.add(leftstr(line, length(line) - 1));
 
+          end;
         end;
       end;
     end;
@@ -1555,6 +1619,334 @@ begin
 end;
 
 procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DACwOpenActions; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
+  sl: TStringList = nil; onlySelection: Boolean = false);
+const
+  smax = 12;
+var
+  i, k, l, v: integer;
+  j, found2: integer;
+  row: integer;
+  fehler: string;
+  lines: array [0 .. smax] of string;
+  linesHide: array [0 .. smax] of Boolean;
+  toSL: Boolean;
+  line: string;
+  sep: string;
+  gt, gts: Cardinal;
+  found: integer;
+begin
+  toSL := false;
+  if (sl <> nil) then
+  // wenn eine StringList sl übergeben wird dann soll dort auch eingetragen werden
+  begin
+    toSL := true;
+    sep := ';';
+  end;
+
+  // jetzt noch die binäre Suche in den Actions ermöglichen
+  // n := binsearchint64(ia2, cwActions[i].actionId);
+  if (cwActionsSorted = false) then
+  begin
+    gts := GetTickCount;
+    cwActionsCt := length(cwActions);
+    SetLength(cwActionsInt64, cwActionsCt);
+    SetLength(cwActionsInt, cwActionsCt);
+    try
+      for i := 0 to cwActionsCt - 1 do
+      begin
+        cwActionsInt64[i] := cwActions[i].actionId;
+        cwActionsInt[i] := i;
+      end;
+    except
+      i := i;
+    end;
+    dosleep(CSleep);
+
+    FastSort2ArrayInt64Int(cwActionsInt64, cwActionsInt, 'VUI'); // VDI
+    // lbCSVError.Items.Add('[sort2]' + inttostr(GetTickCount - gts));
+    gts := GetTickCount - gts;
+    dosleep(CSleep);
+
+    gt := GetTickCount;
+    cwActionsSorted := true;
+  end;
+
+  try
+    if (justone = false) then
+    begin
+      if (toSL = false) then
+      begin
+        SG.Rows[0].BeginUpdate;
+        // SG.ColWidths[SGFieldCol[0]] := 140;
+      end;
+      // SG.cells[SGFieldCol[0], 0] := 'actionId';
+
+      lines[SGFieldCol[0]] := 'actionId';
+      lines[SGFieldCol[1]] := 'userId';
+      lines[SGFieldCol[2]] := 'profit';
+      lines[SGFieldCol[3]] := 'swap';
+      lines[SGFieldCol[4]] := 'opentime';
+      lines[SGFieldCol[5]] := 'closetime';
+      lines[SGFieldCol[6]] := '(neu)typ';
+      lines[SGFieldCol[7]] := '(neu)close';
+      lines[SGFieldCol[8]] := '(neu)volume';
+      lines[SGFieldCol[9]] := '(alt)typ';
+      lines[SGFieldCol[10]] := '(alt)close';
+      lines[SGFieldCol[11]] := '(alt)volume';
+      lines[SGFieldCol[12]] := 'comment';
+
+      if (toSL = false) then
+      begin
+        for k := 0 to smax do
+          SG.cells[k, 0] := lines[k];
+        // Ausblenden was nicht erwünscht ist
+        SG.Rows[0].endUpdate;
+      end
+      else
+      begin
+        sl.clear;
+        line := '';
+        for k := 0 to smax do
+        begin
+          if (SG.ColWidths[SGFieldCol[k]] = -1) then
+            linesHide[SGFieldCol[k]] := true
+          else
+            linesHide[SGFieldCol[k]] := false
+        end;
+      end;
+
+      if (toSL = true) then
+      begin
+        for k := 0 to smax do
+        begin
+          if (linesHide[SGFieldCol[k]] = false) then
+            line := line + lines[k] + sep;
+        end;
+        sl.add(leftstr(line, length(line) - 1));
+      end;
+
+      row := 0;
+      for k := datafrom to datato do
+      begin
+        row := row + 1;
+        lines[SGFieldCol[0]] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
+        lines[SGFieldCol[1]] := inttostr(actions[sort[k]].userId);
+        lines[SGFieldCol[2]] := floattostr(actions[sort[k]].profit);
+        lines[SGFieldCol[3]] := floattostr(actions[sort[k]].Swap);
+        found := findCwactionFromId(actions[sort[k]].actionId);
+        if (found > -1) then
+        begin
+          lines[SGFieldCol[4]] := DateTimeToStr(UnixToDateTime(cwActions[found].openTime));
+          lines[SGFieldCol[5]] := DateTimeToStr(UnixToDateTime(cwActions[found].closeTime));
+          // das sind freie Plätze in die fehlerhafte Einträge aus den OpenTrades die abgeändert wurden eingesetzt werden können
+          // dazu müssen erstmal die passenden OpenTrades überhaupt vorhanden sein , der Tag stimmen
+          lines[SGFieldCol[6]] := OrderTypes(cwActions[found].typeId - 1) + ' ' + inttostr(cwActions[found].typeId);
+          lines[SGFieldCol[7]] := floattostr(cwActions[found].openPrice);
+          lines[SGFieldCol[8]] := FormatFloat(',#0.00', cwActions[found].volume / 100);
+          lines[SGFieldCol[12]] := getCwComment(cwActions[found].commentId);
+          found2 := -1;
+          for j := 0 to length(cwTradeRecords) - 1 do
+          begin
+            if (cwTradeRecords[j].order = int(actions[sort[k]].actionId / 10)) then
+            begin
+              found2 := j;
+              break;
+            end;
+          end;
+          if (found2 > -1) then
+          begin
+            lines[SGFieldCol[9]] := OrderTypes(cwTradeRecords[found2].cmd) + ' ' +
+              inttostr(cwTradeRecords[found2].cmd + 1);
+            lines[SGFieldCol[10]] := floattostr(cwTradeRecords[found2].open_price);
+            lines[SGFieldCol[11]] := FormatFloat(',#0.00', cwTradeRecords[found2].volume / 100);
+          end
+          else
+          begin
+            lines[SGFieldCol[9]] := '-';
+            lines[SGFieldCol[10]] := '-';
+            lines[SGFieldCol[11]] := '-';
+          end;
+        end
+        else
+        begin
+          lines[SGFieldCol[4]] := '-';
+          lines[SGFieldCol[5]] := '-';
+          lines[SGFieldCol[5]] := '-';
+          lines[SGFieldCol[6]] := '-';
+          lines[SGFieldCol[7]] := '-';
+          lines[SGFieldCol[8]] := '-';
+          lines[SGFieldCol[9]] := '-';
+          lines[SGFieldCol[10]] := '-';
+          lines[SGFieldCol[11]] := '-';
+          lines[SGFieldCol[12]] := '-';
+        end;
+
+        if (toSL = false) then
+        begin
+          SG.Rows[row].BeginUpdate;
+          for l := 0 to smax do
+            SG.cells[l, row] := lines[l];
+          SG.Rows[row].endUpdate;
+        end
+        else
+        begin
+          if ((onlySelection = false) or (selSorted[sort[k]] = 1)) then
+          begin
+            line := '';
+            for l := 0 to smax do
+            begin
+              if (linesHide[SGFieldCol[l]] = false) then
+                line := line + lines[l] + sep;
+            end;
+            sl.add(leftstr(line, length(line) - 1));
+
+          end;
+        end;
+      end;
+    end;
+    // evtl noch was löschen ?
+    v := v;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+  gt := GetTickCount - gt;
+end;
+
+procedure doOpenActionsOTRGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var actions: DATradeRecord; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
+  sl: TStringList = nil; onlySelection: Boolean = false);
+const
+  smax = 12;
+var
+  i, k, l, v: integer;
+  j, found2: integer;
+  row: integer;
+  fehler: string;
+  lines: array [0 .. smax] of string;
+  linesHide: array [0 .. smax] of Boolean;
+  toSL: Boolean;
+  line: string;
+  sep: string;
+  gt, gts: Cardinal;
+  found: integer;
+begin
+  toSL := false;
+  if (sl <> nil) then
+  // wenn eine StringList sl übergeben wird dann soll dort auch eingetragen werden
+  begin
+    toSL := true;
+    sep := ';';
+  end;
+
+  // jetzt noch die binäre Suche in den Actions ermöglichen
+  // n := binsearchint64(ia2, cwActions[i].actionId);
+
+  try
+    if (justone = false) then
+    begin
+      if (toSL = false) then
+      begin
+        SG.Rows[0].BeginUpdate;
+        // SG.ColWidths[SGFieldCol[0]] := 140;
+      end;
+      // SG.cells[SGFieldCol[0], 0] := 'actionId';
+
+      lines[SGFieldCol[0]] := 'actionId';
+      lines[SGFieldCol[1]] := 'userId';
+      lines[SGFieldCol[2]] := 'profit';
+      lines[SGFieldCol[3]] := 'opentime';
+      lines[SGFieldCol[4]] := 'closetime';
+      lines[SGFieldCol[5]] := 'cmd';
+      lines[SGFieldCol[6]] := 'openprice';
+      lines[SGFieldCol[7]] := 'closeprice';
+      lines[SGFieldCol[8]] := 'volume';
+      lines[SGFieldCol[9]] := 'comment';
+
+      if (toSL = false) then
+      begin
+        for k := 0 to smax do
+          SG.cells[k, 0] := lines[k];
+        // Ausblenden was nicht erwünscht ist
+        SG.Rows[0].endUpdate;
+      end
+      else
+      begin
+        sl.clear;
+        line := '';
+        for k := 0 to smax do
+        begin
+          if (SG.ColWidths[SGFieldCol[k]] = -1) then
+            linesHide[SGFieldCol[k]] := true
+          else
+            linesHide[SGFieldCol[k]] := false
+        end;
+      end;
+
+      if (toSL = true) then
+      begin
+        for k := 0 to smax do
+        begin
+          if (linesHide[SGFieldCol[k]] = false) then
+            line := line + lines[k] + sep;
+        end;
+        sl.add(leftstr(line, length(line) - 1));
+      end;
+
+      row := 0;
+      for k := datafrom to datato do
+      begin
+        row := row + 1;
+        lines[SGFieldCol[0]] := inttostr(actions[sort[k]].order) + ' ' + inttostr(k);
+        lines[SGFieldCol[1]] := inttostr(actions[sort[k]].login);
+        lines[SGFieldCol[2]] := actions[sort[k]].symbol;
+        lines[SGFieldCol[3]] := DateTimeToStr(UnixToDateTime(Actions[sort[k]].open_Time));
+        lines[SGFieldCol[4]] := DateTimeToStr(UnixToDateTime(Actions[sort[k]].close_Time));
+        lines[SGFieldCol[5]] := OrderTypes(Actions[sort[k]].cmd);
+        lines[SGFieldCol[6]] := floattostr(Actions[sort[k]].open_Price);
+        lines[SGFieldCol[7]] := floattostr(Actions[sort[k]].close_Price);
+        lines[SGFieldCol[8]] := FormatFloat(',#0.00', Actions[sort[k]].volume / 100);
+        lines[SGFieldCol[9]] := Actions[sort[k]].comment;
+
+        if (toSL = false) then
+        begin
+          SG.Rows[row].BeginUpdate;
+          for l := 0 to smax do
+            SG.cells[l, row] := lines[l];
+          SG.Rows[row].endUpdate;
+        end
+        else
+        begin
+          if ((onlySelection = false) or (selSorted[sort[k]] = 1)) then
+          begin
+            line := '';
+            for l := 0 to smax do
+            begin
+              if (linesHide[SGFieldCol[l]] = false) then
+                line := line + lines[l] + sep;
+            end;
+            sl.add(leftstr(line, length(line) - 1));
+          end;
+        end;
+      end;
+    end;
+    // evtl noch was löschen ?
+    v := v;
+  except
+    on E: Exception do
+    begin
+      fehler := E.Message;
+    end;
+
+  end;
+  gt := GetTickCount - gt;
+end;
+
+procedure ALTpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
   var actions: DACwOpenActions; datafrom: integer; datato: integer; justone: Boolean = false);
 var
   k: integer;
@@ -1562,7 +1954,7 @@ var
   fehler: string;
 begin
   try
-    sg.ColCount:=4;
+    SG.ColCount := 4;
     if (justone = false) then
     begin
       SG.Rows[0].BeginUpdate;
@@ -1579,8 +1971,8 @@ begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
       SG.cells[SGFieldCol[0], row] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
-      SG.cells[SGFieldCol[1], row] := floattostr(actions[sort[k]].userID);
-      SG.cells[SGFieldCol[2], row] := floattostr(actions[sort[k]].Profit);
+      SG.cells[SGFieldCol[1], row] := floattostr(actions[sort[k]].userId);
+      SG.cells[SGFieldCol[2], row] := floattostr(actions[sort[k]].profit);
       SG.cells[SGFieldCol[3], row] := floattostr(actions[sort[k]].Swap);
       SG.Rows[row].endUpdate;
     end;
@@ -1694,8 +2086,8 @@ begin
   end;
 end;
 
-procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGSum: TStringGridSorted; var SGFieldCol: DAInteger;
+  var sort: intArray; var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 var
   i, k: integer;
   row: integer;
@@ -1720,6 +2112,13 @@ begin
         if (cwGrouping.element[i].sTyp = 'unused') then
         begin
           SG.ColWidths[SGFieldCol[i]] := -1;
+          SGSum.ColWidths[SGFieldCol[i]] := -1;
+        end
+        else
+        begin
+          if (SG.ColWidths[SGFieldCol[i]] = -1) then
+            SG.ColWidths[SGFieldCol[i]] := 100;
+          SGSum.ColWidths[SGFieldCol[i]] := 100;
         end;
       SG.Rows[0].endUpdate;
     end;
@@ -1754,83 +2153,151 @@ begin
 end;
 
 procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var users: DAcwUser; usersPlus: DACwUserPlus; datafrom: integer; datato: integer; justone: Boolean = false);
+  var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer;
+  justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
+
 var
-  k: integer;
+  k, l: integer;
   row: integer;
   fehler: string;
+  lines: array [0 .. 27] of string;
+  linesHide: array [0 .. 27] of Boolean;
+  toSL: Boolean;
+  line: string;
+  sep: string;
 begin
+  toSL := false;
+  if (sl <> nil) then
+  // wenn eine StringList sl übergeben wird dann soll dort auch eingetragen werden
+  begin
+    toSL := true;
+    sep := ';';
+  end;
   try
     if (justone = false) then
     begin
-      SG.Rows[0].BeginUpdate;
-      SG.cells[SGFieldCol[0], 0] := 'userId';
-      // SG.ColWidths[SGFieldCol[0]] := 100;
-      SG.cells[SGFieldCol[1], 0] := 'accountId';
-      SG.cells[SGFieldCol[2], 0] := 'name';
-      SG.cells[SGFieldCol[3], 0] := 'group';
-      SG.cells[SGFieldCol[4], 0] := 'enable';
-      SG.cells[SGFieldCol[5], 0] := 'registrationTime';
-      SG.cells[SGFieldCol[6], 0] := 'lastLoginTime';
-      SG.cells[SGFieldCol[7], 0] := 'leverage';
-      SG.cells[SGFieldCol[8], 0] := 'balance';
-      SG.cells[SGFieldCol[9], 0] := 'balancePreviousMonth';
-      SG.cells[SGFieldCol[10], 0] := 'balancePreviousDay';
-      SG.cells[SGFieldCol[11], 0] := 'credit';
-      SG.cells[SGFieldCol[12], 0] := 'interestrate';
-      SG.cells[SGFieldCol[13], 0] := 'taxes';
-      SG.cells[SGFieldCol[14], 0] := 'country';
-      SG.cells[SGFieldCol[15], 0] := 'city';
-      SG.cells[SGFieldCol[16], 0] := 'state';
-      SG.cells[SGFieldCol[17], 0] := 'zipcode';
-      SG.cells[SGFieldCol[18], 0] := 'address';
-      SG.cells[SGFieldCol[19], 0] := 'phone';
-      SG.cells[SGFieldCol[20], 0] := 'email';
-      SG.cells[SGFieldCol[21], 0] := 'socialNumber';
-      SG.cells[SGFieldCol[22], 0] := 'comment';
-      SG.cells[SGFieldCol[23], 0] := 'trades';
-      SG.cells[SGFieldCol[24], 0] := 'profit';
-      SG.cells[SGFieldCol[25], 0] := 'totalbalance';
-      SG.cells[SGFieldCol[26], 0] := 'totalswap';
-      SG.cells[SGFieldCol[27], 0] := 'accountCurrency';
+      if (toSL = false) then
+      begin
+        SG.Rows[0].BeginUpdate;
+      end;
+      lines[SGFieldCol[0]] := 'userId';
+      lines[SGFieldCol[1]] := 'accountId';
+      lines[SGFieldCol[2]] := 'name';
+      lines[SGFieldCol[3]] := 'group';
+      lines[SGFieldCol[4]] := 'enable';
+      lines[SGFieldCol[5]] := 'registrationTime';
+      lines[SGFieldCol[6]] := 'lastLoginTime';
+      lines[SGFieldCol[7]] := 'leverage';
+      lines[SGFieldCol[8]] := 'balance';
+      lines[SGFieldCol[9]] := 'balancePreviousMonth';
+      lines[SGFieldCol[10]] := 'balancePreviousDay';
+      lines[SGFieldCol[11]] := 'credit';
+      lines[SGFieldCol[12]] := 'interestrate';
+      lines[SGFieldCol[13]] := 'taxes';
+      lines[SGFieldCol[14]] := 'country';
+      lines[SGFieldCol[15]] := 'city';
+      lines[SGFieldCol[16]] := 'state';
+      lines[SGFieldCol[17]] := 'zipcode';
+      lines[SGFieldCol[18]] := 'address';
+      lines[SGFieldCol[19]] := 'phone';
+      lines[SGFieldCol[20]] := 'email';
+      lines[SGFieldCol[21]] := 'socialNumber';
+      lines[SGFieldCol[22]] := 'comment';
+      lines[SGFieldCol[23]] := 'trades';
+      lines[SGFieldCol[24]] := 'profit';
+      lines[SGFieldCol[25]] := 'totalbalance';
+      lines[SGFieldCol[26]] := 'totalswap';
+      lines[SGFieldCol[27]] := 'accountCurrency';
+      if (toSL = false) then
+      begin
+        for k := 0 to 27 do
+          SG.cells[k, 0] := lines[k];
+        // Ausblenden was nicht erwünscht ist
+        SG.Rows[0].endUpdate;
+      end
+      else
+      begin
+        sl.clear;
+        line := '';
+        for k := 0 to 27 do
+        begin
+          if (SG.ColWidths[SGFieldCol[k]] = -1) then
+            linesHide[SGFieldCol[k]] := true
+          else
+            linesHide[SGFieldCol[k]] := false
+        end;
+      end;
+
+      if (toSL = true) then
+      begin
+        for k := 0 to 27 do
+        begin
+          if (linesHide[SGFieldCol[k]] = false) then
+            line := line + lines[k] + sep;
+        end;
+        sl.add(leftstr(line, length(line) - 1));
+      end;
+
       SG.Rows[0].endUpdate;
     end;
+
     row := 0;
     for k := datafrom to datato do
 
     begin
       row := row + 1;
       SG.Rows[row].BeginUpdate;
-      SG.cells[SGFieldCol[0], row] := inttostr(users[sort[k]].userId);
-      SG.cells[SGFieldCol[1], row] := accountShort[users[sort[k]].accountId];
-      SG.cells[SGFieldCol[2], row] := users[sort[k]].name;
-      SG.cells[SGFieldCol[3], row] := users[sort[k]].group;
-      SG.cells[SGFieldCol[4], row] := inttostr(users[sort[k]].enable);
-      SG.cells[SGFieldCol[5], row] := DateTimeToStr(UnixToDateTime(users[sort[k]].registrationTime));
+      lines[SGFieldCol[0]] := inttostr(users[sort[k]].userId);
+      lines[SGFieldCol[1]] := accountShort[users[sort[k]].accountId];
+      lines[SGFieldCol[2]] := users[sort[k]].name;
+      lines[SGFieldCol[3]] := users[sort[k]].group;
+      lines[SGFieldCol[4]] := inttostr(users[sort[k]].enable);
+      lines[SGFieldCol[5]] := DateTimeToStr(UnixToDateTime(users[sort[k]].registrationTime));
       // inttostr(users[sort[k]].registrationTime);
-      SG.cells[SGFieldCol[6], row] := DateTimeToStr(UnixToDateTime(users[sort[k]].lastLoginTime));
+      lines[SGFieldCol[6]] := DateTimeToStr(UnixToDateTime(users[sort[k]].lastLoginTime));
       // inttostr(users[sort[k]].lastLoginTime);
-      SG.cells[SGFieldCol[7], row] := inttostr(users[sort[k]].leverage);
-      SG.cells[SGFieldCol[8], row] := floattostr(users[sort[k]].balance);
-      SG.cells[SGFieldCol[9], row] := floattostr(users[sort[k]].balancePreviousMonth);
-      SG.cells[SGFieldCol[10], row] := floattostr(users[sort[k]].balancePreviousDay);
-      SG.cells[SGFieldCol[11], row] := floattostr(users[sort[k]].credit);
-      SG.cells[SGFieldCol[12], row] := floattostr(users[sort[k]].interestrate);
-      SG.cells[SGFieldCol[13], row] := floattostr(users[sort[k]].taxes);
-      SG.cells[SGFieldCol[14], row] := users[sort[k]].country;
-      SG.cells[SGFieldCol[15], row] := users[sort[k]].city;
-      SG.cells[SGFieldCol[16], row] := users[sort[k]].state;
-      SG.cells[SGFieldCol[17], row] := users[sort[k]].zipcode;
-      SG.cells[SGFieldCol[18], row] := users[sort[k]].address;
-      SG.cells[SGFieldCol[19], row] := users[sort[k]].phone;
-      SG.cells[SGFieldCol[20], row] := users[sort[k]].email;
-      SG.cells[SGFieldCol[21], row] := users[sort[k]].socialNumber;
-      SG.cells[SGFieldCol[22], row] := users[sort[k]].comment;
-      SG.cells[SGFieldCol[23], row] := inttostr(usersPlus[sort[k]].totalTrades);
-      SG.cells[SGFieldCol[24], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalProfit);
-      SG.cells[SGFieldCol[25], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalBalance);
-      SG.cells[SGFieldCol[26], row] := FormatFloat(',#0.00', usersPlus[sort[k]].totalSwap);
-      SG.cells[SGFieldCol[27], row] := accountCurrency[usersPlus[sort[k]].accountCurrency];
+      lines[SGFieldCol[7]] := inttostr(users[sort[k]].leverage);
+      lines[SGFieldCol[8]] := floattostr(users[sort[k]].balance);
+      lines[SGFieldCol[9]] := floattostr(users[sort[k]].balancePreviousMonth);
+      lines[SGFieldCol[10]] := floattostr(users[sort[k]].balancePreviousDay);
+      lines[SGFieldCol[11]] := floattostr(users[sort[k]].credit);
+      lines[SGFieldCol[12]] := floattostr(users[sort[k]].interestrate);
+      lines[SGFieldCol[13]] := floattostr(users[sort[k]].taxes);
+      lines[SGFieldCol[14]] := users[sort[k]].country;
+      lines[SGFieldCol[15]] := users[sort[k]].city;
+      lines[SGFieldCol[16]] := users[sort[k]].state;
+      lines[SGFieldCol[17]] := users[sort[k]].zipcode;
+      lines[SGFieldCol[18]] := users[sort[k]].address;
+      lines[SGFieldCol[19]] := users[sort[k]].phone;
+      lines[SGFieldCol[20]] := users[sort[k]].email;
+      lines[SGFieldCol[21]] := users[sort[k]].socialNumber;
+      lines[SGFieldCol[22]] := users[sort[k]].comment;
+      lines[SGFieldCol[23]] := inttostr(usersPlus[sort[k]].totalTrades);
+      lines[SGFieldCol[24]] := FormatFloat(',#0.00', usersPlus[sort[k]].totalProfit);
+      lines[SGFieldCol[25]] := FormatFloat(',#0.00', usersPlus[sort[k]].totalBalance);
+      lines[SGFieldCol[26]] := FormatFloat(',#0.00', usersPlus[sort[k]].totalSwap);
+      lines[SGFieldCol[27]] := accountCurrency[usersPlus[sort[k]].accountCurrency];
+
+      if (toSL = false) then
+      begin
+        SG.Rows[row].BeginUpdate;
+        for l := 0 to 27 do
+          SG.cells[l, row] := lines[l];
+        SG.Rows[row].endUpdate;
+      end
+      else
+      begin
+        if ((onlySelection = false) or (selSorted[sort[k]] = 1)) then
+        begin
+          line := '';
+          for l := 0 to 27 do
+          begin
+            if (linesHide[SGFieldCol[l]] = false) then
+              line := line + lines[l] + sep;
+          end;
+          sl.add(leftstr(line, length(line) - 1));
+        end;
+      end;
       SG.Rows[row].endUpdate;
     end;
   except
@@ -2055,8 +2522,8 @@ begin
         SG.cells[SGFieldCol[15], row] := floattostr(actions[k].stopLoss);
         SG.cells[SGFieldCol[16], row] := floattostr(actions[k].takeProfit);
         SG.cells[SGFieldCol[17], row] := floattostr(actions[k].Swap);
-        SG.cells[SGFieldCol[18], row] := floattostr(actions[k].Profit);
-        SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[k].Volume / 100);
+        SG.cells[SGFieldCol[18], row] := floattostr(actions[k].profit);
+        SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[k].volume / 100);
         SG.cells[SGFieldCol[20], row] := inttostr(actions[k].precision);
         SG.cells[SGFieldCol[21], row] := floattostr(actions[k].conversionRate0);
         SG.cells[SGFieldCol[22], row] := floattostr(actions[k].conversionRate0);
@@ -2529,22 +2996,27 @@ var
   cwu: cwUser;
   cws: cwSymbol;
   cwc: cwComment;
+  cwot: TTradeRecord;
+  a: integer;
 begin
   try
     gt := GetTickCount();
     folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
     createDir(folder);
-    fileName := folder + '\' + fname + '.bin';
+
+    fileName := fname;
     if fileexists(fileName) then
     begin
       fstream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
 
-      Case IndexStr(typ, ['actions', 'users', 'symbols', 'comments']) of
-        0:
+      Case IndexStr(typ, ['actions', 'users', 'symbols', 'comments', 'opentrades']) of
+        0: // das kommt vor
           begin
             ct := trunc(fstream.Size / SizeOf(cwa));
             SetLength(cwActions, ct);
             SetLength(cwActionsPlus, ct);
+            cwActionsSorted := false;
+            a := SizeOf(cwa);
             fstream.ReadBuffer(cwActions[0], ct * SizeOf(cwa)); // nicht die ganze stream.size !
           end;
         1:
@@ -2573,6 +3045,12 @@ begin
             SetLength(cwCommentsPlus, ct);
             fstream.ReadBuffer(cwComments[0], ct * SizeOf(cwc)); // nicht die ganze stream.size !
 
+          end;
+        4:
+          begin // im Ausnahmefall für die Fehlersuche in den OTR-Dateien
+            ct := trunc(fstream.Size / SizeOf(cwot));
+            SetLength(cwTradeRecords, ct);
+            fstream.ReadBuffer(cwTradeRecords[0], ct * SizeOf(cwot)); // nicht die ganze stream.size !
           end;
 
       End;
@@ -3619,12 +4097,12 @@ begin
       end;
       if (col = 18) then
       begin
-        res := floattostr(actions[sort[l]].Profit);
+        res := floattostr(actions[sort[l]].profit);
         goto weiter;
       end;
       if (col = 19) then
       begin
-        res := FormatFloat(',#0.00', actions[sort[l]].Volume / 100);
+        res := FormatFloat(',#0.00', actions[sort[l]].volume / 100);
         goto weiter;
       end;
       if (col = 20) then
@@ -3684,7 +4162,7 @@ var
   first: integer;
   Last: integer;
   Pivot: integer;
-  Found: Boolean;
+  found: Boolean;
   substr: string;
   ps: string;
   p: integer;
@@ -3693,12 +4171,12 @@ begin
   // inttostr ist halb so schnell wie strtoint
   first := Low(Strings); // Sets the first item of the range
   Last := High(Strings); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
+  found := false; // Initializes the Found flag (Not found yet)
   result := -1; // Initializes the Result
   // substr := inttostr(v);
   // If First > Last then the searched item doesn't exist
   // If the item is found the loop will stop
-  while (first <= Last) and (not Found) do
+  while (first <= Last) and (not found) do
   begin
     // Gets the middle of the selected range
     Pivot := (first + Last) div 2;
@@ -3709,7 +4187,7 @@ begin
     if index[Pivot] = v then
     // if ps = substr then
     begin
-      Found := true;
+      found := true;
       result := Pivot;
     end
     // If the Item in the middle has a bigger value than
@@ -3729,7 +4207,7 @@ var
   first: integer;
   Last: integer;
   Pivot: integer;
-  Found: Boolean;
+  found: Boolean;
   substr: string;
   ps: string;
   p: integer;
@@ -3739,12 +4217,12 @@ begin
   // inttostr ist halb so schnell wie strtoint
   first := Low(index); // Sets the first item of the range
   Last := High(index); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
+  found := false; // Initializes the Found flag (Not found yet)
   result := -1; // Initializes the Result
   // substr := inttostr(v);
   // If First > Last then the searched item doesn't exist
   // If the item is found the loop will stop
-  while (first <= Last) and (not Found) do
+  while (first <= Last) and (not found) do
   begin
     // Gets the middle of the selected range
     Pivot := (first + Last) div 2;
@@ -3755,7 +4233,7 @@ begin
     if index[Pivot] = v then
     // if ps = substr then
     begin
-      Found := true;
+      found := true;
       result := Pivot;
     end
     // If the Item in the middle has a bigger value than
@@ -3774,7 +4252,7 @@ var
   first: integer;
   Last: integer;
   Pivot: integer;
-  Found: Boolean;
+  found: Boolean;
   substr: string;
   ps: string;
   p: integer;
@@ -3783,12 +4261,12 @@ begin
   // inttostr ist halb so schnell wie strtoint
   first := Low(Strings); // Sets the first item of the range
   Last := High(Strings); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
+  found := false; // Initializes the Found flag (Not found yet)
   result := -1; // Initializes the Result
   // substr := inttostr(v);
   // If First > Last then the searched item doesn't exist
   // If the item is found the loop will stop
-  while (first <= Last) and (not Found) do
+  while (first <= Last) and (not found) do
   begin
     // Gets the middle of the selected range
     Pivot := (first + Last) div 2;
@@ -3799,7 +4277,7 @@ begin
     if pi = v then
     // if ps = substr then
     begin
-      Found := true;
+      found := true;
       result := Pivot;
     end
     // If the Item in the middle has a bigger value than
@@ -3817,18 +4295,18 @@ var
   first: integer;
   Last: integer;
   Pivot: integer;
-  Found: Boolean;
+  found: Boolean;
 begin
   first := Low(Ints); // Sets the first item of the range
   Last := High(Ints); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
+  found := false; // Initializes the Found flag (Not found yet)
   result := -1; // Initializes the Result
-  while (first <= Last) and (not Found) do
+  while (first <= Last) and (not found) do
   begin
     Pivot := (first + Last) div 2;
     if Ints[Pivot] = v then
     begin
-      Found := true;
+      found := true;
       result := Pivot;
     end
     else if Ints[Pivot] > v then
@@ -3843,18 +4321,18 @@ var
   first: integer;
   Last: integer;
   Pivot: integer;
-  Found: Boolean;
+  found: Boolean;
 begin
   first := Low(Ints); // Sets the first item of the range
   Last := High(Ints); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
+  found := false; // Initializes the Found flag (Not found yet)
   result := -1; // Initializes the Result
-  while (first <= Last) and (not Found) do
+  while (first <= Last) and (not found) do
   begin
     Pivot := (first + Last) div 2;
     if Ints[Pivot] = v then
     begin
-      Found := true;
+      found := true;
       result := Pivot;
     end
     else if Ints[Pivot] > v then
@@ -3869,18 +4347,18 @@ var
   first: integer;
   Last: integer;
   Pivot: integer;
-  Found: Boolean;
+  found: Boolean;
 begin
   first := Low(actions); // Sets the first item of the range
   Last := High(actions); // Sets the last item of the range
-  Found := false; // Initializes the Found flag (Not found yet)
+  found := false; // Initializes the Found flag (Not found yet)
   result := -1; // Initializes the Result
-  while (first <= Last) and (not Found) do
+  while (first <= Last) and (not found) do
   begin
     Pivot := (first + Last) div 2;
     if actions[Pivot].actionId = v then
     begin
-      Found := true;
+      found := true;
       result := Pivot;
     end
     else if actions[Pivot].actionId > v then
@@ -4005,11 +4483,11 @@ begin
     // direkt nach Symbolen(ohne Gruppe) wäre hier symbolId zu verwenden und cwSymbolsCt wäre die Größe der 'group'
     Inc(groups[groupId].TradesCount);
     Inc(TradesCount);
-    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].Volume;
-    TradesVolumeTotal := TradesVolumeTotal + actions[i].Volume;
-    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].Profit;
+    groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
+    TradesVolumeTotal := TradesVolumeTotal + actions[i].volume;
+    groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].profit;
     groups[groupId].TradesSwapTotal := groups[groupId].TradesSwapTotal + actions[i].Swap;
-    TradesProfitTotal := TradesProfitTotal + actions[i].Profit;
+    TradesProfitTotal := TradesProfitTotal + actions[i].profit;
     TradesSwapTotal := TradesSwapTotal + actions[i].Swap;
   end;
 
@@ -4229,6 +4707,124 @@ begin
     tresult.Free;
   end;
   // showmessage('res:' + res);
+end;
+
+function TestFilename(fileName: String): Boolean;
+var
+  i: integer;
+begin
+  result := fileName <> '';
+  for i := 1 to length(fileName) do
+    result := result and not(fileName[i] in FileNameForbiddenChars);
+end;
+
+function RInstr(const Str: string; const strSuche: string): integer;
+// ----------------------------------------------------
+var
+  i: integer;
+  l: integer;
+begin
+  // Instr von Hinten
+  i := 0;
+  l := length(strSuche);
+  for i := length(Str) downto 1 do
+  begin
+    if midstr(Str, i, l) = strSuche then
+    begin
+      break;
+    end;
+  end;
+  result := i;
+end;
+
+function findCwactionFromId(id: int64): integer;
+var
+  k: integer;
+begin
+  //
+
+  result := -1;
+
+  if (cwActionsSorted = true) then
+  begin
+    k := BinSearchInt64(cwActionsInt64, id);
+    if (k > -1) then
+    begin
+      result := cwActionsInt[k];
+      exit;
+    end;
+  end;
+
+  // Unsortiert - dann alle durchlaufen ...
+  if (cwActionsSorted = false) then
+    for k := 0 to length(cwActions) - 1 do
+    begin
+      if (cwActions[k].actionId = id) then
+      begin
+        result := k;
+        break;
+      end;
+    end;
+end;
+
+function getDateTimeFromString(s: string): TDateTime;
+var
+  i: integer;
+begin
+  s := ansiuppercase(s);
+  if (trystrtoint(s, i) = true) then
+  begin
+    result := UnixToDateTime(i);
+    exit;
+  end;
+
+  if (s = 'MORGEN') or (s = 'TOMORROW') then
+  begin
+    result := int(now) + 1;
+    exit;
+  end;
+
+  if (s = 'HEUTE') or (s = 'TODAY') then
+  begin
+    result := int(now);
+    exit;
+  end;
+  if (s = 'GESTERN') or (s = 'YESTERDAY') then
+  begin
+    result := int(now) - 1;
+    exit;
+  end;
+  if (s = 'WEEK') or (s = 'WEEKSTART') or (s = 'MONTAG') or (s = 'MONDAY') then
+  begin
+    result := int(now);
+    while (dayofweek(result) <> 2) do
+      result := result - 1;
+    exit;
+  end;
+  if (s = 'MONTH') or (s = 'MONTHSTART') then
+  begin
+    result := int(now);
+    while (dayofthemonth(result) <> 1) do
+      result := result - 1;
+    exit;
+  end;
+
+  if (s = 'YEAR') or (s = 'YEARSTART') then
+  begin
+    result := int(now);
+    while (dayoftheyear(result) <> 1) do
+      result := result - 1;
+    exit;
+  end;
+
+end;
+
+function getUnixTimeFromString(s: string): integer;
+var
+  dt: TDateTime;
+begin
+  dt := getDateTimeFromString(s);
+  result := DateTimeToUnix(dt);
 end;
 
 end.
