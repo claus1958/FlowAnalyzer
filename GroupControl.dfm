@@ -26,7 +26,8 @@ object GroupControl: TGroupControl
       'userId'
       'yearsOpen'
       'yearsClose'
-      'brokerAccount')
+      'brokerAccount'
+      'broker')
   end
   object chkActive: TCheckBox
     Left = 9

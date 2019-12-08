@@ -29,11 +29,20 @@ type
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     CSVExportSelection1: TMenuItem;
+    PopupMenu3: TPopupMenu;
+    MenuItem4: TMenuItem;
+    MenuItem5: TMenuItem;
+    MenuItem6: TMenuItem;
+    RemoveSelection1: TMenuItem;
+    RemoveallbutSelection1: TMenuItem;
     constructor Create(AOwner: TComponent); override;
     procedure saveInit();
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
+
+    procedure doSorting();
+
     procedure sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer; var actions: DACwOpenActions);
     procedure sortGridCwOpenActionsOTR(source: string; sortcol: string; sortdir: integer; var actions: DATradeRecord);
 
@@ -68,6 +77,11 @@ type
     procedure SpeedButton1Click(Sender: TObject);
     procedure Selectcolumns1Click(Sender: TObject);
     procedure CSVExport1Click(Sender: TObject);
+    procedure RemoveSelection1Click(Sender: TObject);
+    procedure RemoveallbutSelection1Click(Sender: TObject);
+    procedure doRemoveSelection(typ: integer); // 1=sel weg 2=nur Selection belassen
+    procedure doRemoveSelectionOTR(typ: integer);
+    procedure Panel1Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -88,7 +102,7 @@ type
     dSort: doubleArray;
     sSort: Stringarray;
     ixSorted: intarray; // actionindex(sortindex)=nummer der Action in der Zeile sortindex
-    selSorted: byteArray;
+    selSorted: byteArray; // jeweils 0 oder 1=selektiert
     selectedCt: integer;
     sorttyp: integer;
     sortdir: integer;
@@ -131,6 +145,8 @@ var
   ok: Boolean;
   mItem: TMenuItem;
   s: string;
+  sz: integer;
+  btn: integer;
 begin
   // Export test
   fname := 'export.csv';
@@ -150,7 +166,15 @@ begin
   expo.fileName := fname;
   expo.separator := ';';
   gridHandler(@expo);
-  ShellExecute(Application.Handle, 'open', PChar('notepad.exe'), PChar(fname), Nil, SW_NORMAL);
+  sz := Get_File_Size(fname);
+
+  btn := mrOk;
+  if (sz > 5000000) then
+  begin
+    btn := messagedlg('Very large file - open now ?', mtWarning, mbOKCancel, 0);
+  end;
+  if (btn = mrOk) then
+    ShellExecute(Application.Handle, 'open', PChar('notepad.exe'), PChar(fname), Nil, SW_NORMAL);
 end;
 
 procedure TDynGrid.SGRowMoved(Sender: TObject; FromIndex, ToIndex: integer);
@@ -253,23 +277,23 @@ begin
         case typ of
           0:
             begin
-              sumi := sumi + cwsummaries[ixSorted[i]].TradesCount;
+              sumi := sumi + cwsummaries[ixSorted[i]].sTradesCount;
             end;
           1:
             begin
-              sumi := sumi + cwsummaries[ixSorted[i]].TradesVolumeTotal;
+              sumi := sumi + cwsummaries[ixSorted[i]].sTradesVolumeTotal;
             end;
           2:
             begin
-              sume := sume + cwsummaries[ixSorted[i]].TradesProfitTotal; // das sind Werte in gemischten Währungen
+              sume := sume + cwsummaries[ixSorted[i]].sTradesProfitTotal; // das sind Werte in gemischten Währungen
             end;
           3:
             begin
-              sume := sume + cwsummaries[ixSorted[i]].TradesSwapTotal;
+              sume := sume + cwsummaries[ixSorted[i]].sTradesSwapTotal;
             end;
           4:
             begin
-              sume := sume + cwsummaries[ixSorted[i]].TradesProfitSwapTotal;
+              sume := sume + cwsummaries[ixSorted[i]].sTradesProfitSwapTotal;
             end;
         end;
       end;
@@ -299,7 +323,7 @@ begin
 
     end;
   end;
-  if (source = 'cwfilteredactions') then
+  if (source = 'cwFilteredActions') then
   begin
     if (ansiindextext(header, ['profit', 'volume', 'swap']) > -1) then
     begin
@@ -323,20 +347,20 @@ begin
           0: // profit
             begin
               // unterscheiden: wenn ClosedTime<>0 ist es echter Profit - sonst OpenProfit 'jetzt'
-              sumd := sumd + cwfilteredactions[ixSorted[i]].profit;
+              sumd := sumd + cwFilteredActions[ixSorted[i]].profit;
 
               // Profit ist immer in Account-Währung Swap ist in Euro
-              sump[cwusersplus[cwfilteredactionsplus[ixSorted[i]].userindex].accountcurrency] :=
-                sump[cwusersplus[cwfilteredactionsplus[ixSorted[i]].userindex].accountcurrency] + cwfilteredactions
+              sump[cwusersplus[cwFilteredactionsPlus[ixSorted[i]].userindex].accountcurrency] :=
+                sump[cwusersplus[cwFilteredactionsPlus[ixSorted[i]].userindex].accountcurrency] + cwFilteredActions
                 [ixSorted[i]].profit;
             end;
           1: // volume
             begin
-              sumi := sumi + cwfilteredactions[ixSorted[i]].volume;
+              sumi := sumi + cwFilteredActions[ixSorted[i]].volume;
             end;
           2: // swap
             begin
-              sumd := sumd + cwfilteredactions[ixSorted[i]].swap;
+              sumd := sumd + cwFilteredActions[ixSorted[i]].swap;
             end;
         end;
       end;
@@ -540,6 +564,11 @@ begin
   //
 end;
 
+procedure TDynGrid.Panel1Click(Sender: TObject);
+begin
+self.invalidate;
+end;
+
 procedure TDynGrid.Panel2Resize(Sender: TObject);
 var
   max: integer;
@@ -577,6 +606,22 @@ begin
     end;
   end;
 
+end;
+
+procedure TDynGrid.RemoveallbutSelection1Click(Sender: TObject);
+begin
+  if (source = 'cwfilteredactions') then
+    doRemoveSelection(2);
+  if (source = 'cwopenactionsOTR') then
+    doRemoveSelectionOTR(2);
+end;
+
+procedure TDynGrid.RemoveSelection1Click(Sender: TObject);
+begin
+  if (source = 'cwfilteredactions') then
+    doRemoveSelection(1);
+  if (source = 'cwopenactionsOTR') then
+    doRemoveSelectionOTR(1);
 end;
 
 procedure TDynGrid.ScrollBar1Change(Sender: TObject);
@@ -717,7 +762,123 @@ begin
   // sortcol  ActionId
   // sortdir  1  und -1
   // und das array
+  doSorting();
+  // if source = 'cwopenactions1' then
+  // sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
+  // if source = 'cwopenactions2' then
+  // sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
+  // if source = 'cwopenactionsOTR' then
+  // sortGridCwOpenActionsOTR(source, sortcol, sortdir, cwTradeRecords);
+  // if source = 'cwactions' then
+  // sortGridCwactions(source, sortcol, sortdir, cwactions);
+  // if source = 'cwfilteredactions' then
+  // sortGridCwactions(source, sortcol, sortdir, cwfilteredactions);
+  // if source = 'cwsingleuseractions' then
+  // sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
+  // if source = 'cwsymbols' then
+  // sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
+  // if ((source = 'cwusers') or (source = 'cwusers2')) then
+  // sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwusersplus);
+  // if source = 'cwcomments' then
+  // sortGridCwComments(source, sortcol, sortdir, cwComments);
+  // if source = 'cwsymbolsgroups' then
+  // sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
+  // if source = 'cwfilteredsymbolsgroups' then
+  // sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
+  // if source = 'cw3summaries' then
+  // sortGridCw3Summaries(source, sortcol, sortdir, cw3summaries);
+  // if source = 'cwsummaries' then
+  // sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
 
+  // autosized := false;
+  // alle Selektionen auf Null setzen
+  setlength(selSorted, length(ixSorted));
+  for i := 0 to length(ixSorted) - 1 do
+    selSorted[i] := 0;
+
+end;
+
+// es geht hier nur um die Überschrift der Column um das Grid zu sortieren
+// die Reihenfolge der Columns spielt keine Rolle !
+procedure TDynGrid.doRemoveSelection(typ: integer);
+var
+  i, ct: integer;
+  mem: string;
+  neuActions: DACwAction;
+begin
+  // 1 = Selection weg oder 2 nur Selection
+  ct := -1;
+  setlength(neuActions, cwFilteredActionCt);
+  for i := 0 to cwFilteredActionCt - 1 do
+  begin
+    if (typ = 1) then
+    begin
+      mem := 'Selection removed';
+      if selSorted[i] = 0 then
+      begin
+        inc(ct);
+        neuActions[ct] := cwFilteredActions[i];
+      end;
+    end;
+    if (typ = 2) then
+    begin
+      mem := 'Selection left';
+      if selSorted[i] = 1 then
+      begin
+        inc(ct);
+        neuActions[ct] := cwFilteredActions[i];
+      end;
+    end;
+  end;
+  cwFilteredActionCt := ct + 1;
+  cwFilteredActions := Copy(neuActions, 0, cwFilteredActionCt);
+  lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' +
+    inttostr(length(cwActions));
+
+  initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
+  // doSorting();
+  // Panel2Resize(self);
+end;
+
+procedure TDynGrid.doRemoveSelectionOTR(typ: integer);
+var
+  i, ct: integer;
+  mem: string;
+  neuTrades: DATradeRecord;
+begin
+  // 1 = Selection weg oder 2 nur Selection
+  ct := -1;
+  setlength(neuTrades, length(cwTradeRecords));
+  for i := 0 to length(cwTradeRecords) - 1 do
+  begin
+    if (typ = 1) then
+    begin
+      mem := 'Selection removed';
+      if selSorted[i] = 0 then
+      begin
+        inc(ct);
+        neuTrades[ct] := cwTradeRecords[i];
+      end;
+    end;
+    if (typ = 2) then
+    begin
+      mem := 'Selection left';
+      if selSorted[i] = 1 then
+      begin
+        inc(ct);
+        neuTrades[ct] := cwTradeRecords[i];
+      end;
+    end;
+  end;
+  cwTradeRecords := Copy(neuTrades, 0, ct + 1);
+
+  initGrid('cwopenactionsOTR', 'actionId', 1, length(cwTradeRecords), 13);
+  lblHeader.Caption := 'OpenActionsOTR:' + inttostr(length(cwTradeRecords));
+
+end;
+
+procedure TDynGrid.doSorting();
+begin
   if source = 'cwopenactions1' then
     sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
   if source = 'cwopenactions2' then
@@ -725,9 +886,9 @@ begin
   if source = 'cwopenactionsOTR' then
     sortGridCwOpenActionsOTR(source, sortcol, sortdir, cwTradeRecords);
   if source = 'cwactions' then
-    sortGridCwactions(source, sortcol, sortdir, cwactions);
+    sortGridCwactions(source, sortcol, sortdir, cwActions);
   if source = 'cwfilteredactions' then
-    sortGridCwactions(source, sortcol, sortdir, cwfilteredactions);
+    sortGridCwactions(source, sortcol, sortdir, cwFilteredActions);
   if source = 'cwsingleuseractions' then
     sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
   if source = 'cwsymbols' then
@@ -744,17 +905,7 @@ begin
     sortGridCw3Summaries(source, sortcol, sortdir, cw3summaries);
   if source = 'cwsummaries' then
     sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
-
-  // autosized := false;
-
-  setlength(selSorted, length(ixSorted));
-  for i := 0 to length(ixSorted) - 1 do
-    selSorted[i] := 0;
-
 end;
-
-// es geht hier nur um die Überschrift der Column um das Grid zu sortieren
-// die Reihenfolge der Columns spielt keine Rolle !
 
 procedure TDynGrid.sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer;
   var actions: DACwOpenActions);
@@ -788,8 +939,8 @@ begin
       scol := 6;
     if sortcol = 'comment' then
     begin
-      smethode := 2; //2=String
-     scol := 12;
+      smethode := 2; // 2=String
+      scol := 12;
     end;
 
     setlength(dSort, dl);
@@ -824,7 +975,7 @@ begin
         begin
           found := findCwactionFromId(actions[i].actionId);
           if (found > -1) then
-            dSort[i] := cwactions[found].openTime
+            dSort[i] := cwActions[found].openTime
           else
             dSort[i] := -1;
           continue;
@@ -833,7 +984,7 @@ begin
         begin
           found := findCwactionFromId(actions[i].actionId);
           if (found > -1) then
-            dSort[i] := cwactions[found].CloseTime
+            dSort[i] := cwActions[found].CloseTime
           else
             dSort[i] := -1;
           continue;
@@ -842,9 +993,9 @@ begin
         begin
           found := findCwactionFromId(actions[i].actionId);
           if (found > -1) then
-            ssort[i] := getcwcomment(cwactions[found].commentid)
+            sSort[i] := getcwcomment(cwActions[found].commentid)
           else
-            ssort[i] := '';
+            sSort[i] := '';
           continue;
         end;
 
@@ -914,8 +1065,8 @@ begin
     if sortcol = 'comment' then
 
     begin
-      smethode := 2; //2=String
-      scol :=10;
+      smethode := 2; // 2=String
+      scol := 10;
     end;
 
     setlength(dSort, dl);
@@ -937,7 +1088,7 @@ begin
         end;
         if scol = 3 then
         begin
-          smethode:=2;
+          smethode := 2;
           sSort[i] := actions[i].symbol;
           continue;
         end;
@@ -949,33 +1100,33 @@ begin
         // !!! ändern
         if scol = 5 then
         begin
-          dsort[i] := actions[i].close_time;
+          dSort[i] := actions[i].close_time;
           continue;
         end;
         if scol = 6 then
         begin
-          dsort[i] := actions[i].cmd;
+          dSort[i] := actions[i].cmd;
           continue;
         end;
         if scol = 7 then
         begin
-          dsort[i] := actions[i].open_price;
+          dSort[i] := actions[i].open_price;
           continue;
         end;
         if scol = 8 then
         begin
-          dsort[i] := actions[i].close_price;
+          dSort[i] := actions[i].close_price;
           continue;
         end;
         if scol = 9 then
         begin
-          dsort[i] := actions[i].volume;
+          dSort[i] := actions[i].volume;
           continue;
         end;
-        if scol =10 then
+        if scol = 10 then
         begin
-          smethode:=2;
-          ssort[i] := actions[i].comment;
+          smethode := 2;
+          sSort[i] := actions[i].comment;
           continue;
         end;
 
@@ -1004,7 +1155,6 @@ begin
   end;
   Panel2Resize(self);
 end;
-
 
 procedure TDynGrid.sortGridCwactions(source: string; sortcol: string; sortdir: integer; var actions: DACwAction);
 var
@@ -1513,10 +1663,12 @@ var
 begin
   p := SpeedButton1.ClientToScreen(point(0, SpeedButton1.Height));
   m := 0;
+  if source = 'cwcomments' then
+    m := 2;
   if source = 'cwactions' then
     m := 2;
   if source = 'cwfilteredactions' then
-    m := 2;
+    m := 3;
   if source = 'cwsingleuseractions' then
     m := 2;
   if source = 'cwusers2' then // neu 28.10.19
@@ -1525,7 +1677,11 @@ begin
     m := 2;
   if source = 'cwopenactions2' then
     m := 2;
+  if source = 'cwopenactionsOTR' then
+    m := 3;
 
+  if (m = 3) then
+    PopupMenu3.Popup(p.X, p.Y); // Columnselection und CSV-Export
   if (m = 2) then
     PopupMenu2.Popup(p.X, p.Y); // Columnselection und CSV-Export
   if (m = 1) then
@@ -1978,32 +2134,32 @@ begin
 
             if scol = 4 then
             begin
-              dSort[l] := summaries[i][j][k].TradesCount;
+              dSort[l] := summaries[i][j][k].sTradesCount;
               continue;
             end;
             if scol = 5 then
             begin
-              dSort[l] := summaries[i][j][k].TradesVolumeTotal;
+              dSort[l] := summaries[i][j][k].sTradesVolumeTotal;
               continue;
             end;
             if scol = 6 then
             begin
-              dSort[l] := summaries[i][j][k].TradesProfitTotal;
+              dSort[l] := summaries[i][j][k].sTradesProfitTotal;
               continue;
             end;
             if scol = 7 then
             begin
-              dSort[l] := summaries[i][j][k].TradesUsers;
+              dSort[l] := summaries[i][j][k].sTradesUsers;
               continue;
             end;
             if scol = 8 then
             begin
-              dSort[l] := summaries[i][j][k].TradesSwapTotal;
+              dSort[l] := summaries[i][j][k].sTradesSwapTotal;
               continue;
             end;
             if scol = 9 then
             begin
-              dSort[l] := summaries[i][j][k].TradesProfitSwapTotal;
+              dSort[l] := summaries[i][j][k].sTradesProfitSwapTotal;
               continue;
             end;
           end;
@@ -2115,32 +2271,32 @@ begin
 
         if scol = 4 then
         begin
-          dSort[l] := summaries[i].TradesCount;
+          dSort[l] := summaries[i].sTradesCount;
           continue;
         end;
         if scol = 5 then
         begin
-          dSort[l] := summaries[i].TradesVolumeTotal;
+          dSort[l] := summaries[i].sTradesVolumeTotal;
           continue;
         end;
         if scol = 6 then
         begin
-          dSort[l] := summaries[i].TradesProfitTotal;
+          dSort[l] := summaries[i].sTradesProfitTotal;
           continue;
         end;
         if scol = 7 then
         begin
-          dSort[l] := summaries[i].TradesUsers;
+          dSort[l] := summaries[i].sTradesUsers;
           continue;
         end;
         if scol = 8 then
         begin
-          dSort[l] := summaries[i].TradesSwapTotal;
+          dSort[l] := summaries[i].sTradesSwapTotal;
           continue;
         end;
         if scol = 9 then
         begin
-          dSort[l] := summaries[i].TradesProfitSwapTotal;
+          dSort[l] := summaries[i].sTradesProfitSwapTotal;
           continue;
         end;
       end;
@@ -2171,6 +2327,7 @@ end;
 
 procedure TDynGrid.gridHandler(pexp: pExport);
 // damit man auch nil übergeben kann muß der Typ ein Zeigertyp sein !
+// nil=kein Export oder pexp ein Export-Objekt
 var
 
   i, j, k: integer;
@@ -2207,9 +2364,9 @@ begin
   if source = 'cwopenactionsOTR' then
     maxDataRows := length(cwTradeRecords);
   if source = 'cwactions' then
-    maxDataRows := length(cwactions);
+    maxDataRows := length(cwActions);
   if source = 'cwfilteredactions' then
-    maxDataRows := length(cwfilteredactions);
+    maxDataRows := length(cwFilteredActions);
   if source = 'cwsingleuseractions' then
     maxDataRows := length(cwSingleUserActions);
   if source = 'cwsymbols' then
@@ -2235,10 +2392,10 @@ begin
   begin
     vScrollvon := 0;
     vscrollbis := maxDataRows;
-    if (maxDataRows > 30000) then
+    if (maxDataRows > 30000000) then
     begin
-      showmessage('Maximum number of lines = 30000');
-      vscrollbis := 29999;
+      showmessage('Maximum number of lines = 30000000');
+      vscrollbis := 29999999;
     end;
   end;
 
@@ -2253,26 +2410,26 @@ begin
     doOpenActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, selSorted, vScrollvon, vscrollbis - 1, false, sl,
       exp.onlySelection);
   if source = 'cwopenactionsOTR' then
-    doOpenActionsOTRGridCWDyn(SG, SGFieldCol, ixSorted, cwTradeRecords, selSorted, vScrollvon, vscrollbis - 1, false, sl,
-      exp.onlySelection);
-
+    doOpenActionsOTRGridCWDyn(SG, SGFieldCol, ixSorted, cwTradeRecords, selSorted, vScrollvon, vscrollbis - 1, false,
+      sl, exp.onlySelection);
   if source = 'cwactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwactions, cwactionsplus, selSorted, vScrollvon, vscrollbis - 1, false,
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwActions, cwactionsplus, selSorted, vScrollvon, vscrollbis - 1, false,
       sl, exp.onlySelection);
   if source = 'cwfilteredactions' then
-    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwfilteredactions, cwfilteredactionsplus, selSorted, vScrollvon,
+    doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwFilteredActions, cwFilteredactionsPlus, selSorted, vScrollvon,
       vscrollbis - 1, false, sl, exp.onlySelection);
   if source = 'cwsingleuseractions' then
     doActionsGridCWDyn(SG, SGFieldCol, ixSorted, cwSingleUserActions, cwSingleUserActionsPlus, selSorted, vScrollvon,
       vscrollbis - 1, false, sl, exp.onlySelection);
-
   if source = 'cwsymbols' then
     doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
     doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwUsers, cwusersplus, selSorted, vScrollvon, vscrollbis - 1, false, sl,
       exp.onlySelection);
   if source = 'cwcomments' then
-    doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, vScrollvon, vscrollbis - 1);
+    doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, selSorted, vScrollvon, vscrollbis - 1, false, sl,
+      exp.onlySelection);
+
   if source = 'cwsymbolsgroups' then
     doSymbolsGroupsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbolsGroups, vScrollvon, vscrollbis - 1);
   if source = 'cwfilteredsymbolsgroups' then
@@ -2364,30 +2521,32 @@ begin
           sortcol := grid.Cells[col, 0];
           sortdir := -sortdir;
           grid.Selection := NoSelection;
-          if source = 'cwopenactions1' then
-            sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
-          if source = 'cwopenactions2' then
-            sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
-          if source = 'cwopenactionsOTR' then
-            sortGridCwOpenActionsOTR(source, sortcol, sortdir, cwTradeRecords);
-          if source = 'cwactions' then
-            sortGridCwactions(source, sortcol, sortdir, cwactions);
-          if source = 'cwfilteredactions' then
-            sortGridCwactions(source, sortcol, sortdir, cwfilteredactions);
-          if source = 'cwsingleuseractions' then
-            sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
-          if source = 'cwsymbols' then
-            sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
-          if ((source = 'cwusers') or (source = 'cwusers2')) then
-            sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwusersplus);
-          if source = 'cwcomments' then
-            sortGridCwComments(source, sortcol, sortdir, cwComments);
-          if source = 'cwsymbolsgroups' then
-            sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
-          if source = 'cwfilteredsymbolsgroups' then
-            sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
-          if source = 'cwsummaries' then
-            sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
+          doSorting();
+
+          // if source = 'cwopenactions1' then
+          // sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
+          // if source = 'cwopenactions2' then
+          // sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ2);
+          // if source = 'cwopenactionsOTR' then
+          // sortGridCwOpenActionsOTR(source, sortcol, sortdir, cwTradeRecords);
+          // if source = 'cwactions' then
+          // sortGridCwactions(source, sortcol, sortdir, cwactions);
+          // if source = 'cwfilteredactions' then
+          // sortGridCwactions(source, sortcol, sortdir, cwfilteredactions);
+          // if source = 'cwsingleuseractions' then
+          // sortGridCwactions(source, sortcol, sortdir, cwSingleUserActions);
+          // if source = 'cwsymbols' then
+          // sortGridCwSymbols(source, sortcol, sortdir, cwSymbols, cwsymbolsplus);
+          // if ((source = 'cwusers') or (source = 'cwusers2')) then
+          // sortGridCwUsers(source, sortcol, sortdir, cwUsers, cwusersplus);
+          // if source = 'cwcomments' then
+          // sortGridCwComments(source, sortcol, sortdir, cwComments);
+          // if source = 'cwsymbolsgroups' then
+          // sortGridCwSymbolsGroups(source, sortcol, sortdir, cwSymbolsGroups);
+          // if source = 'cwfilteredsymbolsgroups' then
+          // sortGridCwSymbolsGroups(source, sortcol, sortdir, cwFilteredSymbolsGroups);
+          // if source = 'cwsummaries' then
+          // sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
 
         end
         else if fixedCol then
@@ -2506,9 +2665,9 @@ begin
                 // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
                 showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
               if source = 'cwactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwactions, i, SGColField[mucol], such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwActions, i, SGColField[mucol], such)
               else if source = 'cwfilteredactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwfilteredactions, i, SGColField[mucol], such)
+                found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, SGColField[mucol], such)
               else if source = 'cwsingleuseractions' then
                 found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, SGColField[mucol], such)
               else if source = 'cwsymbols' then

@@ -211,6 +211,8 @@ type
     edStoredActions: TEdit;
     DynGrid13: TDynGrid;
     Splitter4: TSplitter;
+    Button12: TButton;
+    Splitter5: TSplitter;
     procedure doLoadAllData();
 
     procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
@@ -284,6 +286,9 @@ type
     procedure doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
       var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 
+    procedure doCountUsersInActions(var actions: DACwAction; var actionsPlus: DACwActionPlus;
+      var groups: DACwSymbolGroup; var groupsCt: integer);
+
     procedure CategoryPanel9CollapseExpand(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure btnPieChartClick(Sender: TObject);
@@ -351,6 +356,10 @@ type
     procedure CheckBox2Click(Sender: TObject);
     procedure SpeedButton6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
+    procedure Panel4Resize(Sender: TObject);
+    procedure Panel26Resize(Sender: TObject);
+    procedure Panel6Resize(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -1174,10 +1183,14 @@ var
 begin
 
   doSymbolGroups('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, lbSymbolsGroupsInfo);
+
+  // diese Berechnungen werden letztlich gar nicht verwendet
   doSymbolGroupValues('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt,
     lbSymbolsGroupsInfo);
+  // Dieses Grid wird zwar gefüllt, ist aber gar nicht anzeigbar
   DynGrid8.initGrid('cwsymbolsgroups', 'groupId', 1, cwSymbolsGroupsCt, 18);
-  // nochmal die Symbol-Liste neu darstellen weil jetzt die Symbolgruppen drin sind
+
+  // nochmal die Symbol-Liste neu darstellen weil jetzt die Symbolgruppen drin sind. Zwei Spalten am Ende ...
   btnCwSymbolsToGridClick(nil);
 
   // //das entfällt
@@ -1308,8 +1321,11 @@ begin
   lbCSVError.Items.Add('Z:Build SymbolGroups:' + inttostr(GetTickCount - gt));
 
   // damit sind die SymbolGroups ermittelt und können ab jetzt verwendet werden
+  // jedem Symbol ist in cwSymbolsPlus().groupId eine GroupId zugeordnet welche die Nummer der Group darstellt
 
   // Der Rest ist hinfällig weil künftig anders gelöst !
+  // In den Filtern/Grouping wird separat alles nochmal gerechnet
+
   // Problem: die Actions werden zwar selektiert verwendet aber die groups ist das 'große' Array mit allen Symbolen
   // - auch den in den selektierten Actions nicht verwendeten
   // die Zuordnung jedoch stimmt zwischen groups und cwsymbolsplus.
@@ -1321,48 +1337,54 @@ end;
 procedure TForm2.doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
   var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 var
-  gt: cardinal;
-  ba: Bytearray;
+  gt, gt2: cardinal;
+
+begin
+  gt2 := GetTickCount;
+  gt := GetTickCount;
+  computeSymbolGroupValues(actions, groups, lb); // einziger Aufruf -> Volume Profit Swap usw
+  lbCSVError.Items.Add('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
+  doCountUsersInActions(actions, actionsPlus, groups, groupsCt);
+end;
+
+procedure TForm2.doCountUsersInActions(var actions: DACwAction; var actionsPlus: DACwActionPlus;
+  var groups: DACwSymbolGroup; var groupsCt: integer);
+var
+  gt, gt2: cardinal;
   aba: array of Bytearray;
   i, j, ll, ct: integer;
 begin
+  // global: cwSymbolsPlus wegen der groupIds und cwUsers
+  // übergeben werden die  actions,actionsplus und groups wo dann später die Anzahl Users drinstehen
   gt := GetTickCount;
-  computeSymbolGroupValues(actions, groups, lb);
-  lbCSVError.Items.Add('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
-
-  gt := GetTickCount;
-  // User zählen über ein 2-dimensionales Riesenarray
-  // aba = Array of ByteArray
+  // Zweck: User zählen über ein 2-dimensionales Riesenarray  // aba = Array of ByteArray
   setlength(aba, groupsCt);
   ll := length(cwUsers);
   for i := 0 to groupsCt - 1 do
   begin
     setlength(aba[i], ll);
   end;
-  // ganze Matrix nullsetzen
-  for i := 0 to groupsCt - 1 do
+  for i := 0 to groupsCt - 1 do // ganze Matrix nullsetzen
     for j := 0 to length(cwUsers) - 1 do
       aba[i][j] := 0;
   lbCSVError.Items.Add('Z:Usercount vorbereiten:' + inttostr(GetTickCount - gt));
-
   gt := GetTickCount;
   for i := 0 to length(actions) - 1 do
   begin
     // alle Actions mit Gruppe/UserID in Matrix um 1 erhöhen
-    // alte Variante
-    // inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]);
+    // alte Variante: inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, finduserindex(actions[i].userId)]); war langsamer wegen findUserIndex
     try
-      inc(aba[cwSymbolsPlus[cwActions[i].symbolId].groupId, actionsPlus[i].userIndex]);
+      inc(aba[cwSymbolsPlus[actions[i].symbolId].groupId, actionsPlus[i].userIndex]);
     except
       on E: Exception do // hier kommen etliche Fehler vor
         lbCSVError.Items.Add('Err doSymbolGroupValues:' + E.ToString);
     end;
   end;
   lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
-
   gt := GetTickCount;
   for i := 0 to groupsCt - 1 do
   begin
+    // wieviele User kommen in der jeweiligen (Symbol)Gruppe vor
     ct := 0;
     for j := 0 to length(cwUsers) - 1 do
     begin
@@ -1374,8 +1396,9 @@ begin
       groups[i].TradesUsers := ct;
     end;
   end;
-
   lbCSVError.Items.Add('Z:Gruppen Userwerte zuordnen:' + inttostr(GetTickCount - gt));
+  gt2 := GetTickCount - gt2;
+  lbCSVError.Items.Add('Z:Gruppen Userwerte gesamt:' + inttostr(gt2)); // 141 msec für alle 3.5MioActions
 
 end;
 
@@ -1669,7 +1692,7 @@ begin
   fastsort2arrayString(sort, cwsymbolsSortindex, 'VUAS');
   dosleep(CSleep);
 
-  // users sortieren in einem extra Feld
+  // users Sortieren in einem extra Feld
   cwusersct := length(cwUsers);
   setlength(isort, cwusersct);
   // findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
@@ -1760,6 +1783,27 @@ begin
   // end;
 
   //
+end;
+
+procedure TForm2.Panel26Resize(Sender: TObject);
+begin
+  // das ist die Rettung damit die Scrollbars nach Resize des Forms richtig positioniert werden
+  Panel4.Width := Panel4.Width + 1;
+  Panel4.Width := Panel4.Width - 1;
+
+end;
+
+procedure TForm2.Panel4Resize(Sender: TObject);
+begin
+  //
+
+end;
+
+procedure TForm2.Panel6Resize(Sender: TObject);
+begin
+  DynGrid4.Width := DynGrid4.Width + 1;
+  DynGrid4.Width := DynGrid4.Width - 1;
+
 end;
 
 procedure TForm2.pnlStartBackResize(Sender: TObject);
@@ -1993,6 +2037,22 @@ begin
   showmessage(inttostr(GetTickCount - gt) + ' ' + inttostr(ct));
 end;
 
+procedure TForm2.Button12Click(Sender: TObject);
+var
+  buttonselected: integer;
+begin
+  buttonselected := messagedlg('Really delete Filter: ' + cbLoadFilters.text + ' ?', mtError, mbOKCancel, 0);
+  if (buttonselected = mrOK) then
+  begin
+    try
+      deletefile(cbLoadFilters.text + '.flt');
+      fillCbLoadFilters;
+    except
+      showmessage('File nox exists!');
+    end;
+  end;
+end;
+
 procedure TForm2.btnShowEvaluationClick(Sender: TObject);
 begin
   // lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
@@ -2012,10 +2072,7 @@ begin
   DynGrid13.initGrid('cwopenactionsOTR', 'actionId', 1, length(cwTradeRecords), 13);
   DynGrid13.lblHeader.Caption := 'OpenActionsOTR:' + inttostr(length(cwTradeRecords));
 
-
-
-
-  end;
+end;
 
 procedure TForm2.Button2Click(Sender: TObject);
 var
@@ -2092,6 +2149,7 @@ var
   gt: cardinal;
   i, index: integer;
 begin
+  // manuelles Anklicken der Berechnung
   mynow := monthof(now) + 12 * yearof(now); // viel gebraucht und aus Speedgründen hier einmalig belegt
   FilterTopic := 'manual';
   doFilter();
@@ -2112,6 +2170,7 @@ var
   gt: cardinal;
 begin
   gt := GetTickCount;
+  // erstmal auf alle cwusersct dimensionieren
   setlength(u, cwusersct);
   try
     for i := 0 to cwFilteredActionCt - 1 do
@@ -2122,7 +2181,9 @@ begin
   except
     p := p;
   end;
+  // Zähler nullen
   ct := 0;
+  // Arrays vordimensionieren auf alle Users
   setlength(cwusersselection, cwusersct);
   setlength(cwusersselectionPlus, cwusersct);
   for i := 0 to cwusersct - 1 do
@@ -2132,27 +2193,35 @@ begin
       cwusersselection[ct - 1] := cwUsers[i];
       cwusersselectionPlus[ct - 1] := cwUsersPlus[i];
     end;
+  // nun auf die richtigen Dimensionen verkürzen
   cwusersselectionct := ct + 1;
   setlength(cwusersselection, cwusersselectionct);
   setlength(cwusersselectionPlus, cwusersselectionct);
 
+  // nun die Sortierung vorbereiten
   setlength(isort, cwusersselectionct);
   setlength(cwUsersSelectionSortindex, cwusersselectionct);
   // cwUsersSelectionSortIndex(111)='8212345=111'
-  setlength(cwUsersSelectionSortindex2, cwusersselectionct); // cwUsersSelectionSortIndex2(111)=8212345
+
   for i := 0 to cwusersselectionct - 1 do
   begin
     isort[i] := cwusersselection[i].userId;
     cwUsersSelectionSortindex[i] := inttostr(cwusersselection[i].userId) + '=' + inttostr(i);
   end;
+  // userid=ix sortieren
+  // isort wird sortiert
   fastsort2arrayIntegerString(isort, cwUsersSelectionSortindex, 'VUA');
+
+  // zur Verwendung des schnelleren BinSearchString2 ...
+  setlength(cwUsersSelectionSortindex2, cwusersselectionct);
+  // cwUsersSelectionSortIndex2(111)=8212345
   for i := 0 to cwusersselectionct - 1 do
   begin
     p := pos('=', cwUsersSelectionSortindex[i]) - 1;
     cwUsersSelectionSortindex2[i] := strtoint(leftstr(cwUsersSelectionSortindex[i], p));
   end;
 
-  lbCSVError.Items.Add('Z:F.UserGrtoup:' + inttostr(GetTickCount - gt));
+  lbCSVError.Items.Add('Z:F.UserGroup:' + inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
@@ -2219,16 +2288,16 @@ end;
 
 procedure TForm2.doGroup();
 var
-  i, j, k, l: integer;
-  gt: cardinal;
+  g, i, j, k, l, ui, X: integer;
+  gt, gt1: cardinal;
   s: string;
-  ct: integer;
+  ct, cnt: integer;
   ctmax: integer;
   le: array [0 .. 2] of integer;
   // cw3Summaries: DA3CwSummary;
   // cw3SummariesCt: integer;
   max1, max2, max3, max: integer;
-  fall: array [0 .. 9] of integer; // wie oft kommt welche Gruppe vor
+  fall: array [0 .. 10] of integer; // wie oft kommt welche Gruppe vor
   p: array [0 .. 2] of integer;
   par: array [0 .. 2] of string;
   TradesCount: integer;
@@ -2237,7 +2306,17 @@ var
   TradesSwapTotal: double;
   TradesProfitSwapTotal: double;
   gct: integer;
+  aba: array of Bytearray;
+  sumCt: integer;
+  selUsersCt, found: integer;
+  merk: string;
+  sortIndex: Stringarray; // string
+  sortIndexOhne: Stringarray; // string
+
+  isort: intarray;
+  ps: integer;
 begin
+  gt1 := GetTickCount;
   gt := GetTickCount;
   gct := 0;
   for i := 1 to GroupingCt do
@@ -2319,11 +2398,23 @@ begin
       inc(fall[8]);
     end;
 
+    if (cwgrouping.element[i].styp) = 'broker' then
+    begin
+      le[i] := 2;
+      inc(fall[9]);
+    end;
+
   end;
 
   // le[] sind immer die Anzahl der möglichen Varianten des betreffenden Groupkriteriums
+  // Hier sollte die Gesamtanzahl einfach möglichst klein sein. Knackpunkt des Speichermangels
   max := le[0] * le[1] * le[2];
-  setlength(cw3summaries, le[0], le[1], le[2]);
+  try
+    setlength(cw3summaries, le[0], le[1], le[2]);
+  except
+    showmessage('zu viele Elemente !');
+    exit;
+  end;
   max1 := length(cw3summaries);
   max2 := length(cw3summaries[0]);
   max3 := length(cw3summaries[0][0]);
@@ -2335,16 +2426,20 @@ begin
         cw3summaries[i][j][k].par0 := '';
         cw3summaries[i][j][k].par1 := '';
         cw3summaries[i][j][k].par2 := '';
-        cw3summaries[i][j][k].TradesCount := 0;
-        cw3summaries[i][j][k].TradesVolumeTotal := 0;
-        cw3summaries[i][j][k].TradesProfitTotal := 0;
-        cw3summaries[i][j][k].TradesSwapTotal := 0;
-        cw3summaries[i][j][k].TradesProfitSwapTotal := 0;
-        cw3summaries[i][j][k].TradesUsers := 0;
+        cw3summaries[i][j][k].sTradesCount := 0;
+        cw3summaries[i][j][k].sTradesVolumeTotal := 0;
+        cw3summaries[i][j][k].sTradesProfitTotal := 0;
+        cw3summaries[i][j][k].sTradesSwapTotal := 0;
+        cw3summaries[i][j][k].sTradesProfitSwapTotal := 0;
+        cw3summaries[i][j][k].sTradesUsers := 0; // noch nicht verwendet
       end;
   try
+    // alle gefilterten Actions durchlaufen
     for i := 0 to cwFilteredActionCt - 1 do
     begin
+      // es gibt max. drei Gruppierungselemente  .
+      // Für jede Action wird anhand des Typs der Elemente immer ein Paar aus Integerwert/String ermittelt, welches zB die AccountId einer Action mit Id und Text sein kann
+      //
       for j := 0 to 2 do
       begin
         case cwgrouping.element[j].typ of
@@ -2360,7 +2455,7 @@ begin
               par[j] := cwSymbolsGroups[cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId].name + '/' + s;
               // oder der Name !
             end;
-          2: // User
+          2: // User nicht verwendet
             begin
               p[j] := finduserindex(cwFilteredActions[i].userId);
               par[j] := inttostr(cwFilteredActions[i].userId);
@@ -2389,7 +2484,6 @@ begin
             end;
           7: // brokerAccount
             begin
-              // FEHLT NOCH
               p[j] := cwFilteredActions[i].accountId;
               par[j] := inttostr(cwFilteredActions[i].accountId);
               // BESSER machen mit Namen
@@ -2401,7 +2495,21 @@ begin
                 yearof(unixtodatetime(cwFilteredActions[i].closeTime)), par[j]);
               // par[j] := inttostr(monthof(unixtodatetime(cwFilteredActions[i].closeTime))+'/'+yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
             end;
+          9: // broker
+            begin
+              if (cwFilteredActions[i].accountId < 3) then
+              begin
+                p[j] := 0;
+                par[j] := 'LCG';
+              end
+              else
+              begin
+                p[j] := 1;
+                par[j] := 'AT';
+              end;
+            end;
         else
+          // das wäre eine nicht vorgesehene Gruppierungsnummer - kann eigentlich nicht vorkommen
           begin
             p[j] := 0;
             par[j] := '?';
@@ -2410,20 +2518,29 @@ begin
         end;
       end;
 
-      // jetzt sind alle "Kästchen" im 3D-Array gefüllt
+      // jetzt sind alle drei 'Koordinaten' im 3D-Array bekannt
+      // wir sind immer noch bei einer einzelnen Action
       cw3summaries[p[0], p[1], p[2]].par0 := par[0];
+      // das und die folgenden beiden wird immer wieder gleich belegt bzw überschrieben. Es bleibt aber entweder leer oder ist eindeutig belegt
       cw3summaries[p[0], p[1], p[2]].par1 := par[1];
       cw3summaries[p[0], p[1], p[2]].par2 := par[2];
-      cw3summaries[p[0], p[1], p[2]].TradesCount := cw3summaries[p[0], p[1], p[2]].TradesCount + 1;
-      cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal := cw3summaries[p[0], p[1], p[2]].TradesVolumeTotal +
+      // die drei Werte weisen jeder Action ein 'Kästchen' im 3D-Raum zu. Diese Koordinaten wären gut zu merken aber das kostet an dieser Stelle zu viel Platz
+      // da es bei 4 Mio schon wieder 32MB sind. Daher erstmal fertigrechnen lassen und später nochmal dasselbe von vorn wenn bereits die cwSummaries 'eingedampft' sind
+      // Hierbei werden dann sehr viel weniger Elemente benötigt da bei einer sinnvollen Gruppierung eine 'übersichtliche' Anzahl Gruppen übrigbleibt
+      cw3summaries[p[0], p[1], p[2]].sTradesCount := cw3summaries[p[0], p[1], p[2]].sTradesCount + 1;
+      // hier wird hochgezählt
+      cw3summaries[p[0], p[1], p[2]].sTradesVolumeTotal := cw3summaries[p[0], p[1], p[2]].sTradesVolumeTotal +
+      // und aufsummiert
         cwFilteredActions[i].volume;
 
-      cw3summaries[p[0], p[1], p[2]].TradesProfitTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitTotal +
+      cw3summaries[p[0], p[1], p[2]].sTradesProfitTotal := cw3summaries[p[0], p[1], p[2]].sTradesProfitTotal +
         cwFilteredActions[i].profit;
-      cw3summaries[p[0], p[1], p[2]].TradesSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesSwapTotal +
+      cw3summaries[p[0], p[1], p[2]].sTradesSwapTotal := cw3summaries[p[0], p[1], p[2]].sTradesSwapTotal +
         cwFilteredActions[i].swap;
-      cw3summaries[p[0], p[1], p[2]].TradesProfitSwapTotal := cw3summaries[p[0], p[1], p[2]].TradesProfitSwapTotal +
+      cw3summaries[p[0], p[1], p[2]].sTradesProfitSwapTotal := cw3summaries[p[0], p[1], p[2]].sTradesProfitSwapTotal +
         cwFilteredActions[i].profit + cwFilteredActions[i].swap;
+
+      // cw3summaries[p[0], p[1], p[2]].sTradesUsers:=0;//das fehlt noch
 
       TradesCount := TradesCount + 1;
       TradesVolumeTotal := TradesVolumeTotal + cwFilteredActions[i].volume;
@@ -2436,6 +2553,7 @@ begin
       s := E.ToString;
 
   end;
+
 
   // Ausdünnen
   //
@@ -2456,6 +2574,9 @@ begin
   // SetLength(groups, groupsCt);
   // lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
   // end;
+
+  // aus den vielen vielen cw3summaries werden nun alle ausgelassen, die ohnehin leer sind (die allermeisten) und das Ergebnis landet
+  // in einem nur noch 1-dimensionalen Array cwSummaries
   ctmax := 10000;
   setlength(cwsummaries, ctmax + 1);
   ct := -1;
@@ -2468,6 +2589,9 @@ begin
           begin
             inc(ct);
             cwsummaries[ct] := cw3summaries[i][j][k];
+            cwsummaries[ct].merk := inttostr(i) + '-' + inttostr(j) + '-' + inttostr(k);
+            // das dient später der Ermittlung der STradesUsers
+            // anhand dieses Strings (wie 12-2-23) kann der Index von cwSummaries gefunden werden über den dann die Users gezählt werden
             if (ct = ctmax) then
             begin
               ctmax := ctmax + 10000;
@@ -2477,20 +2601,191 @@ begin
           end;
 
         end;
-    // hier ist der Moment wo der SPeicherplatzbedarf am grössten ist
+    // hier ist der Moment wo der Speicherplatzbedarf am grössten ist
     // mit User SymbolGroups und YearsOpen sind es um die 950 MB
   except
     on E: Exception do
       s := E.ToString;
 
   end;
-  setlength(cwsummaries, ct + 1);
+  sumCt := ct;
+  setlength(cwsummaries, sumCt + 1);
+  // das große Array wird nun endlich wieder gelöscht
   setlength(cw3summaries, 0, 0, 0);
+
+  // nun käme noch die Summe der User .sTradeUsers dazu
+  // hierfür wird dann der Rechenaufwand übermenschlich. Es wäre kein Problem wenn man nun die Actions der ganzen cwSummaries noch einzen kennen würde
+  // im Grund bräuchte man eine vierte Dimension zu jedem Element, nämlich ein Bytearray mit allen Usern. Dann läuft man alle Actions durch und setzt jeweils eine UserId hierin
+  // Am Ende zählt man wie viele verschiedene User das dann jeweils sind
+  // An dieser Stelle hat cwSummaries ja bereits eine deutlich kleinere Anzahl von Elementen (andernfalls ist die Auswertung sowieso Blödsinn).
+  // von daher wäre es vielleicht doch machbar !
+
+  // Sortierung vornehmen und damit schnelle Binärsuche vorbereiten
+  setlength(isort, sumCt + 1);
+  // findUserIndex und findUserName verwenden die cwUsersSortindex und cwUsersSortindex2
+  setlength(sortIndex, sumCt + 1); // 1-2-3=123
+  setlength(sortIndexOhne, sumCt + 1); // 1-2-3 ohne den Rest
+  for i := 0 to sumCt do
+  begin
+    isort[i] := i;
+    sortIndex[i] := cwsummaries[i].merk + '=' + inttostr(i);
+    sortIndexOhne[i] := cwsummaries[i].merk;
+  end;
+  fastsort2arrayStringInteger(isort, sortIndexOhne, 'UA');
+//
+//  for i := 0 to sumCt do
+//  begin
+//    ps := pos('=', sortIndex[i]);
+//    sortIndexOhne[i] := leftstr(sortIndex[i],ps - 1);
+//    try
+//    isort[i]:= strtoint(sortIndex[i].Substring(ps));
+//    except
+//     ps:=ps;
+//    end;
+//  end;
+
+  if (sumCt < 100000) then
+  begin
+    // nur wenn die Gruppenanzahl "klein" genug ist werden die User summiert
+    gt := GetTickCount;
+    setlength(aba, sumCt + 1);
+    selUsersCt := length(cwusersselection); // eigentlich reicht hier auch die bereits reduzierte Useranzahl
+    for i := 0 to sumCt do
+    begin
+      setlength(aba[i], selUsersCt);
+    end;
+
+//    for i := 0 to sumCt do // ganze Matrix nullsetzen  - notwendig ?
+//      for j := 0 to selUsersCt - 1 do
+//        aba[i][j] := 0;
+
+    // nun können die Bytearrays belegt werden
+    // Es werden nun alle Actions durchlaufen
+    // in j wird der Userindex eingetragen bzw erhöht
+    // in i der Index der Group
+    for i := 0 to cwFilteredActionCt - 1 do
+    begin
+      ui := finduserSelectionIndex(cwFilteredActions[i].userId);
+      // nun muss wieder j=0..2 die Suche der Kriterien durchlaufen werden wie obem
+      for j := 0 to 2 do
+      begin
+        case cwgrouping.element[j].typ of
+          0: // unused
+            begin
+              p[j] := 0;
+            end;
+          1: // SymbolGroup
+            begin
+              p[j] := cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId;
+            end;
+          2: // User nicht verwendet
+            begin
+              p[j] := finduserindex(cwFilteredActions[i].userId);
+            end;
+          3: // UserId =UserSelection
+            begin
+              p[j]:=ui;//siehe oben gerade erst gesucht
+              //p[j] := finduserSelectionIndex(cwFilteredActions[i].userId);
+            end;
+          4: // YearsOpen
+            begin
+              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].openTime)));
+            end;
+          5: // YearsClose
+            begin
+              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+            end;
+          6: // dateSpecial
+            begin
+              // FEHLT NOCH
+              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+            end;
+          7: // brokerAccount
+            begin
+              p[j] := cwFilteredActions[i].accountId;
+            end;
+          8: // months
+            begin
+              // FEHLT NOCH
+              p[j] := trimMonthYear(monthof(unixtodatetime(cwFilteredActions[i].closeTime)),
+                yearof(unixtodatetime(cwFilteredActions[i].closeTime)), par[j]);
+            end;
+          9: // broker
+            begin
+              if (cwFilteredActions[i].accountId < 3) then
+              begin
+                p[j] := 0;
+              end
+              else
+              begin
+                p[j] := 1;
+              end;
+            end;
+        else
+          // das wäre eine nicht vorgesehene Gruppierungsnummer - kann eigentlich nicht vorkommen
+          begin
+            p[j] := 0;
+          end;
+          ;
+        end;
+      end;
+      merk := inttostr(p[0]) + '-' + inttostr(p[1]) + '-' + inttostr(p[2]);
+
+      // nun ermitteln welchem cwsummaries[x].merk das merk entspricht
+      // das geht am schnellsten über eine indizierte Suche
+      /// /
+      // found:=-1;
+      // for k:=0 to sumct do
+      // begin
+      /// /        found:=1;
+      /// /        break;
+      // if(cwsummaries[k].merk=merk) then
+      // begin
+      // found:=k;
+      // break;
+      // end;
+      // end;
+
+      found := binSearchString(sortIndexOhne, merk);
+      if (found = -1) then
+      begin
+      //zur Fehlersuche
+        found := binSearchString(sortIndexOhne, merk);
+      end;
+      if (found > -1) then
+      begin
+        // dann wird in aba[x][ui] der Wert auf 1 gesetzt = belegt
+
+        ps := pos('=', sortIndex[found]);
+        found := strtoint(sortIndex[found].Substring(ps));
+
+        //schneller...
+        //found:=isort[found];
+        aba[found][ui] := 1; // genügt - man könnte aber auch hochzählen wenn die Anzahl interessieren würde
+      end;
+    end;
+    // nun sind alle Actions durchlaufen
+
+    // nun die aba[x][i] durchlaufen und wenn <>0 +1 so daß am Ende die gesuchte Anzahl steht
+    for i := 0 to sumCt do
+    begin
+      cnt := 0;
+      for k := 0 to selUsersCt - 1 do
+      begin
+        if (aba[i][k] > 0) then
+          inc(cnt);
+      end;
+      cwsummaries[i].sTradesUsers := cnt;
+    end;
+
+    gt := GetTickCount - gt;
+    lbdebug('UsersCount:' + inttostr(gt));
+  end;
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
   DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 9);
   DynGrid9.lblHeader.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt) + ' z:'
-    + inttostr(GetTickCount - gt);
+    + inttostr(GetTickCount - gt1);
 
 end;
 
@@ -2578,6 +2873,8 @@ begin
     result := 7;
   if styp = ('months') then
     result := 8;
+  if styp = ('broker') then
+    result := 9;
 
 end;
 
@@ -2780,7 +3077,7 @@ begin
             // closed >=16.9 oder 0=noch offen
             ok1 := true;
             u1 := getUnixTimefromstring(Filter[i].edValue.text); // Unix Zeit um 0 Uhr des Tages
-            z1 := unixtodatetime(u1) - 1;                        // Datums des Vortags = die Datei welche am nähesten kurz vor u1 liegt
+            z1 := unixtodatetime(u1) - 1; // Datums des Vortags = die Datei welche am nähesten kurz vor u1 liegt
             // wenn die Datei aber zB am 5.12 23:00 geschrieben wurde und u1=6.12. 00:00 dann gibt es für Orders zwischen 23 und 0 Uhr Fehler
             // >= 16.9 = OpenProfit von Ende 15.9 daher -1 was die letzten Daten vom 15.9. beinhaltet
           end;
@@ -2820,10 +3117,10 @@ begin
     // alle Daten verwendbar ob So,Sa,Fr. Man könnte drei Versuche starten, diese Daten abzurufen
     ps.z1 := z1;
     ps.z2 := z2;
-    ps.ct1:=0;
-    ps.ct1nix:=0;
-    ps.ct2:=0;
-    ps.ct2nix:=0;
+    ps.ct1 := 0;
+    ps.ct1nix := 0;
+    ps.ct2 := 0;
+    ps.ct2nix := 0;
 
     getAndSortOpenActions(z1, cwOpenActionsZ1, accVon, accBis);
     getAndSortOpenActions(z2, cwOpenActionsZ2, accVon, accBis);
@@ -2850,7 +3147,7 @@ begin
         else
         begin
           inc(ps.ct1nix);
-          lbDebug('nF1:'+ inttostr(cwFilteredActions[i].actionId));
+          lbdebug('nF1:' + inttostr(cwFilteredActions[i].actionId));
         end;
       end
       else
@@ -2860,7 +3157,7 @@ begin
 
       if ((cwFilteredActions[i].closeTime <= u2) and (cwFilteredActions[i].closeTime <> 0)) then
       begin
-        //im Zeitabaschnitt geschlossen
+        // im Zeitabaschnitt geschlossen
         // B und D bekommen profit aus cwFilteredActions
         ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
           ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwFilteredActions[i].profit;
@@ -2888,7 +3185,7 @@ begin
         begin
           //
           inc(ps.ct2nix);
-          lbDebug('nF2:' + inttostr(cwFilteredActions[i].actionId));
+          lbdebug('nF2:' + inttostr(cwFilteredActions[i].actionId));
         end;;
       end;
       if (flag = false) then
@@ -3025,7 +3322,6 @@ end;
 procedure TForm2.Button7Click(Sender: TObject);
 begin
   loadCacheFileCw('openTrades\' + edStoredActions.text + '.otr', 'opentrades', lbCSVError);
-  showmessage('!!! die cwactions sind jetzt überschrieben !!!');
 end;
 
 procedure TForm2.Button8Click(Sender: TObject);
@@ -3504,6 +3800,8 @@ var
 begin
   // erstmal alle abschalten
   fe.Active := false;
+  fe.comment := (Sender as TButton).Caption;
+
   chkFilterWithOpenActions.Checked := false;
   for i := 1 to FilterCt do
   begin
@@ -3664,6 +3962,7 @@ begin
 
   doFilter();
   machUserSelection;
+  // Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
   doGroup();
 end;
 
@@ -3880,6 +4179,8 @@ begin
       TabSheet10.Visible := true;
 
   end;
+  // form2.Width:=form2.Width+1;
+  // form2.Width:=form2.Width-1;
 
 end;
 
@@ -3948,7 +4249,7 @@ begin
   askFinishUpdate := false; // Button drücken Update
   getAppOnMessage := true;
   Application.OnMessage := AppOnMessage;
-  Application.OnException := MyExceptionHandler;
+  Application.OnException := MyExceptionHandler; // hier landet dann
   faIni := TMemIniFile.Create(leftstr(Application.ExeName, length(Application.ExeName) - 4) + '2.ini');
   faIni.AutoSave := true;
 
@@ -3983,7 +4284,7 @@ begin
 
       // pw := InputBox('Password:', 'Password:', '');
 
-      if pw = '2502' then
+      if (pw = '2502') or (pw = '#') then
       begin
         pwok := true;
         break;
@@ -4302,10 +4603,13 @@ begin
   sl := TStringList.Create;
   for i := 0 to cwFilteredActionCt - 1 do
   begin
+    // ergibt name=value Wertepaare die später nach Name abgesucht werden können
     sl.Add(inttostr(cwFilteredActions[i].actionId) + '=' + inttostr(i))
   end;
   // sl.Sort;
   FastSortStList(sl, 'AU');
+  // ein Dummy Array mit allen cwFilteredActions anlegen
+  // dieses nacheinander mit allen nicht-Doppelten Actions füllen
   setlength(dummy, cwFilteredActionCt);
   dptr := -1;
   // sl.names[]  sl.valuefromindex[]
@@ -4629,7 +4933,7 @@ begin
   procedure TForm2.SpeedButton6Click(Sender: TObject);
   begin
     setPageIndex(2); // Internal
-    btnShowEvaluationClick(nil);
+
   end;
 
   procedure TForm2.SpeedButton7Click(Sender: TObject);
@@ -5069,6 +5373,7 @@ begin
   end;
 
   procedure TForm2.Button5Click(Sender: TObject);
+  // Save as filter
   var
     s: string;
   begin
@@ -5108,6 +5413,7 @@ begin
     finally
       cbLoadFilters.Items.EndUpdate;
     end;
+    cbLoadFilters.text := '';
   end;
 
   // Trackbar.Position must run at range 1-255...

@@ -41,7 +41,7 @@ begin
   ListBox1.Items.Clear;
 
   ListBox1.Items.Add('Open Actions Time 1');
-  ListBox1.Items.Add('Date after:' + FormatDateTime('dd/mm/yy', ps.z1));
+  ListBox1.Items.Add('Date End of:' + FormatDateTime('dd/mm/yy', ps.z1));
   ListBox1.Items.Add('Volume:' + FormatFloat(',#0.00', ps.volume1 / 100));
   ListBox1.Items.Add('Actions:' + inttostr(ps.ct1)+' nf:'+inttostr(ps.ct1nix));
 
@@ -64,7 +64,7 @@ begin
 
   ListBox1.Items.Add('');
   ListBox1.Items.Add('Open Actions Time 2');
-  ListBox1.Items.Add('Date before:' + FormatDateTime('dd/mm/yy', ps.z2 + 1));
+  ListBox1.Items.Add('Date End of:' + FormatDateTime('dd/mm/yy', ps.z2 ));
   ListBox1.Items.Add('Volume:' + FormatFloat(',#0.00', ps.volume2 / 100));
   ListBox1.Items.Add('Actions:' + inttostr(ps.ct2)+' nf:'+inttostr(ps.ct2nix));
 

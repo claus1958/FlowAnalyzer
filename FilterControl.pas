@@ -936,7 +936,8 @@ var
 begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
   // mit Binsearch2 sinds: 850  Super:-)
-
+  // Die Suche sucht aus 50001234=12345 binär schnell die 12345 heraus
+  // Das zweite Array enthält gleich die =12345 Werte damit diese nicht aus dem String 50001234=12345 mit StrToInt herausgelesen werden müssen
   i := BinSearchString2(cwuserssortindex, cwuserssortindex2, userId);
   if (i > -1) then
   begin

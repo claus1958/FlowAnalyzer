@@ -10,6 +10,7 @@ object DynGrid: TDynGrid
     Width = 757
     Height = 41
     TabOrder = 0
+    OnClick = Panel1Click
     object lblHeader: TLabel
       Left = 324
       Top = 9
@@ -179,7 +180,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu1: TPopupMenu
-    Left = 612
+    Left = 568
     Top = 8
     object Selectcolumns1: TMenuItem
       Caption = 'Column Selection'
@@ -191,7 +192,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu0: TPopupMenu
-    Left = 688
+    Left = 636
     Top = 8
     object MenuItem1: TMenuItem
       Caption = 'Column Selection'
@@ -199,7 +200,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu2: TPopupMenu
-    Left = 552
+    Left = 496
     Top = 8
     object MenuItem2: TMenuItem
       Caption = 'Column Selection'
@@ -212,6 +213,30 @@ object DynGrid: TDynGrid
     object CSVExportSelection1: TMenuItem
       Caption = 'CSV-Export Selection'
       OnClick = CSVExport1Click
+    end
+  end
+  object PopupMenu3: TPopupMenu
+    Left = 448
+    Top = 8
+    object MenuItem4: TMenuItem
+      Caption = 'Column Selection'
+      OnClick = Selectcolumns1Click
+    end
+    object MenuItem5: TMenuItem
+      Caption = 'CSV-Export'
+      OnClick = CSVExport1Click
+    end
+    object MenuItem6: TMenuItem
+      Caption = 'CSV-Export Selection'
+      OnClick = CSVExport1Click
+    end
+    object RemoveSelection1: TMenuItem
+      Caption = 'Remove Selection'
+      OnClick = RemoveSelection1Click
+    end
+    object RemoveallbutSelection1: TMenuItem
+      Caption = 'Remove all but Selection'
+      OnClick = RemoveallbutSelection1Click
     end
   end
 end
