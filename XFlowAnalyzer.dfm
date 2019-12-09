@@ -46,10 +46,6 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object btnLadeDialog: TButton
         Left = 604
         Top = 671
@@ -1276,7 +1272,7 @@ object Form2: TForm2
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 6
+              Width = 995
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -1287,6 +1283,7 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
+              ExplicitWidth = 6
             end
           end
           inline DynGrid2: TDynGrid
@@ -1441,10 +1438,6 @@ object Form2: TForm2
       Font.Style = []
       ImageIndex = 3
       ParentFont = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 8
         Top = 24
@@ -2138,10 +2131,6 @@ object Form2: TForm2
       Caption = 'TabSheet8'
       ImageIndex = 7
       TabVisible = False
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Button9: TButton
         Left = 36
         Top = 76
@@ -2182,10 +2171,6 @@ object Form2: TForm2
     object TabSheet9: TTabSheet
       Caption = 'Gelber Sack'
       ImageIndex = 8
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel21: TPanel
         Left = 120
         Top = 12
@@ -2274,10 +2259,6 @@ object Form2: TForm2
     object TabSheet10: TTabSheet
       Caption = 'Data Loading'
       ImageIndex = 9
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel10: TPanel
         AlignWithMargins = True
         Left = 216

@@ -34,16 +34,16 @@ end;
 
 procedure TForm10.zeigen();
 var
-  ps: ProfitSwapZ12;
+  ps: EvaluationResult;
   i: integer;
 begin
-  ps := FTCommons.PSFilteredActions;
+  ps := FTCommons.PSEvaluation;
   ListBox1.Items.Clear;
 
   ListBox1.Items.Add('Open Actions Time 1');
   ListBox1.Items.Add('Date End of:' + FormatDateTime('dd/mm/yy', ps.z1));
   ListBox1.Items.Add('Volume:' + FormatFloat(',#0.00', ps.volume1 / 100));
-  ListBox1.Items.Add('Actions:' + inttostr(ps.ct1)+' nf:'+inttostr(ps.ct1nix));
+  ListBox1.Items.Add('Actions:' + inttostr(ps.ct1)+' notfound:'+inttostr(ps.ct1nix));
 
   ListBox1.Items.Add('Profit EURO:' + FormatFloat(',#0.00', ps.Profit1[1]));
   ListBox1.Items.Add('Profit USD:' + FormatFloat(',#0.00', ps.Profit1[2]));

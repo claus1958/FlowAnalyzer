@@ -941,7 +941,7 @@ begin
   i := BinSearchString2(cwuserssortindex, cwuserssortindex2, userId);
   if (i > -1) then
   begin
-    p := pos('=', cwuserssortindex[i]);
+    p := pos('$', cwuserssortindex[i]);
 
     result := cwusers[strtoint(midstr(cwuserssortindex[i], p + 1, 255))].name;
   end

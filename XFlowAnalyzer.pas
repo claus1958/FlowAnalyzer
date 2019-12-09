@@ -345,7 +345,7 @@ type
     procedure getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions; accVon: integer; accBis: integer);
     function doHttpPutMemoryStreamToWorker(mStream: TMemoryStream; url: string): integer;
     procedure chkFilterWithOpenActionsClick(Sender: TObject);
-    procedure makePS(var ps: ProfitSwapZ12; source: string);
+    procedure makeEvaluation(var ps: EvaluationResult; source: string);
     procedure saveFilters(fName: string);
     procedure loadFilters(fName: string);
     procedure Button5Click(Sender: TObject);
@@ -1701,14 +1701,14 @@ begin
   for i := 0 to cwusersct - 1 do
   begin
     isort[i] := cwUsers[i].userId;
-    cwUsersSortindex[i] := inttostr(cwUsers[i].userId) + '=' + inttostr(i);
+    cwUsersSortindex[i] := inttostr(cwUsers[i].userId) + '$' + inttostr(i);
   end;
   dosleep(CSleep);
   fastsort2arrayIntegerString(isort, cwUsersSortindex, 'VUA');
   dosleep(CSleep);
   for i := 0 to cwusersct - 1 do
   begin
-    p := pos('=', cwUsersSortindex[i]) - 1;
+    p := pos('$', cwUsersSortindex[i]) - 1;
     cwUsersSortindex2[i] := strtoint(leftstr(cwUsersSortindex[i], p));
   end;
 
@@ -2060,9 +2060,10 @@ begin
   form10.show;
   form10.zeigen;
 
-  // die zusätzliche Darstellung der OpenActions für die beiden Zeiträume
+  // die zusätzliche Darstellung der OpenActions für die beiden Zeiträume in einem eigenen Tab zur Fehlersuche bzw Verdeutlichung
   // Dies sind immer die OpenActions über alle Broker hinweg !
   // hier sind immer ein paar Actions weniger enthalten als in den Grids des Inspectors
+
   DynGrid11.initGrid('cwopenactions1', 'actionId', 1, length(cwOpenActionsZ1), 13);
   DynGrid11.lblHeader.Caption := 'OpenActions:' + inttostr(length(cwOpenActionsZ1));
 
@@ -2152,16 +2153,12 @@ begin
   // manuelles Anklicken der Berechnung
   mynow := monthof(now) + 12 * yearof(now); // viel gebraucht und aus Speedgründen hier einmalig belegt
   FilterTopic := 'manual';
-  doFilter();
-
-  // -> cwFilteredActions cwFilteredActionsCt
-  // nun geht es weiter mit dem Gruppieren
-  machUserSelection();
-  doGroup();
+  doFilter();  // -> cwFilteredActions cwFilteredActionsCt
 end;
 
 procedure TForm2.machUserSelection();
-// die User aus einer großen CwFilteredActions Menge wird herausgesucht, so daß nicht mehr alle User in die Gruppierungsermittlung rein müssen
+// Aus der Gesamtzahl cwUsers werden nur die User aus einer großen CwFilteredActions Menge herausgesucht,
+// so daß nicht mehr alle User in die Gruppierungsermittlung rein müssen und so der Speicherbedarf möglichst klein bleibt
 var
   i, ix, ct, p: integer;
   v: array of cwuser;
@@ -2170,7 +2167,7 @@ var
   gt: cardinal;
 begin
   gt := GetTickCount;
-  // erstmal auf alle cwusersct dimensionieren
+  // erstmal u auf alle cwusersct dimensionieren
   setlength(u, cwusersct);
   try
     for i := 0 to cwFilteredActionCt - 1 do
@@ -2206,7 +2203,7 @@ begin
   for i := 0 to cwusersselectionct - 1 do
   begin
     isort[i] := cwusersselection[i].userId;
-    cwUsersSelectionSortindex[i] := inttostr(cwusersselection[i].userId) + '=' + inttostr(i);
+    cwUsersSelectionSortindex[i] := inttostr(cwusersselection[i].userId) + '$' + inttostr(i);
   end;
   // userid=ix sortieren
   // isort wird sortiert
@@ -2217,7 +2214,7 @@ begin
   // cwUsersSelectionSortIndex2(111)=8212345
   for i := 0 to cwusersselectionct - 1 do
   begin
-    p := pos('=', cwUsersSelectionSortindex[i]) - 1;
+    p := pos('$', cwUsersSelectionSortindex[i]) - 1;
     cwUsersSelectionSortindex2[i] := strtoint(leftstr(cwUsersSelectionSortindex[i], p));
   end;
 
@@ -2289,7 +2286,7 @@ end;
 procedure TForm2.doGroup();
 var
   g, i, j, k, l, ui, X: integer;
-  gt, gt1: cardinal;
+  gt, gt1,gt2: cardinal;
   s: string;
   ct, cnt: integer;
   ctmax: integer;
@@ -2308,7 +2305,7 @@ var
   gct: integer;
   aba: array of Bytearray;
   sumCt: integer;
-  selUsersCt, found: integer;
+  selUsersCt, found,found2: integer;
   merk: string;
   sortIndex: Stringarray; // string
   sortIndexOhne: Stringarray; // string
@@ -2628,21 +2625,23 @@ begin
   for i := 0 to sumCt do
   begin
     isort[i] := i;
-    sortIndex[i] := cwsummaries[i].merk + '=' + inttostr(i);
-    sortIndexOhne[i] := cwsummaries[i].merk;
+    sortIndex[i] := cwsummaries[i].merk + '$' + inttostr(i);
+    //sortIndexOhne[i] := cwsummaries[i].merk;
   end;
-  fastsort2arrayStringInteger(isort, sortIndexOhne, 'UA');
+  fastsort2arrayStringInteger(isort, sortIndex, 'UA');
 //
-//  for i := 0 to sumCt do
-//  begin
-//    ps := pos('=', sortIndex[i]);
-//    sortIndexOhne[i] := leftstr(sortIndex[i],ps - 1);
-//    try
-//    isort[i]:= strtoint(sortIndex[i].Substring(ps));
-//    except
-//     ps:=ps;
-//    end;
-//  end;
+  gt2:=gettickcount;
+  for i := 0 to sumCt do
+  begin
+    ps := pos('$', sortIndex[i]);
+    sortIndexOhne[i] := leftstr(sortIndex[i],ps - 1);
+    try
+    isort[i]:= strtoint(sortIndex[i].Substring(ps));
+    except
+     ps:=ps;
+    end;
+  end;
+  lbdebug('$ Suche'+inttostr(gettickcount-gt2));
 
   if (sumCt < 100000) then
   begin
@@ -2666,7 +2665,8 @@ begin
     for i := 0 to cwFilteredActionCt - 1 do
     begin
       ui := finduserSelectionIndex(cwFilteredActions[i].userId);
-      // nun muss wieder j=0..2 die Suche der Kriterien durchlaufen werden wie obem
+      // nun muss wieder j=0..2 die Suche der Kriterien durchlaufen werden wie oben
+      // man könnte das oben bereits abspeichern zu jeder Action aber das würde nochmal mehr Speicher benötigen
       for j := 0 to 2 do
       begin
         case cwgrouping.element[j].typ of
@@ -2756,12 +2756,13 @@ begin
       begin
         // dann wird in aba[x][ui] der Wert auf 1 gesetzt = belegt
 
-        ps := pos('=', sortIndex[found]);
-        found := strtoint(sortIndex[found].Substring(ps));
-
+//        ps := pos('$', sortIndex[found]);
+//        found2 := strtoint(sortIndex[found].Substring(ps));
+//        if(isort[found]<>found2) then  //zum überprüfen#
+//          found:=found;
         //schneller...
-        //found:=isort[found];
-        aba[found][ui] := 1; // genügt - man könnte aber auch hochzählen wenn die Anzahl interessieren würde
+        found2:=isort[found];
+        aba[found2][ui] := 1; // genügt - man könnte aber auch hochzählen wenn die Anzahl interessieren würde
       end;
     end;
     // nun sind alle Actions durchlaufen
@@ -2985,19 +2986,6 @@ weiter1:
     max := cwFilteredActionCt;
   SGCacheCwSearch.Visible := true;
 
-  // if cwFilteredActionCt > 50 then
-  // begin
-  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, 50, 50);
-  // SGCacheCwSearch.Repaint;
-  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, max, max);
-  // autosizegrid(SGCacheCwSearch, nil);
-  // end
-  // else
-  // begin
-  // doActionsGridCW(SGCacheCwSearch, SGFieldCol, cwFilteredActions, cwFilteredActionCt, cwFilteredActionCt);
-  // autosizegrid(SGCacheCwSearch, nil);
-  // end;
-
   gt := GetTickCount;
   for i := 0 to length(cwFilteredActions) - 1 do
   begin
@@ -3008,21 +2996,11 @@ weiter1:
   doCacheGridCwInfo;
   screen.Cursor := Cursor;
 
-  // if (source = 'cwsummaries') then
-  // begin
-  // //PSSummaries
-  // makePS(PSSummaries,source);
-  // end;
-  // if (source = 'cwfilteredactions') then
-  // begin
-  // //PSFilteredActions
-  // end;
-
   if (chkFilterWithOpenActions.Checked = true) then
-  // Spezialauswertung der OpenActions
+  // Spezialauswertung der OpenActions durchführen
   begin
     screen.Cursor := crHourGlass;
-    makePS(PSFilteredActions, 'cwfilteredactions');
+    makeEvaluation(PSEvaluation, 'cwfilteredactions');
     btnShowEvaluation.Visible := true;
     btnShowEvaluationClick(nil);
   end;
@@ -3031,10 +3009,15 @@ weiter1:
     ' of ' + inttostr(length(cwActions));
 
   DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
+
+
+  machUserSelection;// Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
+  doGroup();
+
   screen.Cursor := crDefault;
 end;
 
-procedure TForm2.makePS(var ps: ProfitSwapZ12; source: string);
+procedure TForm2.makeEvaluation(var ps: EvaluationResult; source: string);
 var
   z1, z2: TDateTime;
   u1, u2: integer;
@@ -3961,9 +3944,7 @@ begin
   Form2.Refresh;
 
   doFilter();
-  machUserSelection;
-  // Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
-  doGroup();
+
 end;
 
 procedure TForm2.btnSaveCacheFileCwClick(Sender: TObject);

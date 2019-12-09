@@ -77,25 +77,26 @@ type
     procedure Get(aUrl: String; aRequestBody, aResponseContent: TStream);
   end;
 
-  profitSwapZ12 = record
-    z1: TDateTime;
-    z2: TDateTime;
-    Profit1: array [1 .. 4] of double; // ungewöhnlich 1..4 da die Währungen so laufen !
-    profit: array [1 .. 4] of double;
-    Profit2: array [1 .. 4] of double;
-    Swap1: double;
-    Swap: double;
-    Swap2: double;
-    Volume1: integer;
+  EvaluationResult = record
+    z1: TDateTime;//Startzeit der Auswertung inclusive    1. bis 2. berechnet also den gesamten 1.
+    z2: TDateTime;//Endzeit der Auswertung exclusive
+    profit1: array [1 .. 4] of double; // offener Profit Beginnn  ungewöhnlich 1..4 da die Währungen so laufen !
+    profit: array [1 .. 4] of double; //realisierter Profit im Zeitraum
+    profit2: array [1 .. 4] of double; //offener Profit am Ende
+    swap1: double;
+    swap: double;
+    swap2: double;
+    volume1: integer;
     volume: integer;
-    Volume2: integer;
+    volume2: integer;
     ct1: integer; // Zeit1 Anzahl Orders
     ct: integer; // innerhalb Z1Z2 realisierte Orders
     ct2: integer; // Zeit2 Anzahl Orders
     ct1nix: integer;
     ctnix: integer;
     ct2nix: integer;
-
+    usersCt:integer;//Anzahl User getradet im Zeitraum
+    usersCt2:integer;//schau mer mal
     procedure clear;
   end;
 
@@ -607,8 +608,7 @@ var
   accountShort: array [1 .. 7] of string;
   accountCurrency: array [0 .. 4] of string;
   sessionKey: String;
-  PSSummaries: profitSwapZ12;
-  PSFilteredActions: profitSwapZ12;
+  PSEvaluation: EvaluationResult;
 
 implementation
 
@@ -618,7 +618,7 @@ const
   IMAGE_FILE_LARGE_ADDRESS_AWARE = $0020;
 {$SETPEFLAGS IMAGE_FILE_LARGE_ADDRESS_AWARE}
 
-procedure profitSwapZ12.clear;
+procedure EvaluationResult.clear;
 var
   i: integer;
 begin
@@ -3877,7 +3877,7 @@ var
   pos: integer;
 begin
   // gtc:=gtc+1;
-  pos := ansipos('=', s);
+  pos := ansipos('$', s);
   if (pos = 0) then
     result := StrToFloat(s)
   else
@@ -4254,7 +4254,7 @@ begin
     // Gets the middle of the selected range
     Pivot := (first + Last) div 2;
     // Compares the String in the middle with the searched one
-    // p := pos('=', Strings[Pivot]);
+    // p := pos('$', Strings[Pivot]);
     // ps := leftstr(Strings[Pivot], p - 1);
     // pi := strtoint(ps);
     if index[Pivot] = v then
@@ -4302,7 +4302,7 @@ begin
     // Gets the middle of the selected range
     Pivot := (first + Last) div 2;
     // Compares the String in the middle with the searched one
-    p := pos('=', Strings[Pivot]);
+    p := pos('$', Strings[Pivot]);
     ps := leftstr(Strings[Pivot], p - 1);
     pi := strtoint(ps);
     if pi = v then
@@ -4348,7 +4348,7 @@ begin
     // Gets the middle of the selected range
     Pivot := (first + Last) div 2;
     // Compares the String in the middle with the searched one
-    p := pos('=', Strings[Pivot]);
+    p := pos('$', Strings[Pivot]);
     ps:=leftstr(Strings[Pivot], p - 1);
     if ps = v then
     // if ps = substr then
@@ -4495,7 +4495,7 @@ begin
   i := BinSearchString2(cwUsersSortIndex, cwUsersSortIndex2, userId);
   if (i > -1) then
   begin
-    p := pos('=', cwUsersSortIndex[i]);
+    p := pos('$', cwUsersSortIndex[i]);
     result := cwUsers[strtoint(midstr(cwUsersSortIndex[i], p + 1, 255))].name;
   end
   else
@@ -4513,7 +4513,7 @@ begin
 
   if (i > -1) then
   begin
-    p := pos('=', cwUsersSortIndex[i]);
+    p := pos('$', cwUsersSortIndex[i]);
     result := strtoint(midstr(cwUsersSortIndex[i], p + 1, 255));
   end
   else
@@ -4530,7 +4530,7 @@ begin
   i := BinSearchString2(cwUsersSelectionSortIndex, cwUsersSelectionSortIndex2, userId);
   if (i > -1) then
   begin
-    p := pos('=', cwUsersSelectionSortIndex[i]);
+    p := pos('$', cwUsersSelectionSortIndex[i]);
     result := cwUsersSelection[strtoint(midstr(cwUsersSelectionSortIndex[i], p + 1, 255))].name;
   end
   else
@@ -4547,7 +4547,7 @@ begin
   i := BinSearchString2(cwUsersSelectionSortIndex, cwUsersSelectionSortIndex2, userId);
   if (i > -1) then
   begin
-    p := pos('=', cwUsersSelectionSortIndex[i]);
+    p := pos('$', cwUsersSelectionSortIndex[i]);
     result := strtoint(midstr(cwUsersSelectionSortIndex[i], p + 1, 255));
   end
   else
