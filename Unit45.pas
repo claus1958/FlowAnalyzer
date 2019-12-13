@@ -47,6 +47,13 @@ type
     ListBox2: TListBox;
     Button7: TButton;
     Button8: TButton;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
+    TabSheet3: TTabSheet;
+    TabSheet4: TTabSheet;
+    TabSheet5: TTabSheet;
+    TabSheet6: TTabSheet;
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     function vergleichInteger(was, mit: integer; op: string): boolean;

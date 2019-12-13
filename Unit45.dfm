@@ -2,8 +2,8 @@ object Form45: TForm45
   Left = 0
   Top = 0
   Caption = 'Form45'
-  ClientHeight = 608
-  ClientWidth = 1050
+  ClientHeight = 773
+  ClientWidth = 1230
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -134,8 +134,8 @@ object Form45: TForm45
     StyleElements = [seFont, seBorder]
   end
   object Button6: TButton
-    Left = 500
-    Top = 407
+    Left = 502
+    Top = 406
     Width = 113
     Height = 26
     Caption = 'INI Test'
@@ -200,7 +200,7 @@ object Form45: TForm45
     Width = 81
     Height = 21
     Date = 43689.000000000000000000
-    Time = 0.897918043978279500
+    Time = 0.897918043978279400
     TabOrder = 15
   end
   object DatePicker1: TDatePicker
@@ -276,7 +276,7 @@ object Form45: TForm45
     Width = 66
     Height = 21
     Date = 43689.000000000000000000
-    Time = 0.897918043978279500
+    Time = 0.897918043978279400
     Kind = dtkTime
     TabOrder = 20
   end
@@ -303,21 +303,58 @@ object Form45: TForm45
     StyleElements = [seFont, seBorder]
   end
   object Button7: TButton
-    Left = 720
-    Top = 424
+    Left = 736
+    Top = 406
     Width = 85
-    Height = 33
+    Height = 29
     Caption = 'Button7'
     TabOrder = 22
     OnClick = Button7Click
   end
   object Button8: TButton
-    Left = 496
-    Top = 468
+    Left = 621
+    Top = 404
     Width = 93
     Height = 29
     Caption = 'Button8'
     TabOrder = 23
     OnClick = Button8Click
+  end
+  object PageControl1: TPageControl
+    Left = 502
+    Top = 441
+    Width = 657
+    Height = 321
+    ActivePage = TabSheet6
+    TabOrder = 24
+    object TabSheet1: TTabSheet
+      Caption = 'TabSheet1'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'TabSheet2'
+      ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
+    end
+    object TabSheet3: TTabSheet
+      Caption = 'TabSheet3'
+      ImageIndex = 2
+    end
+    object TabSheet4: TTabSheet
+      Caption = 'TabSheet4'
+    end
+    object TabSheet5: TTabSheet
+      Caption = 'TabSheet5'
+    end
+    object TabSheet6: TTabSheet
+      Caption = 'TabSheet6'
+      ImageIndex = 5
+    end
   end
 end

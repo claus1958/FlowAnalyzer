@@ -213,11 +213,12 @@ type
     Splitter4: TSplitter;
     Button12: TButton;
     Splitter5: TSplitter;
+    Button13: FTCommons.TButton;
+    SpeedButton8: TSpeedButton;
     procedure doLoadAllData();
 
     procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
       var openActions: DACwOpenActions);
-
     procedure GetLastServerUnixTime();
     function checkLastUpdate(): TDateTime;
     procedure AppOnMessage(var Msg: TMsg; var Handled: boolean);
@@ -271,7 +272,6 @@ type
     procedure doFilter();
     procedure doGroup();
     procedure Button2Click(Sender: TObject);
-    procedure lbCSVErrorClick(Sender: TObject);
     procedure cbStylesChange(Sender: TObject);
     procedure btnUpdateDataClick(Sender: TObject);
     procedure PageControl1Change(Sender: TObject);
@@ -302,7 +302,7 @@ type
     function groupingTyp(styp: string): integer;
     function trimYear(year: integer): integer;
     function trimMonthYear(Month, year: integer; var s: string): integer;
-    procedure machUserSelection();
+    procedure machUserSelectionAusFilteredActions();
     procedure DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 
     procedure dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer;
@@ -357,9 +357,12 @@ type
     procedure SpeedButton6Click(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure Button12Click(Sender: TObject);
-    procedure Panel4Resize(Sender: TObject);
     procedure Panel26Resize(Sender: TObject);
     procedure Panel6Resize(Sender: TObject);
+    procedure lbCSVErrorDblClick(Sender: TObject);
+    procedure lbDebug2DblClick(Sender: TObject);
+    procedure Button13Click(Sender: TObject);
+    procedure Label3Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -371,6 +374,8 @@ type
 var
   Form2: TForm2;
   faIni: TMemIniFile;
+  TabToResize: array [0 .. 10] of boolean; // NEU 12.12.19 wegen der Scrollbars die nicht richtig platziert werden
+  Form2ResizeSimuliert: boolean;
   Filter: array [1 .. 10] of TFilterElemente;
   FilterCt: integer;
   Grouping: array [1 .. 3] of TGroupControl;
@@ -465,7 +470,7 @@ begin
   // bytes := doHTTPGetByteArray(url, lb);
   // über einen zweiten Thread werden die Daten abgerufen
   res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
-  lbDebug2.Items.Add('Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  lbadd(lbDebug2, 'Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
 
   if (typ = 'openActions1') or (typ = 'openActions2') then
   // ist ja sowieso nichts anderes ...
@@ -541,7 +546,7 @@ begin
     end;
 
   res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
-  lbDebug2.Items.Add('Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  lbadd(lbDebug2, 'Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
   if typ = 'lastServerUnixTime' then
   begin
 
@@ -590,7 +595,7 @@ begin
             end;
         end;
       end;
-      lbCSVError.Items.Add('Check:' + inttostr(GetTickCount - gt));
+      lbCSVDebug('Check:' + inttostr(GetTickCount - gt));
       // wenn keine neuen darin waren wird sz->0 gesetzt . Also nix zu tun
       if (alt = sz) then
         sz := 0
@@ -618,16 +623,16 @@ begin
         cwActionsSorted := false;
         move(bytes[0], cwActions[0], length(bytes));
       end;
-      lbDebug2.Items.Add('New/Changed actions:' + inttostr(sz));
-      lbDebug2.Items.Add('Zeit move->actions:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-      lbDebug2.Items.Add('Anzahl Actions:' + inttostr(sz));
+      lbDebug('New/Changed actions:' + inttostr(sz));
+      lbDebug('Zeit move->actions:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+      lbDebug('Anzahl Actions:' + inttostr(sz));
       lblCwActionsLength.Caption := 'CwActions:' + inttostr(length(cwActions));
       btnCwactionsToGridClick(nil);
       result := sz;
     end
     else
     begin
-      lbCSVError.Items.Add('No new actions');
+      lbCSVDebug('No new actions');
       result := 0;
     end;;
   end;
@@ -649,16 +654,16 @@ begin
   // SetLength(cwSymbolsPlus, sz);
   // SetLength(cwsymbolsSortindex, 0); // zurücksetzen
   // move(bytes[0], cwSymbols[0], length(bytes));
-  // lbDebug2.Items.Add('Zeit move->symbol:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-  // lbDebug2.Items.Add('Anzahl Symbols:' + inttostr(sz));
+  // lbadd(lbDebug2,('Zeit move->symbol:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  // lbadd(lbDebug2,('Anzahl Symbols:' + inttostr(sz));
   // for j := 0 to sz - 1 do
   // begin
-  // lbDebug2.Items.Add(inttostr(j) + ' ' + cwSymbols[j].name + ' ' + inttostr(cwSymbols[j].symbolId) + ' ' +
+  // lbadd(lbDebug2,(inttostr(j) + ' ' + cwSymbols[j].name + ' ' + inttostr(cwSymbols[j].symbolId) + ' ' +
   // inttostr(cwSymbols[j].brokerId));
   // if j > 100 then
   // break;
   // end;
-  // lbDebug2.Items.Add('...');
+  // lbadd(lbDebug2,('...');
   //
   // end;
   // if typ = 'ticks' then
@@ -685,16 +690,16 @@ begin
   // SetLength(cwUsersSortindex, 0); // zurücksetzen
   // SetLength(cwUsersSortindex2, 0); // zurücksetzen
   // move(bytes[0], cwUsers[0], length(bytes));
-  // lbDebug2.Items.Add('Zeit move->user:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-  // lbDebug2.Items.Add('Anzahl users:' + inttostr(sz));
+  // lbadd(lbDebug2,('Zeit move->user:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+  // lbadd(lbDebug2,('Anzahl users:' + inttostr(sz));
   // for j := 0 to sz - 1 do
   // begin
-  // lbDebug2.Items.Add(inttostr(j) + ' ' + cwUsers[j].name + ' ' + inttostr(cwUsers[j].userId) + ' ' +
+  // lbadd(lbDebug2,(inttostr(j) + ' ' + cwUsers[j].name + ' ' + inttostr(cwUsers[j].userId) + ' ' +
   // inttostr(cwUsers[j].accountId));
   // if j > 100 then
   // break;
   // end;
-  // lbDebug2.Items.Add('...');
+  // lbadd(lbDebug2,('...');
   //
   // end;
 
@@ -787,9 +792,9 @@ begin
     end;
     bpms := trunc(length(bytes) / (GetTickCount - gt));
 
-    lb.Items.Add('CSV-Load:' + url);
-    lb.Items.Add('Z:get :' + inttostr(GetTickCount - gt));
-    lb.Items.Add('bpms:' + inttostr(bpms));
+    lbadd(lb, 'CSV-Load:' + url);
+    lbadd(lb, 'Z:get :' + inttostr(GetTickCount - gt));
+    lbadd(lb, 'bpms:' + inttostr(bpms));
     gt := GetTickCount;
     // bei CSV-Dateien muss UTF8-decodiert werden damit die Umlaute passen
     SetString(s, PAnsiChar(@bytes[0]), high(bytes) + 1);
@@ -798,16 +803,16 @@ begin
     // den UTF8-decodierten AnsiString wieder als Bytearray
     setlength(bytes, length(s));
     move(Pointer(s)^, Pointer(bytes)^, length(s));
-    lb.Items.Add('Z:UTF8 :' + inttostr(GetTickCount - gt));
+    lbadd(lb, 'Z:UTF8 :' + inttostr(GetTickCount - gt));
 
     gt := GetTickCount;
     ms := TMemoryStream.Create;
 
     ms.WriteBuffer(bytes[0], high(bytes) + 1);
     ms.Position := 0;
-    lb.Items.Add('Z:MStream :' + inttostr(GetTickCount - gt));
+    lbadd(lb, 'Z:MStream :' + inttostr(GetTickCount - gt));
 
-    lb.Items.Add('Bytes gelesen:' + inttostr(length(s)));
+    lbadd(lb, 'Bytes gelesen:' + inttostr(length(s)));
 
     if typ = 'lastUpdate' then
     begin
@@ -820,7 +825,7 @@ begin
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
         Stream.free; // Speicher freigeben
       except
-        lbCSVError.Items.Add('F:writeUsersStream');
+        lbCSVDebug('F:writeUsersStream');
       end;
       sl := TStringList.Create;
       sl.Delimiter := ';';
@@ -840,7 +845,7 @@ begin
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
         Stream.free; // Speicher freigeben
       except
-        lbCSVError.Items.Add('F:writeUsersStream');
+        lbCSVDebug('F:writeUsersStream');
       end;
       sl := TStringList.Create;
       sl.Delimiter := ';';
@@ -860,7 +865,7 @@ begin
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
         Stream.free; // Speicher freigeben
       except
-        lbCSVError.Items.Add('F:writeUsersStream');
+        lbCSVDebug('F:writeUsersStream');
       end;
 
       ParseDelimited('symbols', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
@@ -879,7 +884,7 @@ begin
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
         Stream.free; // Speicher freigeben
       except
-        lbCSVError.Items.Add('F:writeUsersStream');
+        lbCSVDebug('F:writeUsersStream');
       end;
       ParseDelimited('users', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwusersct := length(cwUsers);
@@ -896,7 +901,7 @@ begin
         Stream.WriteBuffer(bytes[0], high(bytes) + 1);
         Stream.free; // Speicher freigeben
       except
-        lbCSVError.Items.Add('F:writeCommentsStream');
+        lbCSVDebug('F:writeCommentsStream');
       end;
       ParseDelimited('comments', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwcommentsct := length(cwComments);
@@ -1136,7 +1141,7 @@ begin
   LoadInfo('Load UsersOnline...');
   GetCsv(edGetUrlCSV.text, 'usersOnline', lbCSVError, false, false); // hier keinen Cache verwenden !
 
-  lbCSVError.Items.Add('Load SymbolsUsersComments:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Load SymbolsUsersComments:' + inttostr(GetTickCount - gt));
 
   getSymbolsUsersCommentsTime := now;
 end;
@@ -1318,7 +1323,7 @@ begin
     end;
   weiter:
   end;
-  lbCSVError.Items.Add('Z:Build SymbolGroups:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:Build SymbolGroups:' + inttostr(GetTickCount - gt));
 
   // damit sind die SymbolGroups ermittelt und können ab jetzt verwendet werden
   // jedem Symbol ist in cwSymbolsPlus().groupId eine GroupId zugeordnet welche die Nummer der Group darstellt
@@ -1343,7 +1348,7 @@ begin
   gt2 := GetTickCount;
   gt := GetTickCount;
   computeSymbolGroupValues(actions, groups, lb); // einziger Aufruf -> Volume Profit Swap usw
-  lbCSVError.Items.Add('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:Get SymbolGroupsValues:' + inttostr(GetTickCount - gt));
   doCountUsersInActions(actions, actionsPlus, groups, groupsCt);
 end;
 
@@ -1367,7 +1372,7 @@ begin
   for i := 0 to groupsCt - 1 do // ganze Matrix nullsetzen
     for j := 0 to length(cwUsers) - 1 do
       aba[i][j] := 0;
-  lbCSVError.Items.Add('Z:Usercount vorbereiten:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:Usercount vorbereiten:' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   for i := 0 to length(actions) - 1 do
   begin
@@ -1377,10 +1382,10 @@ begin
       inc(aba[cwSymbolsPlus[actions[i].symbolId].groupId, actionsPlus[i].userIndex]);
     except
       on E: Exception do // hier kommen etliche Fehler vor
-        lbCSVError.Items.Add('Err doSymbolGroupValues:' + E.ToString);
+        lbCSVDebug('Err doSymbolGroupValues:' + E.ToString);
     end;
   end;
-  lbCSVError.Items.Add('Z:User einfüllen:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:User einfüllen:' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   for i := 0 to groupsCt - 1 do
   begin
@@ -1396,9 +1401,9 @@ begin
       groups[i].TradesUsers := ct;
     end;
   end;
-  lbCSVError.Items.Add('Z:Gruppen Userwerte zuordnen:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:Gruppen Userwerte zuordnen:' + inttostr(GetTickCount - gt));
   gt2 := GetTickCount - gt2;
-  lbCSVError.Items.Add('Z:Gruppen Userwerte gesamt:' + inttostr(gt2)); // 141 msec für alle 3.5MioActions
+  lbCSVDebug('Z:Gruppen Userwerte gesamt:' + inttostr(gt2)); // 141 msec für alle 3.5MioActions
 
 end;
 
@@ -1462,7 +1467,7 @@ begin
   begin
     if merk[i] > 1 then
     begin
-      lbCSVError.Items.Add('Doppelte Order:' + inttostr(i) + ':' + inttostr(merk[i]));
+      lbCSVDebug('Doppelte Order:' + inttostr(i) + ':' + inttostr(merk[i]));
     end;
   end;
 end;
@@ -1518,6 +1523,7 @@ begin
       faIni.WriteInteger('lastUpdateServerUnixTime:', 'unixTime', lastUpdateServerUnixTime);
 
       LoadInfo('Load All Actions (wait!) ...');
+      setlength(cwActions, 0); // NEU 9.12.19
       GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions', 'actions', lbCSVError, false);
       // false=nicht anhängen
       btnSaveCacheFileCwClick(nil);
@@ -1615,7 +1621,7 @@ begin
   pnlStart.Caption := '';
   pnlStart.Visible := true;
   pnlStart.Refresh;
-  lbCSVError.Items.Add('Ladezeit komplett:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Ladezeit komplett:' + inttostr(GetTickCount - gt));
   Dialog2.fdialog2.Button1click(nil);
 
   updateTimer.enabled := true;
@@ -1665,7 +1671,7 @@ begin
     index := finduserindex(cwActions[i].userId);
     cwActionsPlus[i].userIndex := index;
   end;
-  lbCSVError.Items.Add('Z:MachActionsUserIndex:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:MachActionsUserIndex:' + inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.doFinalizeData;
@@ -1730,7 +1736,7 @@ begin
   btnSymbolGroupsClick(nil); // Symbolgruppen erzeugen und anschliessend Werte berechnen
   dosleep(CSleep);
 
-  lbCSVError.Items.Add('Sym/Users prepare:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Sym/Users prepare:' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
   // die 4 Grids in Alle befüllen
   dosleep(CSleep);
@@ -1741,7 +1747,7 @@ begin
   btnCwCommentsToGridClick(nil);
   dosleep(CSleep);
   btnCwactionsToGridClick(nil);
-  lbCSVError.Items.Add('4 Grid:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('4 Grid:' + inttostr(GetTickCount - gt));
 
 end;
 
@@ -1787,29 +1793,25 @@ end;
 
 procedure TForm2.Panel26Resize(Sender: TObject);
 begin
-  // das ist die Rettung damit die Scrollbars nach Resize des Forms richtig positioniert werden
-  Panel4.Width := Panel4.Width + 1;
-  Panel4.Width := Panel4.Width - 1;
-
-end;
-
-procedure TForm2.Panel4Resize(Sender: TObject);
-begin
-  //
+  // NEU das ist die Rettung damit die Scrollbars nach Resize des Forms richtig positioniert werden
+  // Panel4.Width := Panel4.Width + 1;
+  // Panel4.Width := Panel4.Width - 1;
 
 end;
 
 procedure TForm2.Panel6Resize(Sender: TObject);
 begin
-  DynGrid4.Width := DynGrid4.Width + 1;
-  DynGrid4.Width := DynGrid4.Width - 1;
+  // NEU das ist die Rettung damit die Scrollbars nach Resize des Forms richtig positioniert werden
+  // DynGrid4.Width := DynGrid4.Width + 1;
+  // DynGrid4.Width := DynGrid4.Width - 1;
 
 end;
 
 procedure TForm2.pnlStartBackResize(Sender: TObject);
 begin
-  pnlStart.Left := pnlStartBack.Left + trunc(pnlStartBack.Width / 2 - pnlStart.Width / 2);
-  pnlStart.Top := pnlStartBack.Top + trunc(pnlStartBack.Height / 2 - pnlStart.Height / 2);
+  // NEU das ist die Rettung damit die Scrollbars nach Resize des Forms richtig positioniert werden
+  // pnlStart.Left := pnlStartBack.Left + trunc(pnlStartBack.Width / 2 - pnlStart.Width / 2);
+  // pnlStart.Top := pnlStartBack.Top + trunc(pnlStartBack.Height / 2 - pnlStart.Height / 2);
 end;
 
 procedure TForm2.btnLoadCacheFileCwClick(Sender: TObject);
@@ -1932,7 +1934,7 @@ begin
     if (length(openActions) = lvorher) then
     begin
       // war wohl nix
-      lbdebug('nix:' + pstring);
+      lbDebug('nix:' + pstring);
       if ((dayofweek(dt2) = 1) or (dayofweek(dt2) = 7)) then // Sonntag(1) oder Samstag(7) eines zurück versuchen
       begin
         dt2 := dt2 - 1;
@@ -1943,7 +1945,7 @@ begin
     end
     else
     begin
-      lbdebug('ok:' + pstring);
+      lbDebug('ok:' + pstring);
       nochmal := false;
     end;
   end;
@@ -2053,6 +2055,150 @@ begin
   end;
 end;
 
+procedure TForm2.Button13Click(Sender: TObject);
+var
+  Evals: array [1 .. 5, 1 .. 3] of EvaluationResult;
+  fe: TFilterParameter;
+  d, b, i: integer;
+  s:string;
+  sDate1: array [1 .. 5] of string;
+  sDate2: array [1 .. 5] of string;
+  sBroker: array [1 .. 3] of string;
+begin
+
+  // 1=LCG 2=AT 3=Summe
+  // Zeit1  heute morgen
+  // Zeit2  heute-7 morgen-7
+  // Zeit3  monat monat+1 oder morgen
+  // Zeit4  monat-1 monat
+  // Zeit5  jahr morgen
+
+  // Evaluation durchführen
+  // Haken an Action in TimeRange aktivieren
+  // nochmal Filtern
+  // Grouping auf BrokerAccount Summe in Header ist TradesAnzahl
+  // Grouping auf SymbolGroup Stringarray die ersten zB 3 SymbolGruppen
+
+  // Darstellung in eigenem Tab mit FrameElement das die Parameter enthält
+
+  sDate1[1] := 'heute';
+  sDate2[1] := 'morgen';
+  sDate1[2] := 'heute-7';
+  sDate2[2] := 'morgen-7';
+  sDate1[3] := 'monat';
+  sDate2[3] := 'morgen';
+  sDate1[4] := 'monat-1';
+  sDate2[4] := 'monat';
+  sDate1[5] := 'jahr';
+  sDate2[5] := 'morgen';
+
+  sBroker[1] := 'LCG';
+  sBroker[2] := 'ActiveTrades';
+  sBroker[3] := 'LCG,ActiveTrades';
+
+  // erstmal alle abschalten
+  fe.comment := (Sender as TButton).Caption;
+
+  for d := 1 to 5 do
+    for b := 1 to 3 do
+    begin
+      evals[d,b].clear;
+      fe.Active := false;
+      for i := 1 to FilterCt do
+      begin
+        Filter[i].setValues(fe);
+      end;
+
+      fe.Active := true;
+      fe.topic := 'ActionType';
+      fe.operator := '<>';
+      fe.values := 'BALANCE,CREDIT';
+      Filter[1].setValues(fe);
+
+      fe.Active := true;
+      fe.topic := 'BrokerId';
+      fe.operator := '=';
+      fe.values := sBroker[b];
+      Filter[2].setValues(fe);
+
+      fe.Active := true;
+      fe.topic := 'CloseDateTime';
+      fe.operator := '>= or 0';
+      fe.values := sDate1[d];
+      Filter[3].setValues(fe);
+
+      fe.Active := true;
+      fe.topic := 'OpenDateTime';
+      fe.operator := '<';
+      fe.values := sDate2[d];
+      Filter[4].setValues(fe);
+
+      fe.Active := false;
+      fe.topic := '-';
+      fe.operator := 'true';
+      fe.values := '';
+      Filter[5].setValues(fe);
+
+      doFilter;
+
+      fe.Active := true;
+      fe.topic := 'Action in TimeRange';
+      fe.operator := 'true';
+      fe.values := '';
+      Filter[5].setValues(fe);
+
+      doFilter;
+
+
+      Grouping[1].cbTopic.text := 'userId';
+      Grouping[1].cbTopic.Visible := true;
+      Grouping[1].chkActive.Checked := true;
+      doGroup();
+      //-> Anzahl Users steht in der Überschrift
+      Evals[d,b].usersCt:=dyngrid9.maxdatarows;
+      Grouping[1].cbTopic.text := 'symbolGroup';
+      Grouping[1].cbTopic.Visible := true;
+      Grouping[1].chkActive.Checked := true;
+
+
+      doGroup();
+
+      dyngrid9.sortcol:='ActionID';
+      dyngrid9.sortdir:=0; //aufwärts
+      dyngrid9.doSorting;
+      try
+      s:=dyngrid9.sg.cells[0,1]+';'+dyngrid9.sg.cells[0,2]+';'+dyngrid9.sg.cells[0,3];
+      except
+
+      end;
+      //
+      Evals[d,b].mostSymbols:=s;
+      //-> Anzahl SymbolGruppen steht in der Überschrift
+      //aus sSort die ersten soundsovielen aussuchen
+
+
+
+      screen.Cursor := crHourGlass;
+      makeEvaluation(Evals[d,b], 'cwfilteredactions');
+//      btnShowEvaluation.Visible := true;
+//      btnShowEvaluationClick(nil);
+      //und nun die restlichen Werte der Evaluation befüllen
+
+      screen.Cursor := crDefault;
+    end;
+  /// /test eine Sortierung 'fernzusteuern'
+  // dyngrid2.sortcol:='ActionID';
+  // dyngrid2.sortdir:=0; //aufwärts
+  // dyngrid2.doSorting;
+  // if dyngrid2.sDatenTyp=1  then
+  /// / double
+  // else
+  /// / string
+
+  // button13.test:=1; //das ist der abgeleitete TButton aus FTCOmmons der die Eigenschaft test hat !
+
+end;
+
 procedure TForm2.btnShowEvaluationClick(Sender: TObject);
 begin
   // lastUpdateServerUnixTime := faIni.ReadInteger('lastUpdateServerUnixTime:', 'unixTime', 0);
@@ -2087,7 +2233,7 @@ begin
   // Sorttests
   gt := GetTickCount;
   l := length(cwActions);
-  lbCSVError.Items.Add('Sort Elementzahl:' + inttostr(l));
+  lbCSVDebug('Sort Elementzahl:' + inttostr(l));
 
   setlength(ia, l);
   setlength(ia2, l);
@@ -2103,36 +2249,36 @@ begin
       ia2[i] := cwActions[i].typeId;
     end;
   except
-    lbCSVError.Items.Add('Fehler bei i:' + inttostr(i));
+    lbCSVDebug('Fehler bei i:' + inttostr(i));
 
   end;
-  lbCSVError.Items.Add('SortPrepare:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('SortPrepare:' + inttostr(GetTickCount - gt));
 
   for i := 1 to 1 do
   begin
     gt := GetTickCount;
     fastsort2arrayString(sa, ia, 'VUAS');
-    lbCSVError.Items.Add('SortString:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('SortString:' + inttostr(GetTickCount - gt));
 
     gt := GetTickCount;
     FastSort2ArrayDouble(da, ia, 'VUA');
-    lbCSVError.Items.Add('SortDouble:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('SortDouble:' + inttostr(GetTickCount - gt));
 
     gt := GetTickCount;
     fastsort2arrayIntInt(ia2, ia, 'VUI'); // VDI
-    lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('SortInteger:' + inttostr(GetTickCount - gt));
 
     gt := GetTickCount;
     fastsort2arrayString(sa, ia, 'VDAS');
-    lbCSVError.Items.Add('SortString:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('SortString:' + inttostr(GetTickCount - gt));
 
     gt := GetTickCount;
     FastSort2ArrayDouble(da, ia, 'VDA');
-    lbCSVError.Items.Add('SortDouble:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('SortDouble:' + inttostr(GetTickCount - gt));
 
     gt := GetTickCount;
     fastsort2arrayIntInt(ia2, ia, 'VDI'); // VDI
-    lbCSVError.Items.Add('SortInteger:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('SortInteger:' + inttostr(GetTickCount - gt));
   end
 end;
 
@@ -2153,10 +2299,23 @@ begin
   // manuelles Anklicken der Berechnung
   mynow := monthof(now) + 12 * yearof(now); // viel gebraucht und aus Speedgründen hier einmalig belegt
   FilterTopic := 'manual';
-  doFilter();  // -> cwFilteredActions cwFilteredActionsCt
+  doFilter(); // -> cwFilteredActions cwFilteredActionsCt
+  // Wegen grouping: Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
+  doGroup();
+  // -> dynGrid9
+
+  if (chkFilterWithOpenActions.Checked = true) then
+  // Evaluation der OpenActions durchführen
+  begin
+    screen.Cursor := crHourGlass;
+    PSEvaluation.clear;
+    makeEvaluation(PSEvaluation, 'cwfilteredactions');
+    btnShowEvaluation.Visible := true;
+    btnShowEvaluationClick(nil);
+  end;
 end;
 
-procedure TForm2.machUserSelection();
+procedure TForm2.machUserSelectionAusFilteredActions();
 // Aus der Gesamtzahl cwUsers werden nur die User aus einer großen CwFilteredActions Menge herausgesucht,
 // so daß nicht mehr alle User in die Gruppierungsermittlung rein müssen und so der Speicherbedarf möglichst klein bleibt
 var
@@ -2218,7 +2377,7 @@ begin
     cwUsersSelectionSortindex2[i] := strtoint(leftstr(cwUsersSelectionSortindex[i], p));
   end;
 
-  lbCSVError.Items.Add('Z:F.UserGroup:' + inttostr(GetTickCount - gt));
+  lbCSVDebug('Z:F.UserGroup:' + inttostr(GetTickCount - gt));
 end;
 
 procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
@@ -2286,7 +2445,7 @@ end;
 procedure TForm2.doGroup();
 var
   g, i, j, k, l, ui, X: integer;
-  gt, gt1,gt2: cardinal;
+  gt, gt1, gt2: cardinal;
   s: string;
   ct, cnt: integer;
   ctmax: integer;
@@ -2305,7 +2464,7 @@ var
   gct: integer;
   aba: array of Bytearray;
   sumCt: integer;
-  selUsersCt, found,found2: integer;
+  selUsersCt, found, found2: integer;
   merk: string;
   sortIndex: Stringarray; // string
   sortIndexOhne: Stringarray; // string
@@ -2313,6 +2472,9 @@ var
   isort: intarray;
   ps: integer;
 begin
+  if (cwFilteredActionCt = 0) then
+    exit;
+
   gt1 := GetTickCount;
   gt := GetTickCount;
   gct := 0;
@@ -2569,7 +2731,7 @@ begin
   // end;
   // groupsCt := j + 1;
   // SetLength(groups, groupsCt);
-  // lb.Items.Add('Used Sym.groups:' + #9 + inttostr(groupsCt));
+  // lbadd(lb,'Used Sym.groups:' + #9 + inttostr(groupsCt));
   // end;
 
   // aus den vielen vielen cw3summaries werden nun alle ausgelassen, die ohnehin leer sind (die allermeisten) und das Ergebnis landet
@@ -2626,22 +2788,22 @@ begin
   begin
     isort[i] := i;
     sortIndex[i] := cwsummaries[i].merk + '$' + inttostr(i);
-    //sortIndexOhne[i] := cwsummaries[i].merk;
+    // sortIndexOhne[i] := cwsummaries[i].merk;
   end;
   fastsort2arrayStringInteger(isort, sortIndex, 'UA');
-//
-  gt2:=gettickcount;
+  //
+  gt2 := GetTickCount;
   for i := 0 to sumCt do
   begin
     ps := pos('$', sortIndex[i]);
-    sortIndexOhne[i] := leftstr(sortIndex[i],ps - 1);
+    sortIndexOhne[i] := leftstr(sortIndex[i], ps - 1);
     try
-    isort[i]:= strtoint(sortIndex[i].Substring(ps));
+      isort[i] := strtoint(sortIndex[i].Substring(ps));
     except
-     ps:=ps;
+      ps := ps;
     end;
   end;
-  lbdebug('$ Suche'+inttostr(gettickcount-gt2));
+  lbDebug('$ Suche' + inttostr(GetTickCount - gt2));
 
   if (sumCt < 100000) then
   begin
@@ -2654,9 +2816,9 @@ begin
       setlength(aba[i], selUsersCt);
     end;
 
-//    for i := 0 to sumCt do // ganze Matrix nullsetzen  - notwendig ?
-//      for j := 0 to selUsersCt - 1 do
-//        aba[i][j] := 0;
+    // for i := 0 to sumCt do // ganze Matrix nullsetzen  - notwendig ?
+    // for j := 0 to selUsersCt - 1 do
+    // aba[i][j] := 0;
 
     // nun können die Bytearrays belegt werden
     // Es werden nun alle Actions durchlaufen
@@ -2684,8 +2846,8 @@ begin
             end;
           3: // UserId =UserSelection
             begin
-              p[j]:=ui;//siehe oben gerade erst gesucht
-              //p[j] := finduserSelectionIndex(cwFilteredActions[i].userId);
+              p[j] := ui; // siehe oben gerade erst gesucht
+              // p[j] := finduserSelectionIndex(cwFilteredActions[i].userId);
             end;
           4: // YearsOpen
             begin
@@ -2749,19 +2911,19 @@ begin
       found := binSearchString(sortIndexOhne, merk);
       if (found = -1) then
       begin
-      //zur Fehlersuche
+        // zur Fehlersuche
         found := binSearchString(sortIndexOhne, merk);
       end;
       if (found > -1) then
       begin
         // dann wird in aba[x][ui] der Wert auf 1 gesetzt = belegt
 
-//        ps := pos('$', sortIndex[found]);
-//        found2 := strtoint(sortIndex[found].Substring(ps));
-//        if(isort[found]<>found2) then  //zum überprüfen#
-//          found:=found;
-        //schneller...
-        found2:=isort[found];
+        // ps := pos('$', sortIndex[found]);
+        // found2 := strtoint(sortIndex[found].Substring(ps));
+        // if(isort[found]<>found2) then  //zum überprüfen#
+        // found:=found;
+        // schneller...
+        found2 := isort[found];
         aba[found2][ui] := 1; // genügt - man könnte aber auch hochzählen wenn die Anzahl interessieren würde
       end;
     end;
@@ -2780,7 +2942,7 @@ begin
     end;
 
     gt := GetTickCount - gt;
-    lbdebug('UsersCount:' + inttostr(gt));
+    lbDebug('UsersCount:' + inttostr(gt));
   end;
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
@@ -2888,7 +3050,7 @@ var
   gt: cardinal;
   chk: array of boolean;
   faktivCt: integer;
-
+  time1, time2, time3: integer;
 label weiter, weiter1;
 begin
 
@@ -2915,6 +3077,8 @@ begin
   setlength(cwfilterParameter, FilterCt + 1);
   setlength(chk, FilterCt + 1);
   // sowieso hier blöd
+  time1 := 0;
+  time2 := 0;
   for i := 1 to FilterCt do
   begin
     Filter[i].getValues(cwfilterParameter[i]);
@@ -2926,8 +3090,23 @@ begin
     Filter[i].machVergleichArrays;
     chk[i] := Filter[i].chkActive.Checked;
     Filter[i].counter := 0;
-  end;
+    if Filter[i].topic = 'OpenDateTime' then
+    begin
+      time1 := Filter[i].vInteger;
+    end;
+    if Filter[i].topic = 'CloseDateTime' then
+    begin
+      time2 := Filter[i].vInteger;
+    end;
 
+  end;
+  // Reihenfolge in Ordnung bringen
+  if (time1 > time2) then
+  begin
+    time3 := time2;
+    time2 := time1;
+    time1 := time3;
+  end;
   gt := timegettime;
   fz := -1;
   fzmax := 0;
@@ -2937,9 +3116,17 @@ begin
   // unsinnige leere Eingaben abfangen
   for i := 1 to FilterCt do
   begin
-    if (chk[i] = true) and (Filter[i].edValue.text = '') then
-      chk[i] := false
-    else
+    if Filter[i].topic <> 'Action in TimeRange' then
+      if (chk[i] = true) and (Filter[i].edValue.text = '') then
+        chk[i] := false;
+
+    if Filter[i].topic = 'Action in TimeRange' then
+    begin
+      Filter[i].vInteger := time1;
+      Filter[i].vInteger2 := time2;
+
+    end;
+
   end;
 
   // nun werden alle Actions durchlaufen
@@ -2986,6 +3173,7 @@ weiter1:
     max := cwFilteredActionCt;
   SGCacheCwSearch.Visible := true;
 
+  // nun die Userindexe finden wegen schnellerer Weiterberechnung
   gt := GetTickCount;
   for i := 0 to length(cwFilteredActions) - 1 do
   begin
@@ -2996,23 +3184,14 @@ weiter1:
   doCacheGridCwInfo;
   screen.Cursor := Cursor;
 
-  if (chkFilterWithOpenActions.Checked = true) then
-  // Spezialauswertung der OpenActions durchführen
-  begin
-    screen.Cursor := crHourGlass;
-    makeEvaluation(PSEvaluation, 'cwfilteredactions');
-    btnShowEvaluation.Visible := true;
-    btnShowEvaluationClick(nil);
-  end;
-
+  gt := GetTickCount;
   DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
     ' of ' + inttostr(length(cwActions));
-
   DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
+  lbDebug('dg2:' + inttostr(GetTickCount - gt));
 
+  machUserSelectionAusFilteredActions;
 
-  machUserSelection;// Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
-  doGroup();
 
   screen.Cursor := crDefault;
 end;
@@ -3043,7 +3222,6 @@ begin
   // fastsort2arrayInt64Int(ids,sorted, 'VUI'); // VDI
   if (source = 'cwfilteredactions') then
   begin
-    ps.clear;
 
     u1 := 0;
     u2 := 0;
@@ -3097,7 +3275,7 @@ begin
     // damit sind die beiden erforderlichen OpenActions-Dateien festgestellt die nun eingelesen werden müssen
     // wie soll mit fehlenden Daten umgegangen werden ? Durch die vielen Ausfälle fehlen oft die letzten Sonntagsdaten
     // diese sind aber mow identisch mit den letzten Samstags- und letzten Freitagsdaten. Es wären also nacheinander
-    // alle Daten verwendbar ob So,Sa,Fr. Man könnte drei Versuche starten, diese Daten abzurufen
+    // alle Daten verwendbar ob So,Sa,Fr. Man könnte drei Versuche starten, diese Daten abzurufen ... was nun auch passiert!
     ps.z1 := z1;
     ps.z2 := z2;
     ps.ct1 := 0;
@@ -3109,7 +3287,7 @@ begin
     getAndSortOpenActions(z2, cwOpenActionsZ2, accVon, accBis);
     // nun aus cwFilteredActions, cwOpenActionsZ1 und cwOpenActionsZ2 die ps Werte hochzählen bzw füllen !
     for i := 0 to length(cwFilteredActions) - 1 do
-    // die Fälle A=alles vor Z1 und F alles nach Z2 sind bereits entsprechend der Filter entfernt worden
+    // die Fälle A=alles vor Z1 bereits closed  und F alles opened nach Z2 sind bereits entsprechend der Filter entfernt worden
     //
     begin
       flag := false;
@@ -3130,7 +3308,7 @@ begin
         else
         begin
           inc(ps.ct1nix);
-          lbdebug('nF1:' + inttostr(cwFilteredActions[i].actionId));
+          lbDebug('nF1 (open in z1):' + inttostr(cwFilteredActions[i].actionId));
         end;
       end
       else
@@ -3168,7 +3346,7 @@ begin
         begin
           //
           inc(ps.ct2nix);
-          lbdebug('nF2:' + inttostr(cwFilteredActions[i].actionId));
+          lbDebug('nF2 (open in z2):' + inttostr(cwFilteredActions[i].actionId));
         end;;
       end;
       if (flag = false) then
@@ -3378,7 +3556,7 @@ begin
     tt := datetimetounix(dt); // das ist die Vorgabe per Inputbox
   LoadInfo('Sort Actions ...');
   lold := length(cwActions);
-  lbCSVError.Items.Add('[Vorbereitung]' + inttostr(GetTickCount - gt));
+  lbCSVDebug('[Vorbereitung]' + inttostr(GetTickCount - gt));
 
   // Neue Variante: fromModified
   gt := GetTickCount;
@@ -3413,7 +3591,7 @@ begin
   // // a2 > 0 muss nix bedeuten da es momentan 11 mit CloseTime in der Zukunft gibt
   // end;
 
-  lbCSVError.Items.Add('[Daten laden]' + inttostr(GetTickCount - gt));
+  lbCSVDebug('[Daten laden]' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
 
   // showmessage(' Actions:' + inttostr(length(cwActions)));
@@ -3429,7 +3607,7 @@ begin
   // begin
   if (cnew = 0) then
   begin
-    lbCSVError.Items.Add('[Abbruch - keine neuen Actions]' + inttostr(GetTickCount - gt));
+    lbCSVDebug('[Abbruch - keine neuen Actions]' + inttostr(GetTickCount - gt));
     updateStatus := 1; // udateStatus 0=nix zu tun 1=schnell ohne Actions Update 2=mit Actions
     updateGoing := false;
     Dialog2.fdialog2.askFinish(); // Close;
@@ -3454,7 +3632,7 @@ begin
   // na2 enthält die neuen ActionIds und na die Indexe in cwactions
   // nun werden diese Arrays sortiert
   fastsort2arrayInt64Int(na2, na, 'VUI'); // VDI
-  lbCSVError.Items.Add('[sort1]' + inttostr(GetTickCount - gt));
+  lbCSVDebug('[sort1]' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
 
   gt := GetTickCount;
@@ -3483,7 +3661,7 @@ begin
   dosleep(CSleep);
 
   fastsort2arrayInt64Int(ia2, ia, 'VUI'); // VDI
-  lbCSVError.Items.Add('[sort2]' + inttostr(GetTickCount - gts));
+  lbCSVDebug('[sort2]' + inttostr(GetTickCount - gts));
   dosleep(CSleep);
   gt := GetTickCount;
 
@@ -3508,7 +3686,7 @@ begin
     end;
   end;
 
-  lbCSVError.Items.Add('[einfügen1]' + inttostr(GetTickCount - gt));
+  lbCSVDebug('[einfügen1]' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
   gt := GetTickCount;
 
@@ -3526,7 +3704,7 @@ begin
   setlength(cwActionsPlus, p + 1);
   cwActionsSorted := false;
 
-  lbCSVError.Items.Add('[einfügen2]' + inttostr(GetTickCount - gt));
+  lbCSVDebug('[einfügen2]' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
   gt := GetTickCount;
 
@@ -3550,22 +3728,22 @@ begin
   // showmessage('new data available');
   // doFinalizeData;
   // dosleep(CSleep);
-  // lbCSVError.Items.Add('[finalize]' + inttostr(GetTickCount - gt));
+  // lbCSVDebug('[finalize]' + inttostr(GetTickCount - gt));
   //
   // lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) +
   // #13#10 + ' Actions:' + inttostr(length(cwActions));
-  // lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
+  // lbCSVDebug('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
   // rest:
   // dosleep(CSleep);
   // // gt:=gettickcount;
   // // computeStartScreen;
-  // // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // // lbCSVDebug('Compute StartScreen:' + inttostr(GetTickCount - gt));
   // dosleep(CSleep);
   // getSymbolsUsersComments(false); // vom Server damit die Werte aktuell sind
   // dosleep(CSleep);
   // gt := GetTickCount;
   // computeStartScreen;
-  // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // lbCSVDebug('Compute StartScreen:' + inttostr(GetTickCount - gt));
   // dosleep(CSleep);
   //
   // Dialog2.fdialog2.Close;
@@ -3587,12 +3765,12 @@ begin
     lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols))
       + #13#10 + ' Actions:' + inttostr(length(cwActions));
   end;
-  // lbCSVError.Items.Add('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
+  // lbCSVDebug('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
   // rest:
   dosleep(CSleep);
   // gt:=gettickcount;
   // computeStartScreen;
-  // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // lbCSVDebug('Compute StartScreen:' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
   // das könnte man sich sparen wenn gerade erst durchgeführt !
   if ((now - getSymbolsUsersCommentsTime) > (1 / 1440)) then
@@ -3606,7 +3784,7 @@ begin
     // showmessage('das spare ich mir');
   end;
   computeStartScreen;
-  // lbCSVError.Items.Add('Compute StartScreen:' + inttostr(GetTickCount - gt));
+  // lbCSVDebug('Compute StartScreen:' + inttostr(GetTickCount - gt));
   dosleep(CSleep);
 
   Dialog2.fdialog2.Close;
@@ -3742,6 +3920,7 @@ begin
 end;
 
 procedure TForm2.btnOnePageClick(Sender: TObject);
+
 begin
 
   with (Sender as TButton) do
@@ -3768,7 +3947,7 @@ begin
 end;
 
 procedure TForm2.btnSampleClick(Sender: TObject);
-
+// Die Sample-Buttons mit ihren speziellen Voreinstellungen
 var
   i: integer;
   fe: TFilterParameter;
@@ -3944,6 +4123,10 @@ begin
   Form2.Refresh;
 
   doFilter();
+    // Wegen grouping: Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
+  doGroup();
+  // -> dynGrid9
+
 
 end;
 
@@ -4092,7 +4275,9 @@ end;
 procedure TForm2.setPageIndex(i: integer);
 var
   j: integer;
+  t: TTabSheet;
 begin
+  // Wechsel der Tabs
   // Ersatz für PageControl1.ActivePageIndex:=i
   for j := 0 to 9 do
   begin
@@ -4139,17 +4324,40 @@ begin
 
   case i of
     0:
-      TabSheet1.Visible := true;
+      begin
+        TabSheet1.Visible := true;
+        DynGrid2.doUpdateStyleElements;
+        DynGrid9.doUpdateStyleElements;
+      end;
     1:
-      TabSheet2.Visible := true;
+      begin
+        TabSheet2.Visible := true; // Filter
+      end;
     2:
-      TabSheet3.Visible := true;
+      begin
+        TabSheet3.Visible := true;
+        DynGrid11.doUpdateStyleElements;
+        DynGrid12.doUpdateStyleElements;
+        DynGrid13.doUpdateStyleElements;
+
+      end;
     3:
       TabSheet4.Visible := true;
     4:
-      TabSheet5.Visible := true;
+      begin
+        TabSheet5.Visible := true; // User
+        DynGrid4.doUpdateStyleElements;
+        DynGrid10.doUpdateStyleElements;
+      end;
     5:
-      TabSheet6.Visible := true;
+      begin
+        TabSheet6.Visible := true;
+        DynGrid3.doUpdateStyleElements;
+        DynGrid5.doUpdateStyleElements;
+        DynGrid6.doUpdateStyleElements;
+        DynGrid7.doUpdateStyleElements;
+
+      end;
     6:
       TabSheet7.Visible := true;
     7:
@@ -4160,6 +4368,15 @@ begin
       TabSheet10.Visible := true;
 
   end;
+  if (TabToResize[i] = true) then
+  begin
+    Form2ResizeSimuliert := true;
+    // Form2.Width := Form2.Width + 1;     //betrifft aber leider wieder ALLE
+    // Form2.Width := Form2.Width - 1;
+    Form2ResizeSimuliert := false;
+    TabToResize[i] := false;
+  end;
+
   // form2.Width:=form2.Width+1;
   // form2.Width:=form2.Width-1;
 
@@ -4352,6 +4569,7 @@ begin
   maxActionsPerGrid := 10000;
 
   lboxDebug := lbCSVError;
+  lbCSV := lbCSVError;
   lboxInfo := lbCSVError;
 
   setlength(SGFieldCol, 30);
@@ -4811,7 +5029,7 @@ begin
       finally
         screen.Cursor := Cursor;
       end;
-      lbdebug('Zeit Gridsort:' + inttostr(timegettime - gt));
+      lbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
     end;
   end;
 
@@ -4854,14 +5072,14 @@ begin
           FastSort2ArrayDouble(da, ia, 'VUA');
         if (sortTyp = 1) then
           FastSort2ArrayDouble(da, ia, 'VDA');
-        lbdebug('Sort:' + inttostr(GetTickCount - gt));
+        lbDebug('Sort:' + inttostr(GetTickCount - gt));
         gt := GetTickCount();
         for k := 0 to CountItem - 1 do
         begin
           MyList.Add(genstrgrid.Rows[k].text);
           // MyList ist nun quasi die Kopie des StringGrids ab unterhalb der Überschrift
         end;
-        lbdebug('Mylist:' + inttostr(GetTickCount - gt));
+        lbDebug('Mylist:' + inttostr(GetTickCount - gt));
         gt := GetTickCount();
 
         for k := 1 to CountItem - 1 do
@@ -4872,7 +5090,7 @@ begin
           if k = 50 then
             genstrgrid.Repaint;
         end;
-        lbdebug('Grid neu:' + inttostr(GetTickCount - gt));
+        lbDebug('Grid neu:' + inttostr(GetTickCount - gt));
 
       end;
     finally
@@ -4946,13 +5164,13 @@ begin
           MyList.Add(genstrgrid.Rows[i].Strings[ThatCol] + TheSeparator + genstrgrid.Rows[i].text);
 
         // Sort the List
-        lbdebug('Sort MyList:' + inttostr(timegettime - gt));
+        lbDebug('Sort MyList:' + inttostr(timegettime - gt));
         gt := timegettime;
         if (sortTyp = -1) then
           MyList.CustomSort(StringListSortComparefnDown);
         if (sortTyp = 1) then
           MyList.CustomSort(StringListSortComparefnUp);
-        lbdebug('Sort CustomSort:' + inttostr(timegettime - gt));
+        lbDebug('Sort CustomSort:' + inttostr(timegettime - gt));
 
         gt := timegettime;
 
@@ -4969,7 +5187,7 @@ begin
           MyList.Strings[(k - 1)] := Copy(MyList.Strings[(k - 1)], (ThePosition + 1), length(MyList.Strings[(k - 1)]));
           // TempString;
         end;
-        lbdebug('Sort MyList gen:' + inttostr(timegettime - gt));
+        lbDebug('Sort MyList gen:' + inttostr(timegettime - gt));
 
         // Refill the StringGrid       - ca 75% der Zeit hierfür
         gt := timegettime;
@@ -4983,7 +5201,7 @@ begin
         end;
         genstrgrid.rowcount := CountItem;
 
-        lbdebug('Sort ->Grid:' + inttostr(timegettime - gt));
+        lbDebug('Sort ->Grid:' + inttostr(timegettime - gt));
       end;
     finally
       // Free the List
@@ -5035,32 +5253,32 @@ begin
     if (k < 0) then
       exit;
 
-    lb.Items.Add('userId' + #9 + inttostr(cwUsers[k].userId));
-    lb.Items.Add('accountId' + #9 + inttostr(cwUsers[k].accountId));
-    lb.Items.Add('group' + #9 + cwUsers[k].group);
-    lb.Items.Add('enable' + #9 + inttostr(cwUsers[k].enable));
-    lb.Items.Add('registrationTime' + #9 + inttostr(cwUsers[k].registrationTime));
-    lb.Items.Add('lastLoginTime' + #9 + inttostr(cwUsers[k].lastLoginTime));
-    lb.Items.Add('leverage' + #9 + inttostr(cwUsers[k].leverage));
-    lb.Items.Add('balance' + #9 + floattostr(cwUsers[k].balance));
-    lb.Items.Add('balPrevMonth' + #9 + floattostr(cwUsers[k].balancePreviousMonth));
-    lb.Items.Add('balPrevDay' + #9 + floattostr(cwUsers[k].balancePreviousDay));
-    lb.Items.Add('credit' + #9 + floattostr(cwUsers[k].credit));
-    lb.Items.Add('interestrate' + #9 + floattostr(cwUsers[k].interestrate));
-    lb.Items.Add('taxes' + #9 + floattostr(cwUsers[k].taxes));
-    lb.Items.Add('name' + #9 + cwUsers[k].name);
-    lb.Items.Add('country' + #9 + cwUsers[k].country);
-    lb.Items.Add('city' + #9 + cwUsers[k].city);
-    lb.Items.Add('state' + #9 + cwUsers[k].State);
-    lb.Items.Add('zipcode' + #9 + cwUsers[k].zipcode);
-    lb.Items.Add('address' + #9 + cwUsers[k].address);
-    lb.Items.Add('phone' + #9 + cwUsers[k].phone);
-    lb.Items.Add('email' + #9 + cwUsers[k].email);
-    lb.Items.Add('soc.number' + #9 + cwUsers[k].socialNumber);
-    lb.Items.Add('comment' + #9 + cwUsers[k].comment);
-    lb.Items.Add('totalTrades' + #9 + inttostr(cwUsersPlus[k].totaltrades));
-    lb.Items.Add('totalProfit' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalprofit));
-    lb.Items.Add('totalBalance' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalbalance));
+    lbadd(lb, 'userId' + #9 + inttostr(cwUsers[k].userId));
+    lbadd(lb, 'accountId' + #9 + inttostr(cwUsers[k].accountId));
+    lbadd(lb, 'group' + #9 + cwUsers[k].group);
+    lbadd(lb, 'enable' + #9 + inttostr(cwUsers[k].enable));
+    lbadd(lb, 'registrationTime' + #9 + inttostr(cwUsers[k].registrationTime));
+    lbadd(lb, 'lastLoginTime' + #9 + inttostr(cwUsers[k].lastLoginTime));
+    lbadd(lb, 'leverage' + #9 + inttostr(cwUsers[k].leverage));
+    lbadd(lb, 'balance' + #9 + floattostr(cwUsers[k].balance));
+    lbadd(lb, 'balPrevMonth' + #9 + floattostr(cwUsers[k].balancePreviousMonth));
+    lbadd(lb, 'balPrevDay' + #9 + floattostr(cwUsers[k].balancePreviousDay));
+    lbadd(lb, 'credit' + #9 + floattostr(cwUsers[k].credit));
+    lbadd(lb, 'interestrate' + #9 + floattostr(cwUsers[k].interestrate));
+    lbadd(lb, 'taxes' + #9 + floattostr(cwUsers[k].taxes));
+    lbadd(lb, 'name' + #9 + cwUsers[k].name);
+    lbadd(lb, 'country' + #9 + cwUsers[k].country);
+    lbadd(lb, 'city' + #9 + cwUsers[k].city);
+    lbadd(lb, 'state' + #9 + cwUsers[k].State);
+    lbadd(lb, 'zipcode' + #9 + cwUsers[k].zipcode);
+    lbadd(lb, 'address' + #9 + cwUsers[k].address);
+    lbadd(lb, 'phone' + #9 + cwUsers[k].phone);
+    lbadd(lb, 'email' + #9 + cwUsers[k].email);
+    lbadd(lb, 'soc.number' + #9 + cwUsers[k].socialNumber);
+    lbadd(lb, 'comment' + #9 + cwUsers[k].comment);
+    lbadd(lb, 'totalTrades' + #9 + inttostr(cwUsersPlus[k].totaltrades));
+    lbadd(lb, 'totalProfit' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalprofit));
+    lbadd(lb, 'totalBalance' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalbalance));
 
     lblUserInfo0.Caption := cwUsers[k].name;
     lblUserInfo1.Caption := 'Reg.Date:  ' + datetimetostr(unixtodatetime(cwUsers[k].registrationTime));
@@ -5133,7 +5351,7 @@ begin
     s2 := FormatDateTime('nn:ss', (GetTickCount - lastUserActivity) / 1000 / 86400);
     // lblInfoTimer.caption:=inttostr(nextUpdateT
     lblUpdateRest.Caption := 'Next Update:' + s + ' User Off:' + s2;
-    if (GetTickCount - lastUserActivity) > 120000 then
+    if (GetTickCount - lastUserActivity) > 120000 then // 2 Minuten kein Usereingriff -> Update kann durchgeführt werden
     begin
       // 2 Minuten keine Usereingabe - update anklicken
       if (askFinishUpdate = true) then
@@ -5144,9 +5362,19 @@ begin
     end;
   end;
 
-  procedure TForm2.lbCSVErrorClick(Sender: TObject);
+  procedure TForm2.Label3Click(Sender: TObject);
+  begin
+    doGroup;
+  end;
+
+  procedure TForm2.lbCSVErrorDblClick(Sender: TObject);
   begin
     lbCSVError.Items.clear;
+  end;
+
+  procedure TForm2.lbDebug2DblClick(Sender: TObject);
+  begin
+    lbDebug2.Items.clear;
   end;
 
   procedure TForm2.lblUpdateRestClick(Sender: TObject);
@@ -5331,6 +5559,7 @@ begin
   procedure TForm2.FormResize(Sender: TObject);
   var
     Msg: TWMMove;
+    i: integer;
   begin
     // über align nicht mehr nötig
 
@@ -5346,6 +5575,14 @@ begin
       Form2.Height := 100;
 
     OnMove(Msg); // damit Dialog richtig platziert wird
+
+    if (Form2ResizeSimuliert = false) then
+      // nicht bei der 'unechten' +1 -1 Resize Aktion die per Programm ausgeführt wird
+      for i := 0 to 10 do
+      begin
+        TabToResize[i] := true;
+      end;
+
   end;
 
   procedure TForm2.Button4Click(Sender: TObject);
@@ -5586,7 +5823,7 @@ begin
 
     end;
     fillStartScreen;
-    lbCSVError.Items.Add('ComputeStartScreen:' + inttostr(GetTickCount - gt));
+    lbCSVDebug('ComputeStartScreen:' + inttostr(GetTickCount - gt));
   end;
 
   procedure TForm2.MyExceptionHandler(Sender: TObject; E: Exception);

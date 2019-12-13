@@ -34,7 +34,8 @@ object FilterElemente: TFilterElemente
       'MarginRate'
       'AccountCurrency'
       'CloseDateTime OR Open'
-      'Comment')
+      'Comment'
+      'Action in TimeRange')
   end
   object cbOperator: TComboBox
     Left = 163

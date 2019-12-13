@@ -97,6 +97,7 @@ type
     ct2nix: integer;
     usersCt:integer;//Anzahl User getradet im Zeitraum
     usersCt2:integer;//schau mer mal
+    mostSymbols:string;
     procedure clear;
   end;
 
@@ -399,6 +400,8 @@ type
 
   // byteArray = array of byte;
 
+procedure lbAdd(lb: TListBox; s: string);
+
 function findCwactionFromId(id: int64): integer;
 
 function getSessionKey(var key: string): integer;
@@ -465,6 +468,7 @@ function GetPIndex(lo, hi: integer): integer;
 function strGleichToFloat(s: string): double;
 procedure ClearStringGridSorted(const Grid: FTCommons.TStringGridSorted);
 procedure lbDebug(s: string);
+procedure lbCSVDebug(s: string);
 procedure AutoSizeGrid(Grid, Grid2: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
@@ -602,6 +606,7 @@ var
   cwRatings: DACwRating;
   cwGrouping: cwGroupElemente;
   lboxDebug: TListBox;
+  lbCSV:TListBox;
   lboxInfo: TListBox;
   cwFilterParameter: array of TFilterParameter;
   brokerShort: array [1 .. 2] of string;
@@ -659,7 +664,14 @@ procedure lbDebug(s: string);
 begin
   if (lboxDebug <> nil) then
   begin
-    lboxDebug.items.add(s);
+    lboxDebug.items.add(timetostr(now)+':'+s);
+  end;
+end;
+procedure lbCSVDebug(s: string);
+begin
+  if (lbCSV <> nil) then
+  begin
+    lbCSV.items.add(timetostr(now)+':'+s);
   end;
 end;
 
@@ -667,7 +679,7 @@ procedure lbInfo(s: string);
 begin
   if (lboxInfo <> nil) then
   begin
-    lboxInfo.items.add(s);
+    lboxInfo.items.add(timetostr(now)+':'+s);
   end;
 end;
 
@@ -1218,7 +1230,7 @@ begin
       valuez := csvReader.ColumnCount;
       if valuez = 0 then
       begin
-        // sl.items.add('leere Zeile ignoriert');
+        // lbAdd(sl,'leere Zeile ignoriert');
       end
       else
       begin
@@ -1237,7 +1249,7 @@ begin
           if l = 0 then
           begin
             ok := false;
-            sl.items.add('leere Daten entfernt');
+            lbAdd(sl,'leere Daten entfernt');
           end;
         end;
         if ok = true then
@@ -1259,7 +1271,7 @@ begin
           // und zuweisen
           if (valuez > headerz) then
           begin
-            sl.items.add('zu viele valuez. Angepasst !');
+            lbAdd(sl,'zu viele valuez. Angepasst !');
             valuez := headerz;
           end;
 
@@ -1281,8 +1293,8 @@ begin
                 except
                   on E: Exception do
                   begin
-                    sl.items.add(ns);
-                    sl.items.add('lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
+                    lbAdd(sl,ns);
+                    lbAdd(sl,'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
                   end;
 
                 end;
@@ -1324,8 +1336,8 @@ begin
                 except
                   on E: Exception do
                   begin
-                    sl.items.add(ns);
-                    sl.items.add('lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
+                    lbAdd(sl,ns);
+                    lbAdd(sl,'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
                   end;
 
                 end;
@@ -1388,8 +1400,8 @@ begin
                 except
                   on E: Exception do
                   begin
-                    sl.items.add(ns);
-                    sl.items.add('lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
+                    lbAdd(sl,ns);
+                    lbAdd(sl,'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
                   end;
 
                 end;
@@ -1433,7 +1445,7 @@ begin
     // end;
     // end;
   end;
-  sl.items.add('Z Parse:' + inttostr(GetTickCount - gt) + ' Ct:' + inttostr(lc));
+  lbAdd(sl,'Z Parse:' + inttostr(GetTickCount - gt) + ' Ct:' + inttostr(lc));
 end;
 
 procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
@@ -3125,7 +3137,7 @@ begin
     if fileexists(fileName) then
       fstream.Free;
   end;
-  lb.items.add('Zeit LoadCacheFileCw:' + inttostr(GetTickCount() - gt));
+  lbadd(lb,'Zeit LoadCacheFileCw:' + inttostr(GetTickCount() - gt));
   // p0 := @cwActions[0];
 
 end;
@@ -4703,13 +4715,13 @@ var
 begin
   GMS.dwLength := SizeOf(TMemoryStatusEx);
   GlobalMemoryStatusEx(GMS);
-  lb.items.add('used (system):               ' + inttostr(GMS.dwMemoryLoad) + ' %');
-  lb.items.add('physical memory - total:     ' + inttostr(trunc(GMS.ullTotalPhys / 1048576)) + ' MB');
-  lb.items.add(' (system)       - available: ' + inttostr(trunc(GMS.ullAvailPhys / 1048576)) + ' MB');
-  lb.items.add('page file       - total:     ' + inttostr(trunc(GMS.ullTotalPageFile / 1048576)) + ' MB');
-  lb.items.add('                - available: ' + inttostr(trunc(GMS.ullAvailPageFile / 1048576)) + ' MB');
-  lb.items.add('virtual memory  - total:     ' + inttostr(trunc(GMS.ullTotalVirtual / 1048576)) + ' MB');
-  lb.items.add(' (this program) - available: ' + inttostr(trunc(GMS.ullAvailVirtual / 1048576)) + ' MB');
+  lbAdd(lb,'used (system):               ' + inttostr(GMS.dwMemoryLoad) + ' %');
+  lbAdd(lb,'physical memory - total:     ' + inttostr(trunc(GMS.ullTotalPhys / 1048576)) + ' MB');
+  lbAdd(lb,' (system)       - available: ' + inttostr(trunc(GMS.ullAvailPhys / 1048576)) + ' MB');
+  lbAdd(lb,'page file       - total:     ' + inttostr(trunc(GMS.ullTotalPageFile / 1048576)) + ' MB');
+  lbAdd(lb,'                - available: ' + inttostr(trunc(GMS.ullAvailPageFile / 1048576)) + ' MB');
+  lbAdd(lb,'virtual memory  - total:     ' + inttostr(trunc(GMS.ullTotalVirtual / 1048576)) + ' MB');
+  lbAdd(lb,' (this program) - available: ' + inttostr(trunc(GMS.ullAvailVirtual / 1048576)) + ' MB');
 
 end;
 
@@ -5128,5 +5140,10 @@ begin
   // Result := '1KB';
   // end;
 end;
+
+  procedure lbAdd(lb: TListBox; s: string);
+  begin
+    lb.Items.Add(timetostr(now) + ':' + s);
+  end;
 
 end.

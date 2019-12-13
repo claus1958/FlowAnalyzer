@@ -1,5 +1,6 @@
 unit FilterControl;
 
+// FilterControl ist ein Frame ELement
 interface
 
 uses
@@ -28,6 +29,7 @@ const
   fltTopicAccountCurrency = 18;
   fltTopicCloseDateTimeOrOpen = 19;
   fltTopicComment = 20;
+  fltTopicActionInTimeRange = 21;
 
   fltOpGleich = 1;
   fltOpUnGleich = 2;
@@ -41,6 +43,8 @@ const
   fltOpGroesserGleichOderNull = 10; // bei Datum wichtig
   fltOpKlNotNull = 11; // neuer Operator bei Datum
   fltOpKlOrNull = 12;
+  fltOpTrue = 13;
+  fltOpFalse = 14;
 
 type
   TFilterElemente = class(TFrame)
@@ -85,11 +89,11 @@ type
     // function vergleichIntegerArray(was: array of integer; mit: integer; op: string): boolean;
   private
     chkLB1Selected: array of boolean;
+  public
     topic: string;
     operators: string;
     coperator: Integer;
     ctopic: Integer;
-  public
     vglI: array of Integer; // all diese Parameter werden vor der eigentlichen Suche erstellt
     vglS: array of string;
     vglICt: Integer;
@@ -98,6 +102,7 @@ type
     vDouble: double;
     vString: String;
     vInteger: Integer;
+    vInteger2: Integer; // nur bei Action in TimeRange verwendet und nicht manuell eingebbar
     brokerId: array [0 .. 7] of Integer;
     counter: Integer;
     mmon: boolean;
@@ -113,8 +118,7 @@ type
 implementation
 
 {$R *.dfm}
-
-uses XFlowAnalyzer;
+// uses XFlowAnalyzer;  //brauche ich wohl gar nicht    . Sehr wohl aber oben FTCommons
 
 constructor TFilterElemente.Create(AOwner: TComponent);
 begin
@@ -154,16 +158,16 @@ begin
   begin
     if dtPicker1.Visible = true then
     begin
-      dtPicker1.DateTime:=getDateTimeFromString(edValue.Text);
+      dtPicker1.DateTime := getDateTimeFromString(edValue.Text);
 
-//      // den Wert umrechnen und im Picker eintragen
-//      if trystrtoint(edValue.Text, i) = true then
-//        dtPicker1.DateTime := (unixtodatetime(i))
-//      else
-//      begin
-//        s := AnsiUpperCase(edValue.Text);
-//        dtPicker1.DateTime := getDateTimeFromString(s);
-//      end;
+      // // den Wert umrechnen und im Picker eintragen
+      // if trystrtoint(edValue.Text, i) = true then
+      // dtPicker1.DateTime := (unixtodatetime(i))
+      // else
+      // begin
+      // s := AnsiUpperCase(edValue.Text);
+      // dtPicker1.DateTime := getDateTimeFromString(s);
+      // end;
     end;
 
   end;
@@ -416,6 +420,8 @@ begin
   begin
     typ := 1;
   end;
+  if topic = 'Action in TimeRange' then
+    typ := 4;
 
   if typ = 1 then
   // reines Editierfeld
@@ -468,7 +474,21 @@ begin
     cbOperator.Items.Add('< or 0');
 
   end;
+
+  if typ = 4 then
+  begin
+    chkLB1.Visible := false;
+    edValue.Visible := false;
+    dtPicker1.Visible := false;
+    btnMore.Visible := false;
+    chkLB1.Visible := false;
+    cbOperator.Items.Clear;
+    cbOperator.Items.Add('true');
+    cbOperator.Items.Add('false');
+
+  end;
   // form2.dolockWindowUpdate(false);
+  cbOperator.itemindex:=0;
 
 end;
 
@@ -675,7 +695,7 @@ begin
 
   then
   begin
-//oben:dtPicker1.DateTime:=getDateTimeFromString(edValue.Text); ->
+    // oben:dtPicker1.DateTime:=getDateTimeFromString(edValue.Text); ->
     vString := edValue.Text;
     if (vString = '') then
       vString := '0';
@@ -684,8 +704,8 @@ begin
       if (vString = '') then
         vInteger := 0
       else
-        vinteger:=getUnixTimeFromString(edValue.text);
-        //vInteger := strtoint(vString)
+        vInteger := getUnixTimeFromString(edValue.Text);
+      // vInteger := strtoint(vString)
     end
     else
       vInteger := datetimetounix(strtodatetime(vString));
@@ -694,6 +714,11 @@ begin
   if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) OR
     (ctopic = fltTopicMarginRate) then
     vDouble := mystringtofloat(edValue.Text);
+
+  if (ctopic = fltTopicActionInTimeRange) then
+  begin
+    // very special wird später zugewiesen
+  end;
 
 end;
 
@@ -984,7 +1009,6 @@ begin
 
 end;
 
-
 procedure TFilterElemente.getValues(f: TFilterParameter);
 var
   s: string;
@@ -1024,6 +1048,10 @@ begin
     coperator := fltOpContains;
   if operators = 'begins' then
     coperator := fltOpBegins;
+  if operators='true' then
+    coperator:=fltOpTrue;
+  if operators='false' then
+    coperator:=fltOpFalse;
 
   topic := vorQuote(cbTopic.Text);
 
@@ -1065,6 +1093,8 @@ begin
     ctopic := fltTopicCloseDateTimeOrOpen; // = 19;
   if topic = 'Comment' then
     ctopic := fltTopicComment; // = 20
+  if topic = 'Action in TimeRange' then
+    ctopic := fltTopicActionInTimeRange; // = 21
 
   // Rest passiert beim Aufrufer
 end;
@@ -1111,6 +1141,7 @@ function TFilterElemente.checkCwaction(var a: cwaction; var aplus: cwActionPlus)
 // SymbolId
 // Symbol  =
 // Lotsize
+// Action in TimeRange
 
 // was wird verglichen - Index aus einer Liste bzw eine Zahl(Integer) oder Double  / oder ein String / ein Datum TDate  /
 // mit was wird verglichen - muss eigentlich derselbe Daten typ sein
@@ -1322,6 +1353,27 @@ begin
       exit;
 
     end;
+    if ctopic = fltTopicActionInTimeRange then
+    begin
+       if((a.openTime>=vinteger) and (a.openTime<=vinteger2))or((a.closeTime>=vinteger) and ((a.closeTime<>0)and(a.closeTime<=vinteger2))) then
+       begin
+           if (coperator = fltOpTrue) then
+             result:=true;
+           if (coperator = fltOpFalse) then
+             result:=false;
+       end
+       else
+       begin
+           if (coperator = fltOpTrue) then
+             result:=false;
+           if (coperator = fltOpFalse) then
+             result:=true;
+
+       end;
+
+
+    end;
+
   except
     result := false;
   end;

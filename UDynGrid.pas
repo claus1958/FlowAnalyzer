@@ -42,7 +42,7 @@ type
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
 
     procedure doSorting();
-
+    procedure doUpdateStyleElements();
     procedure sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer; var actions: DACwOpenActions);
     procedure sortGridCwOpenActionsOTR(source: string; sortcol: string; sortdir: integer; var actions: DATradeRecord);
 
@@ -84,7 +84,12 @@ type
     procedure Panel1Click(Sender: TObject);
 
   private
-    { Private-Deklarationen }
+  { Private-Deklarationen }
+    const
+    cPrivat = 1;
+
+  var
+    privat: integer;
   public
   { Public-Deklarationen }
     const
@@ -101,6 +106,7 @@ type
     source: string;
     dSort: doubleArray;
     sSort: Stringarray;
+    sDatenTyp: integer; // 1=Double 2=String NEU 12.12.19 zur nachträglichen Verwendung von ssort oder dsort
     ixSorted: intarray; // actionindex(sortindex)=nummer der Action in der Zeile sortindex
     selSorted: byteArray; // jeweils 0 oder 1=selektiert
     selectedCt: integer;
@@ -134,7 +140,7 @@ begin
   inherited Create(AOwner);
   initialized := false;
   maxDataRows := 0;
-  setlength(dSort, 0); // warum nur die ?
+  setlength(dSort, 0); // warum nur die beiden ?
   setlength(sSort, 0);
 end;
 
@@ -566,7 +572,7 @@ end;
 
 procedure TDynGrid.Panel1Click(Sender: TObject);
 begin
-self.invalidate;
+  self.invalidate;
 end;
 
 procedure TDynGrid.Panel2Resize(Sender: TObject);
@@ -638,6 +644,8 @@ procedure TDynGrid.ScrollBar1Scroll(Sender: TObject; ScrollCode: TScrollCode; va
 var
   a: integer;
 begin
+
+
   // TScrollCode = (scLineUp, scLineDown, scPageUp, scPageDown, scPosition,scTrack, scTop, scBottom, scEndScroll);
   a := 0;
   // klappt so nicht wie gewünscht da position nach +5 wieder als +1 kommt
@@ -792,6 +800,14 @@ begin
 
   // autosized := false;
   // alle Selektionen auf Null setzen
+
+
+  // nun stecken die sortierten Elemente der einen Spalte in ssort und dsort
+  // wird dann aber eigentlich nicht mehr gebraucht weil es um den Index ixSorted geht !
+
+  setlength(sSort, 0); // NEU 12.12.19
+  setlength(dSort, 0);
+
   setlength(selSorted, length(ixSorted));
   for i := 0 to length(ixSorted) - 1 do
     selSorted[i] := 0;
@@ -836,8 +852,7 @@ begin
     inttostr(length(cwActions));
 
   initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
-  // doSorting();
-  // Panel2Resize(self);
+
 end;
 
 procedure TDynGrid.doRemoveSelectionOTR(typ: integer);
@@ -878,6 +893,7 @@ begin
 end;
 
 procedure TDynGrid.doSorting();
+//
 begin
   if source = 'cwopenactions1' then
     sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);
@@ -907,6 +923,11 @@ begin
     sortGridCwSummaries(source, sortcol, sortdir, cwsummaries);
 end;
 
+procedure TDynGrid.doUpdateStyleElements;
+begin
+  self.UpdateStyleElements;
+end;
+
 procedure TDynGrid.sortGridCwOpenActions(source: string; sortcol: string; sortdir: integer;
   var actions: DACwOpenActions);
 var
@@ -916,13 +937,14 @@ var
 begin
   gt := gettickcount;
 
-  dl := length(actions);
+  dl := length(actions); // immer der ganze Haufen !
   if (dl = 0) then
     exit;
 
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
-  scol := 1; // alles undefinierte ist dann die erste Spalte = ActionId
+  scol := 1;
+  // alles undefinierte ist dann die erste Spalte = ActionId  Scol ist NICHT unbedingt die Spalte die man sieht
   if ((source = 'cwopenactions1') or (source = 'cwopenactions2')) then
   begin
     if sortcol = 'actionId' then
@@ -998,7 +1020,6 @@ begin
             sSort[i] := '';
           continue;
         end;
-
       end;
     end;
     // nun sortieren
@@ -1020,6 +1041,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   Panel2Resize(self);
@@ -1151,6 +1173,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   Panel2Resize(self);
@@ -1390,6 +1413,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
@@ -1650,6 +1674,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
@@ -1688,6 +1713,9 @@ begin
     PopupMenu1.Popup(p.X, p.Y); // Columnselection und CSV-Export
   if (m = 0) then
     PopupMenu0.Popup(p.X, p.Y); // Columnselection
+
+  // testweise hier mal was probieren
+  self.UpdateStyleElements;
 
 end;
 
@@ -1753,6 +1781,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
@@ -1929,6 +1958,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
@@ -2056,6 +2086,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
+    sDatenTyp := smethode;
 
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
@@ -2180,9 +2211,8 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VUAS')
       else
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
-
     end;
-
+    sDatenTyp := smethode;
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
@@ -2319,7 +2349,7 @@ begin
         FastSort2ArrayString(sSort, ixSorted, 'VDAS')
 
     end;
-
+    sDatenTyp := smethode;
   end;
   // lblTime.caption := inttostr(gettickcount - gt);
   Panel2Resize(self);
@@ -2482,7 +2512,7 @@ begin
   end;
   lastMouseDown := gt;
   gt := timegettime();
-  grid := Sender as FTCommons.TStringGridSorted;
+  grid := Sender as FTCommons.TStringGridSorted; // das ist gleichzeitig SG
   // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
   if Button = mbleft then
   begin
@@ -2522,6 +2552,8 @@ begin
           sortdir := -sortdir;
           grid.Selection := NoSelection;
           doSorting();
+          setlength(sSort, 0); // NEU 12.12.19
+          setlength(dSort, 0);
 
           // if source = 'cwopenactions1' then
           // sortGridCwOpenActions(source, sortcol, sortdir, cwOpenActionsZ1);

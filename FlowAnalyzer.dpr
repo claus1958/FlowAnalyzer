@@ -18,10 +18,11 @@ uses
   uTwoLabel in 'uTwoLabel.pas' {twoLabel: TFrame},
   Dialog2 in 'Dialog2.pas' {Dialog2},
   ChangeLog in 'ChangeLog.pas',
-  Unit10 in 'Unit10.pas' {Form10};
+  Unit10 in 'Unit10.pas' {Form10},
+  EvalInfo in 'EvalInfo.pas' {Frame11: TFrame};
 
 {$R *.res}
-
+{$SetPEFlags $0020} //IMAGE_FILE_LARGE_ADDRESS_AWARE}
 begin
   ReportMemoryLeaksOnShutdown := DebugHook <> 0;
   Application.Initialize;
