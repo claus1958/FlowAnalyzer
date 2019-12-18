@@ -15,8 +15,8 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Carbon');
   Application.CreateForm(TForm45, Form45);
   Application.CreateForm(TForm9, Form9);
+  TStyleManager.TrySetStyle('Onyx Blue');
   Application.Run;
 end.

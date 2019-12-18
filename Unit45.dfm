@@ -17,7 +17,7 @@ object Form45: TForm45
   TextHeight = 13
   object Label1: TLabel
     Left = 8
-    Top = 367
+    Top = 343
     Width = 1037
     Height = 19
     Alignment = taCenter
@@ -25,6 +25,18 @@ object Form45: TForm45
     BiDiMode = bdLeftToRight
     Caption = 'Initest'
     ParentBiDiMode = False
+  end
+  object Label2: TLabel
+    Left = 896
+    Top = 380
+    Width = 263
+    Height = 52
+    AutoSize = False
+    Caption = 
+      'asdfasdf asdf asdfasdf  asdf sdsdgsdfgsdfg sdfg sdfsdfgsdfgsdfg ' +
+      'sdfgsdfg sdgsdfg sdf sdfg sdf g sdfgsdfgsdfg sdgsd gsd gfsdfg sd' +
+      'fgsdfgsdfgsd gsdfgsdfg sdfgsdfg sdfgsdfg sdfg'
+    WordWrap = True
   end
   inline Frame41: TFrame4
     Left = 464
@@ -200,7 +212,7 @@ object Form45: TForm45
     Width = 81
     Height = 21
     Date = 43689.000000000000000000
-    Time = 0.897918043978279400
+    Time = 0.897918043978279500
     TabOrder = 15
   end
   object DatePicker1: TDatePicker
@@ -276,7 +288,7 @@ object Form45: TForm45
     Width = 66
     Height = 21
     Date = 43689.000000000000000000
-    Time = 0.897918043978279400
+    Time = 0.897918043978279500
     Kind = dtkTime
     TabOrder = 20
   end
@@ -306,7 +318,7 @@ object Form45: TForm45
     Left = 736
     Top = 406
     Width = 85
-    Height = 29
+    Height = 26
     Caption = 'Button7'
     TabOrder = 22
     OnClick = Button7Click
@@ -329,18 +341,10 @@ object Form45: TForm45
     TabOrder = 24
     object TabSheet1: TTabSheet
       Caption = 'TabSheet1'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
     end
     object TabSheet2: TTabSheet
       Caption = 'TabSheet2'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
     end
     object TabSheet3: TTabSheet
       Caption = 'TabSheet3'

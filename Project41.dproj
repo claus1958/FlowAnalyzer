@@ -70,7 +70,7 @@
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
         <UWP_DelphiLogo150>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_150.png</UWP_DelphiLogo150>
         <SanitizedProjectName>Project41</SanitizedProjectName>
-        <Custom_Styles>Carbon|VCLSTYLE|$(BDSCOMMONDIR)\Styles\Carbon.vsf</Custom_Styles>
+        <Custom_Styles>&quot;Onyx Blue|VCLSTYLE|$(BDSCOMMONDIR)\Styles\OnyxBlue.vsf&quot;</Custom_Styles>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Win32)'!=''">
         <DCC_UsePackage>DBXSqliteDriver;IndyIPCommon;RESTComponents;bindcompdbx;DBXInterBaseDriver;vcl;IndyIPServer;vclactnband;cwtest;vclFireDAC;IndySystem;tethering;svnui;advchartdedXE12;dsnapcon;FireDACADSDriver;cw1;PasLex;FireDACMSAccDriver;fmxFireDAC;vclimg;TeeDB;FireDAC;vcltouch;vcldb;bindcompfmx;svn;FireDACSqliteDriver;FireDACPgDriver;ibmonitor;inetdb;FMXTee;soaprtl;DbxCommonDriver;FmxTeeUI;ibxpress;fmx;FireDACIBDriver;fmxdae;xmlrtl;soapmidas;ibxbindings;fmxobj;vclwinx;vclib;rtl;Tee;DbxClientDriver;RSCommon;RSFMXCharts;CustomIPTransport;vcldsnap;dbexpress;IndyCore;vclx;bindcomp;appanalytics;dsnap;RSCharting;advchartdXE12;FireDACCommon;IndyIPClient;bindcompvcl;RSVclCommon;RESTBackendComponents;TeeUI;VCLRESTComponents;soapserver;dbxcds;VclSmp;adortl;vclie;bindengine;DBXMySQLDriver;CloudService;dsnapxml;FireDACMySQLDriver;dbrtl;IndyProtocols;inetdbxpress;FireDACCommonODBC;FireDACCommonDriver;RSChartsDB;inet;fmxase;$(DCC_UsePackage)</DCC_UsePackage>
@@ -175,10 +175,8 @@
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSCommonD260.6.0.bpl">RiverSoftAVG Common Classes Library</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSChartsDBD260.bpl">RiverSoftAVG Database Charting Components</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSChartingD260.bpl">RiverSoftAVG Charting Component Suite (VCL)</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\20.0\Bpl\advchartdXE12.bpl">TMS VCL Chart</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSCommonChartsD260.bpl">RiverSoftAVG Charting Component Suite Common Library</Excluded_Packages>
                     <Excluded_Packages Name="C:\Comps\RiverSoftAVG\Bin\Win32\D260\RSFMXCommonD260.6.0.bpl">RiverSoftAVG Common Classes Library (FMX)</Excluded_Packages>
-                    <Excluded_Packages Name="C:\Program Files (x86)\tmssoftware\AdvChart RSXE12\Win32\AdvChartDEDXE12.bpl">TMS VCL Chart Designtime</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k260.bpl">Microsoft Office 2000 Beispiele für gekapselte Komponenten für Automatisierungsserver</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp260.bpl">Microsoft Office XP Beispiele für gekapselte Komponenten für Automation Server</Excluded_Packages>
                 </Excluded_Packages>

@@ -6,8 +6,8 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
   RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
-  psAPI, System.zip, Wininet, csCSV, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,
-  System.NetEncoding, DateUtils;
+  psAPI, System.zip, Wininet, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,
+  System.NetEncoding, DateUtils,csCSV,SHELLAPI;
 
 const
 
@@ -78,11 +78,11 @@ type
   end;
 
   EvaluationResult = record
-    z1: TDateTime;//Startzeit der Auswertung inclusive    1. bis 2. berechnet also den gesamten 1.
-    z2: TDateTime;//Endzeit der Auswertung exclusive
+    z1: TDateTime; // Startzeit der Auswertung inclusive    1. bis 2. berechnet also den gesamten 1.
+    z2: TDateTime; // Endzeit der Auswertung exclusive
     profit1: array [1 .. 4] of double; // offener Profit Beginnn  ungewöhnlich 1..4 da die Währungen so laufen !
-    profit: array [1 .. 4] of double; //realisierter Profit im Zeitraum
-    profit2: array [1 .. 4] of double; //offener Profit am Ende
+    profit: array [1 .. 4] of double; // realisierter Profit im Zeitraum
+    profit2: array [1 .. 4] of double; // offener Profit am Ende
     swap1: double;
     swap: double;
     swap2: double;
@@ -95,9 +95,9 @@ type
     ct1nix: integer;
     ctnix: integer;
     ct2nix: integer;
-    usersCt:integer;//Anzahl User getradet im Zeitraum
-    usersCt2:integer;//schau mer mal
-    mostSymbols:string;
+    usersCt: integer; // Anzahl User getradet im Zeitraum
+    usersCt2: integer; // schau mer mal
+    mostSymbols: string;
     procedure clear;
   end;
 
@@ -191,7 +191,7 @@ type
   cwOpenAction = packed record
     actionId: int64;
     userId: integer;
-    Swap: double;
+    swap: double;
     profit: double;
   end;
 
@@ -250,7 +250,7 @@ type
     closePrice: double; // 8
     stopLoss: double; // 8
     takeProfit: double; // 8
-    Swap: double; // 8
+    swap: double; // 8
     profit: double; // 8
     volume: integer; // 4
     precision: integer; // 4
@@ -293,7 +293,7 @@ type
     sTradesSwapTotal: double;
     sTradesProfitSwapTotal: double;
     Plus: array [0 .. 12] of double; // Platzhalten erstmal für die zusätzlichen Felder ...
-    merk: string;//dient später der Ermittlung der sTradesUsers
+    merk: string; // dient später der Ermittlung der sTradesUsers
   End;
 
   DACwSummary = array of cwSummary;
@@ -431,6 +431,9 @@ function getCwSymbol(id: integer): string;
 function OrderTypes(cmd: integer): string;
 procedure saveCacheFileCw(fname: string; typ: string; lb: TListBox);
 function loadCacheFileCw(fname: string; typ: string; lb: TListBox): integer;
+procedure saveOpenActionsBuffer(fname: string; ba: byteArray);
+function loadOpenActionsBuffer(fname: string; var ba: byteArray):integer;
+
 // A=Alpha V=Value U=Up D=Down
 procedure QuicksortAU(low, high: integer; var Ordliste: StringArray); // StringArray ist Array of String
 procedure QuicksortAD(low, high: integer; var Ordliste: StringArray);
@@ -459,7 +462,7 @@ procedure FastSort2ArrayInt64Int(dbla: int64Array; inta: intArray; sTyp: string)
 
 function CTime2DateTime(T: time_c): TDateTime;
 function DateTime2CTime(T: TDateTime): time_c;
-procedure Swap(var Value1, Value2: string);
+procedure swap(var Value1, Value2: string);
 procedure SwapDbl(var Value1, Value2: double);
 procedure SwapInt(var Value1, Value2: integer);
 procedure SwapInt64(var Value1, Value2: int64);
@@ -548,6 +551,7 @@ function getStartOfMonth(dt: TDateTime): TDateTime;
 function getNextYear(dt: TDateTime): TDateTime;
 function getPreviousYear(dt: TDateTime): TDateTime;
 function Get_File_Size(sFileToExamine: string): integer;
+procedure DelFilesFromDir(Directory, FileMask: string; DelSubDirs: Boolean);
 
 var
 
@@ -606,7 +610,7 @@ var
   cwRatings: DACwRating;
   cwGrouping: cwGroupElemente;
   lboxDebug: TListBox;
-  lbCSV:TListBox;
+  lbCSV: TListBox;
   lboxInfo: TListBox;
   cwFilterParameter: array of TFilterParameter;
   brokerShort: array [1 .. 2] of string;
@@ -629,17 +633,17 @@ var
 begin
   for i := 1 to 4 do
   begin
-    Profit1[i] := 0;
+    profit1[i] := 0;
     profit[i] := 0;
-    Profit2[i] := 0;
+    profit2[i] := 0;
   end;
-  Swap1 := 0;
-  Swap := 0;
-  Swap2 := 0;
+  swap1 := 0;
+  swap := 0;
+  swap2 := 0;
 
   volume := 0;
-  Volume1 := 0;
-  Volume2 := 0;
+  volume1 := 0;
+  volume2 := 0;
 
   ct := 0;
   ct1 := 0;
@@ -664,14 +668,15 @@ procedure lbDebug(s: string);
 begin
   if (lboxDebug <> nil) then
   begin
-    lboxDebug.items.add(timetostr(now)+':'+s);
+    lboxDebug.items.add(timetostr(now) + ':' + s);
   end;
 end;
+
 procedure lbCSVDebug(s: string);
 begin
   if (lbCSV <> nil) then
   begin
-    lbCSV.items.add(timetostr(now)+':'+s);
+    lbCSV.items.add(timetostr(now) + ':' + s);
   end;
 end;
 
@@ -679,7 +684,7 @@ procedure lbInfo(s: string);
 begin
   if (lboxInfo <> nil) then
   begin
-    lboxInfo.items.add(timetostr(now)+':'+s);
+    lboxInfo.items.add(timetostr(now) + ':' + s);
   end;
 end;
 
@@ -1249,7 +1254,7 @@ begin
           if l = 0 then
           begin
             ok := false;
-            lbAdd(sl,'leere Daten entfernt');
+            lbAdd(sl, 'leere Daten entfernt');
           end;
         end;
         if ok = true then
@@ -1271,7 +1276,7 @@ begin
           // und zuweisen
           if (valuez > headerz) then
           begin
-            lbAdd(sl,'zu viele valuez. Angepasst !');
+            lbAdd(sl, 'zu viele valuez. Angepasst !');
             valuez := headerz;
           end;
 
@@ -1293,8 +1298,8 @@ begin
                 except
                   on E: Exception do
                   begin
-                    lbAdd(sl,ns);
-                    lbAdd(sl,'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
+                    lbAdd(sl, ns);
+                    lbAdd(sl, 'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
                   end;
 
                 end;
@@ -1336,8 +1341,8 @@ begin
                 except
                   on E: Exception do
                   begin
-                    lbAdd(sl,ns);
-                    lbAdd(sl,'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
+                    lbAdd(sl, ns);
+                    lbAdd(sl, 'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
                   end;
 
                 end;
@@ -1400,8 +1405,8 @@ begin
                 except
                   on E: Exception do
                   begin
-                    lbAdd(sl,ns);
-                    lbAdd(sl,'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
+                    lbAdd(sl, ns);
+                    lbAdd(sl, 'lc' + inttostr(lc) + ' ' + values[i] + '->' + E.Message);
                   end;
 
                 end;
@@ -1445,7 +1450,7 @@ begin
     // end;
     // end;
   end;
-  lbAdd(sl,'Z Parse:' + inttostr(GetTickCount - gt) + ' Ct:' + inttostr(lc));
+  lbAdd(sl, 'Z Parse:' + inttostr(GetTickCount - gt) + ' Ct:' + inttostr(lc));
 end;
 
 procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
@@ -1615,7 +1620,7 @@ begin
           lines[SGFieldCol[14]] := floattostr(actions[sort[k]].closePrice);
           lines[SGFieldCol[15]] := floattostr(actions[sort[k]].stopLoss);
           lines[SGFieldCol[16]] := floattostr(actions[sort[k]].takeProfit);
-          lines[SGFieldCol[17]] := floattostr(actions[sort[k]].Swap);
+          lines[SGFieldCol[17]] := floattostr(actions[sort[k]].swap);
           lines[SGFieldCol[18]] := floattostr(actions[sort[k]].profit);
           lines[SGFieldCol[19]] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
           lines[SGFieldCol[20]] := inttostr(actions[sort[k]].precision);
@@ -1778,7 +1783,7 @@ begin
         lines[SGFieldCol[0]] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
         lines[SGFieldCol[1]] := inttostr(actions[sort[k]].userId);
         lines[SGFieldCol[2]] := floattostr(actions[sort[k]].profit);
-        lines[SGFieldCol[3]] := floattostr(actions[sort[k]].Swap);
+        lines[SGFieldCol[3]] := floattostr(actions[sort[k]].swap);
         found := findCwactionFromId(actions[sort[k]].actionId);
         if (found > -1) then
         begin
@@ -1793,6 +1798,7 @@ begin
           found2 := -1;
           for j := 0 to length(cwTradeRecords) - 1 do
           begin
+            //hinten an der ActionId eine Stelle wieder abschneiden, welche ich als BrokerAccount angehängt habe
             if (cwTradeRecords[j].order = int(actions[sort[k]].actionId / 10)) then
             begin
               found2 := j;
@@ -1801,10 +1807,10 @@ begin
           end;
           if (found2 > -1) then
           begin
-            lines[SGFieldCol[9]] := OrderTypes(cwTradeRecords[found2].cmd) + ' ' +
+            lines[SGFieldCol[9]] := '!'+OrderTypes(cwTradeRecords[found2].cmd) + ' ' +
               inttostr(cwTradeRecords[found2].cmd + 1);
-            lines[SGFieldCol[10]] := floattostr(cwTradeRecords[found2].open_price);
-            lines[SGFieldCol[11]] := FormatFloat(',#0.00', cwTradeRecords[found2].volume / 100);
+            lines[SGFieldCol[10]] := '!'+floattostr(cwTradeRecords[found2].open_price);
+            lines[SGFieldCol[11]] := '!'+FormatFloat(',#0.00', cwTradeRecords[found2].volume / 100);
           end
           else
           begin
@@ -1898,7 +1904,7 @@ begin
       end;
       lines[SGFieldCol[0]] := 'actionId';
       lines[SGFieldCol[1]] := 'userId';
-      lines[SGFieldCol[2]] := 'profit';
+      lines[SGFieldCol[2]] := 'symbol';
       lines[SGFieldCol[3]] := 'opentime';
       lines[SGFieldCol[4]] := 'closetime';
       lines[SGFieldCol[5]] := 'cmd';
@@ -1906,6 +1912,8 @@ begin
       lines[SGFieldCol[7]] := 'closeprice';
       lines[SGFieldCol[8]] := 'volume';
       lines[SGFieldCol[9]] := 'comment';
+      lines[SGFieldCol[10]] := 'profit';
+      lines[SGFieldCol[11]] := 'stoploss';
 
       if (toSL = false) then
       begin
@@ -1951,6 +1959,8 @@ begin
         lines[SGFieldCol[7]] := floattostr(actions[sort[k]].close_price);
         lines[SGFieldCol[8]] := FormatFloat(',#0.00', actions[sort[k]].volume / 100);
         lines[SGFieldCol[9]] := actions[sort[k]].comment;
+        lines[SGFieldCol[10]] := floattostr(actions[sort[k]].profit);
+        lines[SGFieldCol[11]] := floattostr(actions[sort[k]].sl);
 
         if (toSL = false) then
         begin
@@ -2593,7 +2603,7 @@ begin
         SG.cells[SGFieldCol[14], row] := floattostr(actions[k].closePrice);
         SG.cells[SGFieldCol[15], row] := floattostr(actions[k].stopLoss);
         SG.cells[SGFieldCol[16], row] := floattostr(actions[k].takeProfit);
-        SG.cells[SGFieldCol[17], row] := floattostr(actions[k].Swap);
+        SG.cells[SGFieldCol[17], row] := floattostr(actions[k].swap);
         SG.cells[SGFieldCol[18], row] := floattostr(actions[k].profit);
         SG.cells[SGFieldCol[19], row] := FormatFloat(',#0.00', actions[k].volume / 100);
         SG.cells[SGFieldCol[20], row] := inttostr(actions[k].precision);
@@ -3137,7 +3147,7 @@ begin
     if fileexists(fileName) then
       fstream.Free;
   end;
-  lbadd(lb,'Zeit LoadCacheFileCw:' + inttostr(GetTickCount() - gt));
+  lbAdd(lb, 'Zeit LoadCacheFileCw:' + inttostr(GetTickCount() - gt));
   // p0 := @cwActions[0];
 
 end;
@@ -3149,7 +3159,7 @@ var
   fileName: string;
   fstream: TStream;
   l: integer;
-  gt: Cardinal;
+  gt, td: Cardinal;
 begin
   try
     gt := GetTickCount();
@@ -3184,7 +3194,8 @@ begin
   finally
     fstream.Free;
   end;
-  lb.items.add('Zeit SaveCacheFile:' + inttostr(GetTickCount() - gt)); // 1.5 sec
+  td := GetTickCount - gt;
+  lb.items.add('Zeit SaveCacheFile:' + inttostr(td)); // 1.5 sec
 end;
 
 procedure QuicksortUAStringInt(low, high: integer; var dbla: StringArray; var inta: intArray);
@@ -3213,7 +3224,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(dbla[Left], dbla[Right]);
+      swap(dbla[Left], dbla[Right]);
       SwapInt(inta[Left], inta[Right]);
       Inc(Left);
       Dec(Right);
@@ -3385,7 +3396,7 @@ begin
     if (Left <= Right) then
     begin
       SwapInt(inta[Left], inta[Right]);
-      Swap(stra[Left], stra[Right]);
+      swap(stra[Left], stra[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3564,7 +3575,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(dbla[Left], dbla[Right]);
+      swap(dbla[Left], dbla[Right]);
       SwapInt(inta[Left], inta[Right]);
       Inc(Left);
       Dec(Right);
@@ -3609,7 +3620,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(Ordliste[Left], Ordliste[Right]);
+      swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3653,7 +3664,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(Ordliste[Left], Ordliste[Right]);
+      swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3697,7 +3708,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(Ordliste[Left], Ordliste[Right]);
+      swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3741,7 +3752,7 @@ begin
     end;
     if (Left <= Right) then
     begin
-      Swap(Ordliste[Left], Ordliste[Right]);
+      swap(Ordliste[Left], Ordliste[Right]);
       Inc(Left);
       Dec(Right);
     end;
@@ -3809,9 +3820,10 @@ begin
     exit;
 
   if (sTyp = 'UA') then
-    QuicksortUAStringInt(Low(stra), High(stra), stra,inta);
+    QuicksortUAStringInt(Low(stra), High(stra), stra, inta);
 
 end;
+
 procedure FastSort2ArrayIntegerString(inta: intArray; stra: StringArray; sTyp: string);
 
 begin
@@ -3898,7 +3910,7 @@ begin
   end;
 end;
 
-procedure Swap(var Value1, Value2: string);
+procedure swap(var Value1, Value2: string);
 var
   temp: string; // Integer;
 begin
@@ -4176,7 +4188,7 @@ begin
       end;
       if (col = 17) then
       begin
-        res := floattostr(actions[sort[l]].Swap);
+        res := floattostr(actions[sort[l]].swap);
         goto weiter;
       end;
       if (col = 18) then
@@ -4240,7 +4252,7 @@ begin
 end;
 
 function BinSearchString2(var Strings: StringArray; var Index: intArray; var v: integer): integer;
- // spezielle schnellere Variante die nach 45678 in abcde=45678 sucht und den Index liefert
+// spezielle schnellere Variante die nach 45678 in abcde=45678 sucht und den Index liefert
 // ich nehme zwei Arrays : eines ist 12345=45678 und eines nur 45678 damit man die strtoint-Berechnung des =45678 spart
 // ??? eigentlich Quatsch das Strings wird ja gar nicht mehr benötigt - erst später beim Aufrufer wird das ausgewertet
 var
@@ -4285,11 +4297,10 @@ begin
   end;
 end;
 
-
 function BinSearchStringGleich(var Strings: StringArray; var v: integer): integer;
 var
-  //sucht Zahl in einem String der Form zahl=andereZahl
-  //gibt den Index zurück und von der aufrufenden Stelle wird dann andereZahl verwendet
+  // sucht Zahl in einem String der Form zahl=andereZahl
+  // gibt den Index zurück und von der aufrufenden Stelle wird dann andereZahl verwendet
   // spezielle Variante die nach 12345 in 12345=45678 sucht und den Index des Treffers liefert
   // ist etwas langsam weil ständig der String nach = aufgetrennt werden muss
   first: integer;
@@ -4335,8 +4346,8 @@ end;
 
 function BinSearchStringGleich2(var Strings: StringArray; var v: string): integer;
 var
-  //sucht Zahl in einem String der Form zahl=andereZahl
-  //gibt den Index zurück und von der aufrufenden Stelle wird dann andereZahl verwendet
+  // sucht Zahl in einem String der Form zahl=andereZahl
+  // gibt den Index zurück und von der aufrufenden Stelle wird dann andereZahl verwendet
   // spezielle Variante die nach 12345 in 12345=45678 sucht und den Index des Treffers liefert
   // ist etwas langsam weil ständig der String nach = aufgetrennt werden muss
   first: integer;
@@ -4344,7 +4355,7 @@ var
   Pivot: integer;
   found: Boolean;
   substr: string;
-  ps:string;
+  ps: string;
   p: integer;
 begin
   // inttostr ist halb so schnell wie strtoint
@@ -4361,7 +4372,7 @@ begin
     Pivot := (first + Last) div 2;
     // Compares the String in the middle with the searched one
     p := pos('$', Strings[Pivot]);
-    ps:=leftstr(Strings[Pivot], p - 1);
+    ps := leftstr(Strings[Pivot], p - 1);
     if ps = v then
     // if ps = substr then
     begin
@@ -4377,7 +4388,6 @@ begin
       first := Pivot + 1;
   end;
 end;
-
 
 function BinSearchString(var Strings: StringArray; var v: string): integer;
 var
@@ -4401,7 +4411,7 @@ begin
   while (first <= Last) and (not found) do
   begin
     Pivot := (first + Last) div 2;
-    if strings[pivot] = v then
+    if Strings[Pivot] = v then
     // if ps = substr then
     begin
       found := true;
@@ -4409,14 +4419,13 @@ begin
     end
     // If the Item in the middle has a bigger value than
     // the searched item, then select the first half
-    else if strings[pivot] > v then
+    else if Strings[Pivot] > v then
       Last := Pivot - 1
       // else select the second half
     else
       first := Pivot + 1;
   end;
 end;
-
 
 function BinSearchInt(var Ints: intArray; v: integer): integer;
 var
@@ -4451,7 +4460,7 @@ var
   Pivot: integer;
   found: Boolean;
 begin
-  //sucht Zahl aus einer sortierten Reihe von Zahlen und gibt deren Index zurück
+  // sucht Zahl aus einer sortierten Reihe von Zahlen und gibt deren Index zurück
   first := Low(Ints); // Sets the first item of the range
   Last := High(Ints); // Sets the last item of the range
   found := false; // Initializes the Found flag (Not found yet)
@@ -4567,7 +4576,7 @@ begin
 end;
 
 procedure computeSymbolGroupValues(var actions: DACwAction; var groups: DACwSymbolGroup; lb: TListBox);
-//wird nach dem Einlesen aller Actions aufgerufen und berechnet die Werte OHNE die TradesUsers !
+// wird nach dem Einlesen aller Actions aufgerufen und berechnet die Werte OHNE die TradesUsers !
 var
   i, j, symbolId, groupId: integer;
   _TradesCount: integer;
@@ -4616,9 +4625,9 @@ begin
     groups[groupId].TradesVolumeTotal := groups[groupId].TradesVolumeTotal + actions[i].volume;
     _TradesVolumeTotal := _TradesVolumeTotal + actions[i].volume;
     groups[groupId].TradesProfitTotal := groups[groupId].TradesProfitTotal + actions[i].profit;
-    groups[groupId].TradesSwapTotal := groups[groupId].TradesSwapTotal + actions[i].Swap;
+    groups[groupId].TradesSwapTotal := groups[groupId].TradesSwapTotal + actions[i].swap;
     _TradesProfitTotal := _TradesProfitTotal + actions[i].profit;
-    _TradesSwapTotal := _TradesSwapTotal + actions[i].Swap;
+    _TradesSwapTotal := _TradesSwapTotal + actions[i].swap;
   end;
 
   lb.items.clear;
@@ -4715,13 +4724,13 @@ var
 begin
   GMS.dwLength := SizeOf(TMemoryStatusEx);
   GlobalMemoryStatusEx(GMS);
-  lbAdd(lb,'used (system):               ' + inttostr(GMS.dwMemoryLoad) + ' %');
-  lbAdd(lb,'physical memory - total:     ' + inttostr(trunc(GMS.ullTotalPhys / 1048576)) + ' MB');
-  lbAdd(lb,' (system)       - available: ' + inttostr(trunc(GMS.ullAvailPhys / 1048576)) + ' MB');
-  lbAdd(lb,'page file       - total:     ' + inttostr(trunc(GMS.ullTotalPageFile / 1048576)) + ' MB');
-  lbAdd(lb,'                - available: ' + inttostr(trunc(GMS.ullAvailPageFile / 1048576)) + ' MB');
-  lbAdd(lb,'virtual memory  - total:     ' + inttostr(trunc(GMS.ullTotalVirtual / 1048576)) + ' MB');
-  lbAdd(lb,' (this program) - available: ' + inttostr(trunc(GMS.ullAvailVirtual / 1048576)) + ' MB');
+  lbAdd(lb, 'used (system):               ' + inttostr(GMS.dwMemoryLoad) + ' %');
+  lbAdd(lb, 'physical memory - total:     ' + inttostr(trunc(GMS.ullTotalPhys / 1048576)) + ' MB');
+  lbAdd(lb, ' (system)       - available: ' + inttostr(trunc(GMS.ullAvailPhys / 1048576)) + ' MB');
+  lbAdd(lb, 'page file       - total:     ' + inttostr(trunc(GMS.ullTotalPageFile / 1048576)) + ' MB');
+  lbAdd(lb, '                - available: ' + inttostr(trunc(GMS.ullAvailPageFile / 1048576)) + ' MB');
+  lbAdd(lb, 'virtual memory  - total:     ' + inttostr(trunc(GMS.ullTotalVirtual / 1048576)) + ' MB');
+  lbAdd(lb, ' (this program) - available: ' + inttostr(trunc(GMS.ullAvailVirtual / 1048576)) + ' MB');
 
 end;
 
@@ -4906,7 +4915,16 @@ var
   pm: integer;
   p, q: integer;
   td: TDateTime;
+  iNow:extended;//heute - aber am Samstag und Sonntag ist das immer der Freitag !!
 begin
+
+  inow:=int(now);
+  if(dayofweek(now)=7) then //Samstag
+    inow:=inow-1;
+  if(dayofweek(now)=1) then //Sonntag
+    inow:=inow-2;
+
+
   s := ansiuppercase(s);
   pm := 0;
   if (trystrtoint(s, i) = true) then
@@ -4943,25 +4961,25 @@ begin
 
   if (s = 'DAY') or (s = 'TODAY') or (s = 'TAG') or (s = 'HEUTE') then
   begin
-    result := int(now) + pm;
+    result := iNow + pm;
     exit;
   end;
 
   if (s = 'MORGEN') or (s = 'TOMORROW') then
   begin
-    result := int(now) + 1 + pm;
+    result := iNow + 1 + pm;
     exit;
   end;
 
   if (s = 'GESTERN') or (s = 'YESTERDAY') then
   begin
-    result := int(now) - 1 + pm;
+    result := iNow - 1 + pm;
     exit;
   end;
 
   if (s = 'MONTAG') or (s = 'MONDAY') then
   begin
-    result := int(now);
+    result := iNow;    //Sonntag=1 Mo=2 ... Samstag=7
     while (dayofweek(result) <> 2) do
       result := result - 1;
     result := result + pm;
@@ -4970,7 +4988,7 @@ begin
 
   if (s = 'WEEK') or (s = 'WEEKSTART') or (s = 'WOCHE') then
   begin
-    result := int(now) + pm * 7;
+    result := iNow + pm * 7;
     while (dayofweek(result) <> 2) do
       result := result - 1;
     exit;
@@ -4979,7 +4997,7 @@ begin
   // schwierig hier mit + und - umzugehen
   if (s = 'MONTH') or (s = 'MONTHSTART') or (s = 'MONAT') then
   begin
-    result := int(now);
+    result := iNow;
     td := getStartOfMonth(now);
     if pm = 0 then
       result := td;
@@ -5007,7 +5025,7 @@ begin
 
   if (s = 'YEAR') or (s = 'YEARSTART') or (s = 'JAHR') then
   begin
-    td := int(now);
+    td := iNow;
     p := dayoftheyear(td);
     td := td - (p - 1);
     if (pm = 0) then
@@ -5141,9 +5159,96 @@ begin
   // end;
 end;
 
-  procedure lbAdd(lb: TListBox; s: string);
-  begin
-    lb.Items.Add(timetostr(now) + ':' + s);
+procedure lbAdd(lb: TListBox; s: string);
+begin
+  lb.items.add(timetostr(now) + ':' + s);
+end;
+
+procedure saveOpenActionsBuffer(fname: string; ba: byteArray);
+// das ist der Cache im API-Format
+var
+  folder: string;
+  fileName: string;
+  fstream: TStream;
+  l: integer;
+  gt, td: Cardinal;
+begin
+try
+  try
+    gt := GetTickCount();
+    folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
+    createDir(folder);
+    fileName := folder + '\' + fname + '.bin';
+    fstream := TFileStream.Create(fileName, fmCreate);
+
+    l := length(ba);
+    fstream.WriteBuffer(ba[0], l);
+
+  finally
+    fstream.Free;
   end;
+except
+  l:=l;
+end;
+  td := GetTickCount - gt;
+  lbDebug('Zeit SaveOpenActionsBuffer:' + inttostr(td));
+end;
+
+function loadOpenActionsBuffer(fname: string; var ba: byteArray):integer;
+var
+  folder: string;
+  fileName: string;
+  fstream: TStream;
+  gt: Cardinal;
+  FSize: integer;
+  ct: integer;
+begin
+  try
+    gt := GetTickCount();
+    folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
+    createDir(folder);
+
+    fileName :=folder+'\'+ fname+'.bin';
+    if fileexists(fileName) then
+    begin
+      fstream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
+
+      ct := fstream.Size;
+      SetLength(ba, ct);
+      fstream.ReadBuffer(ba[0], ct); // nicht die ganze stream.size !
+      result := 1;
+    end
+    else
+    begin
+      // showmessage('Die Datei existiert nicht');
+      result := 0;
+    end;
+  finally
+    if fileexists(fileName) then
+      fstream.Free;
+  end;
+  lbDebug('Zeit LoadCacheFileCw:' + inttostr(GetTickCount() - gt));
+  // p0 := @cwActions[0];
+
+end;
+
+procedure DelFilesFromDir(Directory, FileMask: string; DelSubDirs: Boolean);
+var
+  SourceLst: string;
+  FOS: TSHFileOpStruct;
+begin
+  FillChar(FOS, SizeOf(FOS), 0);
+  FOS.Wnd := Application.MainForm.Handle;
+  FOS.wFunc := FO_DELETE;
+  SourceLst := Directory + '\' + FileMask + #0;
+  FOS.pFrom := PChar(SourceLst);
+  if not DelSubDirs then
+    FOS.fFlags := FOS.fFlags OR FOF_FILESONLY;
+  // Remove the next line if you want a confirmation dialog box
+  // FOS.fFlags := FOS.fFlags OR FOF_NOCONFIRMATION;
+  // Uncomment the next line for a "silent operation" (no progress box)
+  // FOS.fFlags := FOS.fFlags OR FOF_SILENT;
+  SHFileOperation(fos);
+end;
 
 end.

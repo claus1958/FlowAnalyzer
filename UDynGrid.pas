@@ -37,6 +37,7 @@ type
     RemoveallbutSelection1: TMenuItem;
     constructor Create(AOwner: TComponent); override;
     procedure saveInit();
+    procedure suchInSpalte(dorepeat:boolean=false);
     procedure Panel2Resize(Sender: TObject);
     procedure ScrollBar1Change(Sender: TObject);
     procedure initGrid(source: string; sortcol: string; sortdir: integer; rows: integer; cols: integer);
@@ -98,7 +99,7 @@ type
     // bei jeder Erweiterung der Spalten treten Fehler auf - daher hier einen anderen Header wählen ..
 
   var
-
+    merkDynGridSuch:string;
     SGFieldCol: DAInteger;
     SGColField: DAInteger;
     initialized: Boolean;
@@ -529,7 +530,13 @@ begin
     // gridHandler(nil);
     // form2.repaint;
     // end;
+    114:
 
+    //F3
+    begin
+      //Suche wiederholen
+      suchinspalte(true);//True=Wiederholung
+    end;
     VK_DOWN:
       begin
         if (row >= visibleRows - 1) then
@@ -645,7 +652,6 @@ var
   a: integer;
 begin
 
-
   // TScrollCode = (scLineUp, scLineDown, scPageUp, scPageDown, scPosition,scTrack, scTop, scBottom, scEndScroll);
   a := 0;
   // klappt so nicht wie gewünscht da position nach +5 wieder als +1 kommt
@@ -693,6 +699,7 @@ var
   j, k: integer;
   b: Boolean;
 begin
+  merkDynGridSuch:='';
   lblSelection.Caption := '';
   selectedCt := 0;
   self.source := source;
@@ -1719,6 +1726,69 @@ begin
 
 end;
 
+procedure TDynGrid.suchInSpalte(dorepeat:boolean=false);
+
+var
+  such: string;
+  suchLength, i: integer;
+  suchfound: Boolean;
+  found: integer;
+  gt: cardinal;
+begin
+  if((dorepeat=false)or(merkDynGridSuch='')) then
+    such := InputBox('Search in column', 'Search expression:', merkdyngridsuch)
+  else
+    such:=merkDynGridSuch;
+  // immer in Großbuchstaben wandeln
+  such := uppercase(such);
+  merkDynGridSuch:=such;
+  suchLength := such.length;
+  if such <> '' then
+  begin
+    suchfound := false;
+    gt := gettickcount;
+    i := scrollPosition+1;//Achtung wenn Feld überschritten wird
+    // der Parameter mucol ist hier falsch
+    // wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
+    // string wäre leichter umzusetzen ist aber in der Suche langsam !
+    if source = 'cwopenactions1' then
+      // fehlt wegen zu viel Aufwand !
+      showmessage('Suchfunktion in' + source + ' noch nicht implementiert');
+
+    // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, i, SGColField[mucol], such)
+    ;
+    if source = 'cwopenactions2' then
+      // fehlt
+      // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
+      showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
+    if source = 'cwactions' then
+      found := findActionparameter(SG, SGFieldCol, ixSorted, cwActions, i, SGColField[mucol], such)
+    else if source = 'cwfilteredactions' then
+      found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, SGColField[mucol], such)
+    else if source = 'cwsingleuseractions' then
+      found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, SGColField[mucol], such)
+    else if source = 'cwsymbols' then
+      found := -2
+    else if ((source = 'cwusers') or (source = 'cwusers2')) then
+      found := -2
+    else if source = 'cwcomments' then
+      found := -2
+    else if source = 'cwsymbolsgroups' then
+      found := -2
+    else if source = 'cwfilteredsymbolsgroups' then
+      found := -2;
+    if found > -1 then
+      // todo das ist natürlich bei DynGrid Quatsch !
+      ScrollBar1.Position := found;
+    if (found = -1) then
+      showmessage('z:' + inttostr(gettickcount - gt));
+    if (found = -2) then
+      showmessage('Funktion in' + source + ' noch nicht implementiert');
+
+  end;
+
+end;
+
 procedure TDynGrid.sortGridCwComments(source: string; sortcol: string; sortdir: integer; var comments: DACwComment);
 var
   dl, i, scol, smethode: integer;
@@ -2508,12 +2578,22 @@ begin
   if ((gt - lastMouseDown) < mouseDownPause) then
   begin
     LbDebug('zu schnell MouseDown - Abbruch');
+    if (Button = mbleft) then
+    begin
+      grid := Sender as FTCommons.TStringGridSorted; // das ist gleichzeitig SG
+      grid.MouseToCell(X, Y, col, row);
+      mucol := col;
+      suchInSpalte;
+    end;
+    // grid := Sender as FTCommons.TStringGridSorted; // das ist gleichzeitig SG
+    // self.SGMouseUp(self,mbLeft,sssShift,x,y);
     exit;
   end;
   lastMouseDown := gt;
   gt := timegettime();
   grid := Sender as FTCommons.TStringGridSorted; // das ist gleichzeitig SG
   // diese Routine ist nicht im FTCollector sondern nur im FlowAnalyzer
+
   if Button = mbleft then
   begin
     grid.MouseToCell(X, Y, col, row);
@@ -2604,7 +2684,7 @@ var
   grid: FTCommons.TStringGridSorted;
   Cursor: TCursor;
   such, vgl: string;
-  suchlength: integer;
+  suchLength: integer;
   suchfound: Boolean;
   gt: cardinal;
   found: integer;
@@ -2672,55 +2752,57 @@ begin
         else
         // autosizegrid(SG,SGsum)
         begin
-          if ssshift in Shift then
+          if ssShift in Shift then
           begin
-            such := InputBox('Search in column', 'Search expression:', '');
-            // immer in Großbuchstaben wandeln
-            such := uppercase(such);
-            suchlength := such.length;
-            if such <> '' then
-            begin
-              suchfound := false;
-              gt := gettickcount;
-              i := scrollPosition;
-              // der Parameter mucol ist hier falsch
-              // wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
-              // string wäre leichter umzusetzen ist aber in der Suche langsam !
-              if source = 'cwopenactions1' then
-                // fehlt wegen zu viel Aufwand !
-                showmessage('Suchfunktion in' + source + ' noch nicht implementiert');
+            suchInSpalte;
 
-              // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, i, SGColField[mucol], such)
-              ;
-              if source = 'cwopenactions2' then
-                // fehlt
-                // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
-                showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
-              if source = 'cwactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwActions, i, SGColField[mucol], such)
-              else if source = 'cwfilteredactions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, SGColField[mucol], such)
-              else if source = 'cwsingleuseractions' then
-                found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, SGColField[mucol], such)
-              else if source = 'cwsymbols' then
-                found := -2
-              else if ((source = 'cwusers') or (source = 'cwusers2')) then
-                found := -2
-              else if source = 'cwcomments' then
-                found := -2
-              else if source = 'cwsymbolsgroups' then
-                found := -2
-              else if source = 'cwfilteredsymbolsgroups' then
-                found := -2;
-              if found > -1 then
-                // todo das ist natürlich bei DynGrid Quatsch !
-                ScrollBar1.Position := found;
-              if (found = -1) then
-                showmessage('z:' + inttostr(gettickcount - gt));
-              if (found = -2) then
-                showmessage('Funktion in' + source + ' noch nicht implementiert');
-
-            end;
+            // such := InputBox('Search in column', 'Search expression:', '');
+            // // immer in Großbuchstaben wandeln
+            // such := uppercase(such);
+            // suchlength := such.length;
+            // if such <> '' then
+            // begin
+            // suchfound := false;
+            // gt := gettickcount;
+            // i := scrollPosition;
+            // // der Parameter mucol ist hier falsch
+            // // wenn das SGColField(mucol) dann ist das Field wenigstens unverwechselbar
+            // // string wäre leichter umzusetzen ist aber in der Suche langsam !
+            // if source = 'cwopenactions1' then
+            // // fehlt wegen zu viel Aufwand !
+            // showmessage('Suchfunktion in' + source + ' noch nicht implementiert');
+            //
+            // // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ1, i, SGColField[mucol], such)
+            // ;
+            // if source = 'cwopenactions2' then
+            // // fehlt
+            // // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
+            // showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
+            // if source = 'cwactions' then
+            // found := findActionparameter(SG, SGFieldCol, ixSorted, cwActions, i, SGColField[mucol], such)
+            // else if source = 'cwfilteredactions' then
+            // found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, SGColField[mucol], such)
+            // else if source = 'cwsingleuseractions' then
+            // found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, SGColField[mucol], such)
+            // else if source = 'cwsymbols' then
+            // found := -2
+            // else if ((source = 'cwusers') or (source = 'cwusers2')) then
+            // found := -2
+            // else if source = 'cwcomments' then
+            // found := -2
+            // else if source = 'cwsymbolsgroups' then
+            // found := -2
+            // else if source = 'cwfilteredsymbolsgroups' then
+            // found := -2;
+            // if found > -1 then
+            // // todo das ist natürlich bei DynGrid Quatsch !
+            // ScrollBar1.Position := found;
+            // if (found = -1) then
+            // showmessage('z:' + inttostr(gettickcount - gt));
+            // if (found = -2) then
+            // showmessage('Funktion in' + source + ' noch nicht implementiert');
+            //
+            // end;
           end;
         end;
 
@@ -2803,7 +2885,7 @@ begin
   else
   begin
     fall := 1;
-    if ssshift in Shift then
+    if ssShift in Shift then
     begin
       fall := 2;
     end;

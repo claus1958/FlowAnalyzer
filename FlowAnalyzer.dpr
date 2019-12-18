@@ -19,7 +19,8 @@ uses
   Dialog2 in 'Dialog2.pas' {Dialog2},
   ChangeLog in 'ChangeLog.pas',
   Unit10 in 'Unit10.pas' {Form10},
-  EvalInfo in 'EvalInfo.pas' {Frame11: TFrame};
+  EvalInfo in 'EvalInfo.pas' {Frame11: TFrame},
+  ReportInfo in 'ReportInfo.pas' {ReportInfo: TFrame};
 
 {$R *.res}
 {$SetPEFlags $0020} //IMAGE_FILE_LARGE_ADDRESS_AWARE}
@@ -27,7 +28,9 @@ begin
   ReportMemoryLeaksOnShutdown := DebugHook <> 0;
   Application.Initialize;
   Application.Initialize;
+ // TStyleManager.TrySetStyle('Carbon');
   TStyleManager.TrySetStyle('Carbon');
+  //  TStyleManager.TrySetStyle('Cyan Dusk');
   Application.CreateForm(TForm2, Form2);
   Application.CreateForm(TDialog2, FDialog2);
   Application.CreateForm(TForm5, Form5);

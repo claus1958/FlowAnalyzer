@@ -2,7 +2,7 @@ object Form2: TForm2
   Left = 0
   Top = 0
   Caption = 'Flow Analyzer'
-  ClientHeight = 940
+  ClientHeight = 1095
   ClientWidth = 1604
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,7 +18,7 @@ object Form2: TForm2
   TextHeight = 13
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 907
+    Top = 1062
     Width = 1604
     Height = 33
     Panels = <>
@@ -27,7 +27,7 @@ object Form2: TForm2
     Left = 77
     Top = 0
     Width = 1527
-    Height = 907
+    Height = 1062
     Align = alClient
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -65,7 +65,7 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 1525
-        Height = 905
+        Height = 1060
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clGrayText
@@ -134,7 +134,7 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 1525
-        Height = 905
+        Height = 1060
         VertScrollBar.Tracking = True
         Align = alClient
         HeaderFont.Charset = DEFAULT_CHARSET
@@ -497,7 +497,7 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 0
-        Height = 905
+        Height = 1060
         Align = alLeft
         TabOrder = 1
         object lblAllDataInfo: TLabel
@@ -573,14 +573,14 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 1525
-        Height = 905
+        Height = 1060
         Align = alClient
         TabOrder = 0
         OnResize = Panel6Resize
         object Splitter2: TSplitter
           Left = 501
           Top = 1
-          Height = 903
+          Height = 1058
           ExplicitLeft = 322
           ExplicitHeight = 869
         end
@@ -588,7 +588,7 @@ object Form2: TForm2
           Left = 1
           Top = 1
           Width = 500
-          Height = 903
+          Height = 1058
           Align = alLeft
           TabOrder = 0
           object Panel13: TPanel
@@ -621,13 +621,13 @@ object Form2: TForm2
             Left = 1
             Top = 2
             Width = 498
-            Height = 900
+            Height = 1055
             Align = alClient
             TabOrder = 1
             ExplicitLeft = 1
             ExplicitTop = 2
             ExplicitWidth = 498
-            ExplicitHeight = 900
+            ExplicitHeight = 1055
             inherited Panel1: TPanel
               Width = 498
               Align = alTop
@@ -652,34 +652,34 @@ object Form2: TForm2
               Left = 0
               Top = 41
               Width = 498
-              Height = 859
+              Height = 1014
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
               ExplicitWidth = 498
-              ExplicitHeight = 859
+              ExplicitHeight = 1014
               inherited ScrollBar1: TScrollBar
                 Left = 481
-                Height = 857
+                Height = 1012
                 ExplicitLeft = 481
-                ExplicitHeight = 857
+                ExplicitHeight = 1012
               end
               inherited Panel3: TPanel
                 Width = 480
-                Height = 857
+                Height = 1012
                 ExplicitWidth = 480
-                ExplicitHeight = 857
+                ExplicitHeight = 1012
                 inherited SG: TStringGridSorted
                   Width = 478
-                  Height = 825
+                  Height = 980
                   ExplicitWidth = 478
-                  ExplicitHeight = 825
+                  ExplicitHeight = 980
                 end
                 inherited SGSum: TStringGridSorted
-                  Top = 826
+                  Top = 981
                   Width = 478
                   Font.Height = -12
-                  ExplicitTop = 826
+                  ExplicitTop = 981
                   ExplicitWidth = 478
                 end
               end
@@ -690,7 +690,7 @@ object Form2: TForm2
           Left = 504
           Top = 1
           Width = 1020
-          Height = 903
+          Height = 1058
           Align = alClient
           TabOrder = 1
           object Splitter3: TSplitter
@@ -707,13 +707,13 @@ object Form2: TForm2
             Left = 1
             Top = 209
             Width = 1018
-            Height = 693
+            Height = 848
             Align = alClient
             TabOrder = 0
             ExplicitLeft = 1
             ExplicitTop = 209
             ExplicitWidth = 1018
-            ExplicitHeight = 693
+            ExplicitHeight = 848
             inherited Panel1: TPanel
               Width = 1018
               Align = alTop
@@ -735,34 +735,34 @@ object Form2: TForm2
               Left = 0
               Top = 41
               Width = 1018
-              Height = 652
+              Height = 807
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
               ExplicitWidth = 1018
-              ExplicitHeight = 652
+              ExplicitHeight = 807
               inherited ScrollBar1: TScrollBar
                 Left = 1001
-                Height = 650
+                Height = 805
                 ExplicitLeft = 1001
-                ExplicitHeight = 650
+                ExplicitHeight = 805
               end
               inherited Panel3: TPanel
                 Width = 1000
-                Height = 650
+                Height = 805
                 ExplicitWidth = 1000
-                ExplicitHeight = 650
+                ExplicitHeight = 805
                 inherited SG: TStringGridSorted
                   Width = 998
-                  Height = 618
+                  Height = 773
                   ExplicitWidth = 998
-                  ExplicitHeight = 618
+                  ExplicitHeight = 773
                 end
                 inherited SGSum: TStringGridSorted
-                  Top = 619
+                  Top = 774
                   Width = 998
                   Font.Height = -12
-                  ExplicitTop = 619
+                  ExplicitTop = 774
                   ExplicitWidth = 998
                 end
               end
@@ -799,7 +799,7 @@ object Form2: TForm2
               Width = 484
               Height = 198
               Align = alLeft
-              Color = clGray
+              Color = clSilver
               Ctl3D = False
               Font.Charset = DEFAULT_CHARSET
               Font.Color = clWhite
@@ -928,7 +928,7 @@ object Form2: TForm2
       end
     end
     object TabSheet1: TTabSheet
-      Caption = 'Data Inspector'
+      Caption = 'Inspector'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -12
@@ -939,15 +939,15 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 1525
-        Height = 905
+        Height = 1060
         Align = alClient
         TabOrder = 0
         OnResize = Panel26Resize
-        object Panel34: TPanel
+        object pnlInspectorBedienung: TPanel
           Left = 1
           Top = 1
           Width = 524
-          Height = 903
+          Height = 1058
           Align = alLeft
           TabOrder = 0
           object Panel36: TPanel
@@ -1201,15 +1201,6 @@ object Form2: TForm2
                 Visible = False
                 OnClick = btnShowEvaluationClick
               end
-              object Button13: TButton
-                Left = 264
-                Top = 8
-                Width = 49
-                Height = 21
-                Caption = 'test'
-                TabOrder = 2
-                OnClick = Button13Click
-              end
             end
             object Panel24: TPanel
               Left = 4
@@ -1253,12 +1244,27 @@ object Form2: TForm2
               end
             end
           end
+          object pnlInspectorWait: TPanel
+            Left = 41
+            Top = 304
+            Width = 453
+            Height = 205
+            Caption = 'Computing ...'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -64
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentFont = False
+            TabOrder = 1
+            Visible = False
+          end
         end
         object Panel4: TPanel
           Left = 525
           Top = 1
           Width = 999
-          Height = 903
+          Height = 1058
           Align = alClient
           TabOrder = 1
           object Splitter1: TSplitter
@@ -1364,13 +1370,13 @@ object Form2: TForm2
             Left = 1
             Top = 425
             Width = 997
-            Height = 477
+            Height = 632
             Align = alClient
             TabOrder = 2
             ExplicitLeft = 1
             ExplicitTop = 425
             ExplicitWidth = 997
-            ExplicitHeight = 477
+            ExplicitHeight = 632
             inherited Panel1: TPanel
               Width = 997
               Align = alTop
@@ -1397,34 +1403,34 @@ object Form2: TForm2
               Left = 0
               Top = 41
               Width = 997
-              Height = 436
+              Height = 591
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
               ExplicitWidth = 997
-              ExplicitHeight = 436
+              ExplicitHeight = 591
               inherited ScrollBar1: TScrollBar
                 Left = 980
-                Height = 434
+                Height = 589
                 ExplicitLeft = 980
-                ExplicitHeight = 434
+                ExplicitHeight = 589
               end
               inherited Panel3: TPanel
                 Width = 979
-                Height = 434
+                Height = 589
                 ExplicitWidth = 979
-                ExplicitHeight = 434
+                ExplicitHeight = 589
                 inherited SG: TStringGridSorted
                   Width = 977
-                  Height = 402
+                  Height = 557
                   ExplicitWidth = 977
-                  ExplicitHeight = 402
+                  ExplicitHeight = 557
                 end
                 inherited SGSum: TStringGridSorted
-                  Top = 403
+                  Top = 558
                   Width = 977
                   Font.Height = -12
-                  ExplicitTop = 403
+                  ExplicitTop = 558
                   ExplicitWidth = 977
                 end
               end
@@ -1718,7 +1724,7 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 1525
-        Height = 905
+        Height = 1060
         Align = alClient
         Caption = 'Panel12'
         TabOrder = 0
@@ -1873,13 +1879,13 @@ object Form2: TForm2
           Left = 1
           Top = 610
           Width = 1523
-          Height = 294
+          Height = 449
           Align = alClient
           TabOrder = 2
           ExplicitLeft = 1
           ExplicitTop = 610
           ExplicitWidth = 1523
-          ExplicitHeight = 294
+          ExplicitHeight = 449
           inherited Panel1: TPanel
             Width = 1523
             Align = alTop
@@ -1901,34 +1907,34 @@ object Form2: TForm2
             Left = 0
             Top = 41
             Width = 1523
-            Height = 253
+            Height = 408
             Align = alClient
             ExplicitLeft = 0
             ExplicitTop = 41
             ExplicitWidth = 1523
-            ExplicitHeight = 253
+            ExplicitHeight = 408
             inherited ScrollBar1: TScrollBar
               Left = 1506
-              Height = 251
+              Height = 406
               ExplicitLeft = 1506
-              ExplicitHeight = 251
+              ExplicitHeight = 406
             end
             inherited Panel3: TPanel
               Width = 1505
-              Height = 251
+              Height = 406
               ExplicitWidth = 1505
-              ExplicitHeight = 251
+              ExplicitHeight = 406
               inherited SG: TStringGridSorted
                 Width = 1503
-                Height = 219
+                Height = 374
                 ExplicitWidth = 1503
-                ExplicitHeight = 219
+                ExplicitHeight = 374
               end
               inherited SGSum: TStringGridSorted
-                Top = 220
+                Top = 375
                 Width = 1503
                 Font.Height = -12
-                ExplicitTop = 220
+                ExplicitTop = 375
                 ExplicitWidth = 1503
               end
             end
@@ -1943,7 +1949,7 @@ object Form2: TForm2
         Left = 0
         Top = 0
         Width = 261
-        Height = 905
+        Height = 1060
         Align = alLeft
         TabOrder = 0
         object Label4: TLabel
@@ -2011,7 +2017,7 @@ object Form2: TForm2
         Left = 261
         Top = 0
         Width = 1264
-        Height = 905
+        Height = 1060
         Align = alClient
         TabOrder = 1
         object Panel17: TPanel
@@ -2026,7 +2032,7 @@ object Form2: TForm2
           Left = 1
           Top = 34
           Width = 1262
-          Height = 870
+          Height = 1025
           Align = alClient
           Caption = 'Panel18'
           TabOrder = 1
@@ -2034,7 +2040,7 @@ object Form2: TForm2
             Left = 1
             Top = 1
             Width = 1260
-            Height = 868
+            Height = 1023
             VertScrollBar.Tracking = True
             Align = alClient
             HeaderFont.Charset = DEFAULT_CHARSET
@@ -2178,6 +2184,1136 @@ object Form2: TForm2
         TabOrder = 3
       end
     end
+    object TabSheet11: TTabSheet
+      Caption = 'Report'
+      ImageIndex = 10
+      TabVisible = False
+      object Panel25: TPanel
+        Left = 0
+        Top = 0
+        Width = 1525
+        Height = 1060
+        Align = alClient
+        Caption = 'Panel25'
+        TabOrder = 0
+        object ScrollBox1: TScrollBox
+          Left = 1
+          Top = 1
+          Width = 1523
+          Height = 1058
+          Align = alClient
+          TabOrder = 0
+          inline ReportInfo1: TReportInfo
+            Left = 13
+            Top = 64
+            Width = 229
+            Height = 209
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 0
+            ExplicitLeft = 13
+            ExplicitTop = 64
+          end
+          inline ReportInfo2: TReportInfo
+            Left = 13
+            Top = 276
+            Width = 229
+            Height = 209
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 1
+            ExplicitLeft = 13
+            ExplicitTop = 276
+          end
+          inline ReportInfo3: TReportInfo
+            Left = 13
+            Top = 488
+            Width = 229
+            Height = 209
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 2
+            ExplicitLeft = 13
+            ExplicitTop = 488
+          end
+          inline ReportInfo4: TReportInfo
+            Left = 13
+            Top = 700
+            Width = 229
+            Height = 209
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 3
+            ExplicitLeft = 13
+            ExplicitTop = 700
+          end
+          inline ReportInfo5: TReportInfo
+            Left = 13
+            Top = 912
+            Width = 229
+            Height = 209
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 4
+            ExplicitLeft = 13
+            ExplicitTop = 912
+          end
+          inline ReportInfoA: TReportInfo
+            Left = 248
+            Top = 21
+            Width = 325
+            Height = 37
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 5
+            ExplicitLeft = 248
+            ExplicitTop = 21
+            ExplicitWidth = 325
+            ExplicitHeight = 37
+            inherited Label1: TLabel
+              Width = 29
+              Caption = 'LCG'
+              ExplicitWidth = 29
+            end
+          end
+          inline ReportInfoB: TReportInfo
+            Left = 579
+            Top = 21
+            Width = 325
+            Height = 37
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 6
+            ExplicitLeft = 579
+            ExplicitTop = 21
+            ExplicitWidth = 325
+            ExplicitHeight = 37
+            inherited Label1: TLabel
+              Width = 96
+              Caption = 'Active Trades'
+              ExplicitWidth = 96
+            end
+          end
+          inline ReportInfoC: TReportInfo
+            Left = 910
+            Top = 21
+            Width = 325
+            Height = 37
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 7
+            ExplicitLeft = 910
+            ExplicitTop = 21
+            ExplicitWidth = 325
+            ExplicitHeight = 37
+            inherited Label1: TLabel
+              Width = 53
+              Caption = 'Gesamt'
+              ExplicitWidth = 53
+            end
+          end
+          inline ReportInfo6: TReportInfo
+            Left = 13
+            Top = 21
+            Width = 229
+            Height = 37
+            Color = 15448201
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Tahoma'
+            Font.Style = []
+            ParentBackground = False
+            ParentColor = False
+            ParentFont = False
+            TabOrder = 8
+            ExplicitLeft = 13
+            ExplicitTop = 21
+            ExplicitHeight = 37
+            inherited Label1: TLabel
+              Width = 5
+              Caption = ''
+              ExplicitWidth = 5
+            end
+          end
+          inline Frame114: TFrame11
+            Left = 248
+            Top = 276
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 9
+            ExplicitLeft = 248
+            ExplicitTop = 276
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame115: TFrame11
+            Left = 579
+            Top = 276
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 10
+            ExplicitLeft = 579
+            ExplicitTop = 276
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame116: TFrame11
+            Left = 910
+            Top = 276
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 11
+            ExplicitLeft = 910
+            ExplicitTop = 276
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame117: TFrame11
+            Left = 248
+            Top = 488
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 12
+            ExplicitLeft = 248
+            ExplicitTop = 488
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame118: TFrame11
+            Left = 579
+            Top = 488
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 13
+            ExplicitLeft = 579
+            ExplicitTop = 488
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame119: TFrame11
+            Left = 910
+            Top = 488
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 14
+            ExplicitLeft = 910
+            ExplicitTop = 488
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame120: TFrame11
+            Left = 248
+            Top = 700
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 15
+            ExplicitLeft = 248
+            ExplicitTop = 700
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame121: TFrame11
+            Left = 579
+            Top = 700
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 16
+            ExplicitLeft = 579
+            ExplicitTop = 700
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame122: TFrame11
+            Left = 910
+            Top = 700
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 17
+            ExplicitLeft = 910
+            ExplicitTop = 700
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame123: TFrame11
+            Left = 248
+            Top = 912
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 18
+            ExplicitLeft = 248
+            ExplicitTop = 912
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame124: TFrame11
+            Left = 579
+            Top = 912
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 19
+            ExplicitLeft = 579
+            ExplicitTop = 912
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame125: TFrame11
+            Left = 910
+            Top = 912
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 20
+            ExplicitLeft = 910
+            ExplicitTop = 912
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame111: TFrame11
+            Left = 248
+            Top = 64
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 21
+            ExplicitLeft = 248
+            ExplicitTop = 64
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame112: TFrame11
+            Left = 579
+            Top = 64
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 22
+            ExplicitLeft = 579
+            ExplicitTop = 64
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          inline Frame113: TFrame11
+            Left = 910
+            Top = 64
+            Width = 328
+            Height = 209
+            Color = clSkyBlue
+            ParentBackground = False
+            ParentColor = False
+            TabOrder = 23
+            ExplicitLeft = 910
+            ExplicitTop = 64
+            inherited Label2: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label4: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label6: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label8: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label10: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label12: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label14: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+            inherited Label16: TLabel
+              Width = 8
+              Height = 19
+              ExplicitWidth = 8
+              ExplicitHeight = 19
+            end
+          end
+          object btnReport: TButton
+            Left = 25
+            Top = 33
+            Width = 157
+            Height = 21
+            Caption = 'Perform Report'
+            TabOrder = 24
+            OnClick = btnReportClick
+          end
+          object btnReportStop: TButton
+            Left = 184
+            Top = 33
+            Width = 53
+            Height = 21
+            Caption = 'STOP'
+            TabOrder = 25
+            Visible = False
+            OnClick = btnReportStopClick
+          end
+        end
+      end
+    end
     object TabSheet9: TTabSheet
       Caption = 'Gelber Sack'
       ImageIndex = 8
@@ -2269,8 +3405,6 @@ object Form2: TForm2
     object TabSheet10: TTabSheet
       Caption = 'Data Loading'
       ImageIndex = 9
-      ExplicitLeft = 168
-      ExplicitTop = 3
       object Panel10: TPanel
         AlignWithMargins = True
         Left = 216
@@ -2470,7 +3604,7 @@ object Form2: TForm2
     Left = 0
     Top = 0
     Width = 77
-    Height = 907
+    Height = 1062
     Align = alLeft
     TabOrder = 2
     object SpeedButton1: TSpeedButton
@@ -3238,7 +4372,7 @@ object Form2: TForm2
       Width = 77
       Height = 121
       GroupIndex = 1
-      Caption = 'Eval.Actions'
+      Caption = 'Report'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clSilver
       Font.Height = -11
@@ -3598,7 +4732,7 @@ object Form2: TForm2
       Width = 77
       Height = 121
       GroupIndex = 1
-      Caption = 'Report'
+      Caption = 'Eval.Actions'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clSilver
       Font.Height = -11
@@ -3769,29 +4903,34 @@ object Form2: TForm2
         0707070707070707070707070707070707070707070707070707}
       Layout = blGlyphTop
       ParentFont = False
+      Transparent = False
+      Visible = False
       StyleElements = []
-      OnClick = SpeedButton7Click
+      OnClick = SpeedButton8Click
     end
   end
   object ApplicationEvents1: TApplicationEvents
     OnModalBegin = ApplicationEvents1ModalBegin
     OnModalEnd = ApplicationEvents1ModalEnd
-    Left = 310
-    Top = 2
+    Left = 322
+    Top = 65522
   end
   object StartTimer: TTimer
     Enabled = False
     OnTimer = StartTimerTimer
-    Left = 416
+    Left = 400
+    Top = 65520
   end
   object updateTimer: TTimer
     Enabled = False
     Interval = 900000
     OnTimer = updateTimerTimer
-    Left = 476
+    Left = 444
+    Top = 65524
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer
-    Left = 536
+    Left = 500
+    Top = 65520
   end
 end

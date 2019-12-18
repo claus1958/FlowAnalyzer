@@ -8,7 +8,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.Menus, Vcl.ComCtrls, FTCommons, Vcl.StdCtrls, Vcl.Grids,
   Vcl.ExtCtrls, StringGridSorted, Vcl.CheckLst, ClipBrd, filterElement, FilterControl, MMSystem, HTTPWorker, FTTypes,
   Vcl.Themes, UDynGrid, GroupControl, DateUtils, Vcl.AppEvnts, uTwoLabel, Vcl.Buttons, iniFiles, ShellApi,
-  System.NetEncoding, System.IoUtils, System.types;
+  System.NetEncoding, System.IoUtils, System.types, EvalInfo, ReportInfo;
 // AdvChartView, AdvChartViewGDIP, AdvChartGDIP, AdvChart, AdvChartPaneEditorGDIP,
 // AdvChartPaneEditor, AdvChartSerieEditor, ;
 
@@ -29,7 +29,7 @@ type
     Panel8: TPanel;
     TabSheet1: TTabSheet;
     Panel26: TPanel;
-    Panel34: TPanel;
+    pnlInspectorBedienung: TPanel;
     Panel36: TPanel;
     lblFilterResult: TLabel;
     btnDoubleRemoveCw: TButton;
@@ -147,6 +147,7 @@ type
     ApplicationEvents1: TApplicationEvents;
     StartTimer: TTimer;
     TabSheet10: TTabSheet;
+    TabSheet11: TTabSheet;
     Panel10: TPanel;
     Label1: TLabel;
     lblWarten: TLabel;
@@ -213,12 +214,41 @@ type
     Splitter4: TSplitter;
     Button12: TButton;
     Splitter5: TSplitter;
-    Button13: FTCommons.TButton;
     SpeedButton8: TSpeedButton;
+    Panel25: TPanel;
+    ScrollBox1: TScrollBox;
+    ReportInfo1: TReportInfo;
+    ReportInfo2: TReportInfo;
+    ReportInfo3: TReportInfo;
+    ReportInfo4: TReportInfo;
+    ReportInfo5: TReportInfo;
+    ReportInfoA: TReportInfo;
+    ReportInfoB: TReportInfo;
+    ReportInfoC: TReportInfo;
+    ReportInfo6: TReportInfo;
+    Frame114: TFrame11;
+    Frame115: TFrame11;
+    Frame116: TFrame11;
+    Frame117: TFrame11;
+    Frame118: TFrame11;
+    Frame119: TFrame11;
+    Frame120: TFrame11;
+    Frame121: TFrame11;
+    Frame122: TFrame11;
+    Frame123: TFrame11;
+    Frame124: TFrame11;
+    Frame125: TFrame11;
+    Frame111: TFrame11;
+    Frame112: TFrame11;
+    Frame113: TFrame11;
+    btnReport: TButton;
+    pnlInspectorWait: TPanel;
+    btnReportStop: TButton;
     procedure doLoadAllData();
 
     procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
       var openActions: DACwOpenActions);
+    procedure deleteTodaysOpenActionCacheFiles(dt: TDateTime);
     procedure GetLastServerUnixTime();
     function checkLastUpdate(): TDateTime;
     procedure AppOnMessage(var Msg: TMsg; var Handled: boolean);
@@ -341,7 +371,7 @@ type
     procedure Button11Click(Sender: TObject);
     procedure btnShowEvaluationClick(Sender: TObject);
     function GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions;
-      append: boolean = false): integer;
+      append: boolean = false; fromCache: boolean = false): integer;
     procedure getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions; accVon: integer; accBis: integer);
     function doHttpPutMemoryStreamToWorker(mStream: TMemoryStream; url: string): integer;
     procedure chkFilterWithOpenActionsClick(Sender: TObject);
@@ -361,8 +391,10 @@ type
     procedure Panel6Resize(Sender: TObject);
     procedure lbCSVErrorDblClick(Sender: TObject);
     procedure lbDebug2DblClick(Sender: TObject);
-    procedure Button13Click(Sender: TObject);
+    procedure btnReportClick(Sender: TObject);
     procedure Label3Click(Sender: TObject);
+    procedure SpeedButton8Click(Sender: TObject);
+    procedure btnReportStopClick(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -373,6 +405,8 @@ type
 
 var
   Form2: TForm2;
+  cw: boolean;
+  reportStop: boolean;
   faIni: TMemIniFile;
   TabToResize: array [0 .. 10] of boolean; // NEU 12.12.19 wegen der Scrollbars die nicht richtig platziert werden
   Form2ResizeSimuliert: boolean;
@@ -449,7 +483,7 @@ begin
 end;
 
 function TForm2.GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions;
-  append: boolean = false): integer;
+  append: boolean = false; fromCache: boolean = false): integer;
 var
   ret: String;
   gt: cardinal;
@@ -465,15 +499,45 @@ var
   res: integer;
   alt: integer;
   sErr: string;
+  p: integer;
 begin
   gt := GetTickCount;
   // bytes := doHTTPGetByteArray(url, lb);
   // über einen zweiten Thread werden die Daten abgerufen
-  res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
-  lbadd(lbDebug2, 'Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
 
+  // Hier könnten Bytesarrays auch gepuffert werden, wenn die Abrufe mehrmals nacheinander notwendig sind
+  // TODO 13.12.19
+
+  p := pos('?', url);
+  // alles nach dem ? ist der Filename des Cachefiles
+  // year=2019&month=12&day=14&accountId=1  wäre die LCG-Datei vom 14.12.2019
+  // diese befindet sich im Ordner cache und endet immer mit .bin
+  res := 0;
+  if (fromCache = true) then
+    // nur ältere Daten min 2 Tage aus einem Cache laden
+    res := loadopenactionsbuffer(url.substring(p), bytes);
+  if (res = 1) then
+  begin
+    // alles ok - aus Puffer geladen
+    lbdebug('took OpenActions from cache')
+  end
+  else
+  begin
+
+    res := doHttpGetByteArrayFromWorker(bytes, url, sErr);
+    lbadd(lbDebug2, 'Zeit GetUrl:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+
+    // leftstr(url, p - 1);
+    // die neueren Caches sollen nicht generiert werden, da diese dann Tage später
+    // als unvollständige Dateien geladen werden könnten !
+    if (fromCache = true) then
+      if length(bytes) > 0 then
+
+        saveopenactionsbuffer(url.substring(p), bytes);
+
+  end;
   if (typ = 'openActions1') or (typ = 'openActions2') then
-  // ist ja sowieso nichts anderes ...
+  // ist ja sowieso nichts anderes ... eigentlich ist typ unnötig
   begin
     // der verkürzte Datentyp
     // body := TNetEncoding.Base64.Encode
@@ -623,9 +687,9 @@ begin
         cwActionsSorted := false;
         move(bytes[0], cwActions[0], length(bytes));
       end;
-      lbDebug('New/Changed actions:' + inttostr(sz));
-      lbDebug('Zeit move->actions:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
-      lbDebug('Anzahl Actions:' + inttostr(sz));
+      lbdebug('New/Changed actions:' + inttostr(sz));
+      lbdebug('Zeit move->actions:' + inttostr(GetTickCount - gt) + ' l:' + inttostr(length(bytes)));
+      lbdebug('Anzahl Actions:' + inttostr(sz));
       lblCwActionsLength.Caption := 'CwActions:' + inttostr(length(cwActions));
       btnCwactionsToGridClick(nil);
       result := sz;
@@ -1930,11 +1994,12 @@ begin
       FormatDateTime('DD', dt2) + '&accountId=' + inttostr(serverTyp);
     // httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
     GetBinDataOpenActions('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit' + pstring,
-      'openActions' + sZeit, lbCSVError, openActions, doAppend);
+      'openActions' + sZeit, lbCSVError, openActions, doAppend, true);
+    // wenn sich die Länge nicht geändert hat - also keine Daten gefunden wurden - wird an Sonntagen und Samstagen jeweils rückwärts nochmal gesucht
     if (length(openActions) = lvorher) then
     begin
       // war wohl nix
-      lbDebug('nix:' + pstring);
+      lbdebug('nix:' + pstring);
       if ((dayofweek(dt2) = 1) or (dayofweek(dt2) = 7)) then // Sonntag(1) oder Samstag(7) eines zurück versuchen
       begin
         dt2 := dt2 - 1;
@@ -1945,7 +2010,7 @@ begin
     end
     else
     begin
-      lbDebug('ok:' + pstring);
+      lbdebug('ok:' + pstring);
       nochmal := false;
     end;
   end;
@@ -1967,17 +2032,21 @@ var
   actionId: int64Array;
   ix: intarray;
   ct: integer;
+  s: String;
 var
   openActions: DACwOpenActions;
 begin
   // btnSaveCacheFileCwClick(nil);
   setlength(openActions, 0);
-  LoadInfo('Load open actions');
+  s := 'Load open actions:' + datetimetostr(dt);
+  LoadInfo(s);
   // es werden die Daten von allen 7 Accounts nacheinander aneinandergehängt
 
   getOpenActions(dt, accVon, false, '1', openActions);
   for i := accVon + 1 to accBis do
-    getOpenActions(dt, i, true, '1', openActions);
+    // NICHT für LCG B abrufen weil des dort KEINE OPEN ACTIONS gibt
+    if (i <> 2) then
+      getOpenActions(dt, i, true, '1', openActions);
 
   ct := length(openActions);
   if (ct > 0) then
@@ -2055,17 +2124,27 @@ begin
   end;
 end;
 
-procedure TForm2.Button13Click(Sender: TObject);
+procedure TForm2.btnReportClick(Sender: TObject);
 var
   Evals: array [1 .. 5, 1 .. 3] of EvaluationResult;
   fe: TFilterParameter;
   d, b, i: integer;
-  s:string;
+  s, s1, s2: string;
   sDate1: array [1 .. 5] of string;
   sDate2: array [1 .. 5] of string;
   sBroker: array [1 .. 3] of string;
-begin
+  Ei: array [1 .. 5, 1 .. 3] of TFrame11;
+  Ri: array [1 .. 5] of TReportInfo;
+  Tx: Array [1 .. 5] of String;
+  gt: cardinal;
+label raus;
 
+begin
+  gt := GetTickCount;
+  btnReportStop.Visible := true;
+  btnReport.Visible := false;
+  pnlInspectorWait.Visible := true;
+  pnlInspectorBedienung.enabled := false;
   // 1=LCG 2=AT 3=Summe
   // Zeit1  heute morgen
   // Zeit2  heute-7 morgen-7
@@ -2080,15 +2159,47 @@ begin
   // Grouping auf SymbolGroup Stringarray die ersten zB 3 SymbolGruppen
 
   // Darstellung in eigenem Tab mit FrameElement das die Parameter enthält
+  Ei[1, 1] := Frame111;
+  Ei[1, 2] := Frame112;
+  Ei[1, 3] := Frame113;
+  Ei[2, 1] := Frame114;
+  Ei[2, 2] := Frame115;
+  Ei[2, 3] := Frame116;
+  Ei[3, 1] := Frame117;
+  Ei[3, 2] := Frame118;
+  Ei[3, 3] := Frame119;
+  Ei[4, 1] := Frame120;
+  Ei[4, 2] := Frame121;
+  Ei[4, 3] := Frame122;
+  // die restlichen 3 erstmal weglassen
+  Ei[5, 1] := Frame123;
+  Ei[5, 2] := Frame124;
+  Ei[5, 3] := Frame125;
+  Ri[1] := ReportInfo1;
+  Ri[2] := ReportInfo2;
+  Ri[3] := ReportInfo3;
+  Ri[4] := ReportInfo4;
+  Ri[5] := ReportInfo5;
 
+  Tx[1] := 'Heute';
+  Tx[2] := '7-Tage';
+  Tx[3] := 'Lfd.Monat';
+  Tx[4] := 'Voriger Monat';
+  Tx[5] := 'Lfd.Jahr';
+
+  // die Angaben sind immer inclusive Start - exclusive Ende
   sDate1[1] := 'heute';
   sDate2[1] := 'morgen';
-  sDate1[2] := 'heute-7';
-  sDate2[2] := 'morgen-7';
+
+  sDate1[2] := 'heute-6';
+  sDate2[2] := 'morgen';
+
   sDate1[3] := 'monat';
   sDate2[3] := 'morgen';
+
   sDate1[4] := 'monat-1';
   sDate2[4] := 'monat';
+
   sDate1[5] := 'jahr';
   sDate2[5] := 'morgen';
 
@@ -2099,10 +2210,26 @@ begin
   // erstmal alle abschalten
   fe.comment := (Sender as TButton).Caption;
 
+  s1 := '';
+  s2 := '';
   for d := 1 to 5 do
+
     for b := 1 to 3 do
     begin
-      evals[d,b].clear;
+      Ei[d, b].init; // .setValues(evals[d,b]);
+      Ri[d].init; // setValues(tx[d],s1,s2);
+    end;
+
+  for d := 1 to 5 do
+  begin
+    for b := 1 to 3 do
+    begin
+      dosleep(1);
+      if (reportStop = true) then
+      begin
+        goto raus;
+      end;
+      Evals[d, b].clear;
       fe.Active := false;
       for i := 1 to FilterCt do
       begin
@@ -2139,53 +2266,63 @@ begin
       fe.values := '';
       Filter[5].setValues(fe);
 
+      pnlFilter.Repaint;
+
       doFilter;
+
+      screen.Cursor := crHourGlass;
+      // Problem: durch die Einschränkung stimmen nun die Zahlen nicht mehr
+      makeEvaluation(Evals[d, b], 'cwfilteredactions');
+      // btnShowEvaluation.Visible := true;
+      // btnShowEvaluationClick(nil);
+      // und nun die restlichen Werte der Evaluation befüllen
+
+      // nun Einschränkung auf die tatsächlich gehandelten Trades im Zeitraum
 
       fe.Active := true;
       fe.topic := 'Action in TimeRange';
       fe.operator := 'true';
       fe.values := '';
       Filter[5].setValues(fe);
-
+      pnlFilter.Repaint;
       doFilter;
-
 
       Grouping[1].cbTopic.text := 'userId';
       Grouping[1].cbTopic.Visible := true;
       Grouping[1].chkActive.Checked := true;
       doGroup();
-      //-> Anzahl Users steht in der Überschrift
-      Evals[d,b].usersCt:=dyngrid9.maxdatarows;
+      // -> Anzahl Users steht in der Überschrift
+      Evals[d, b].usersCt := DynGrid9.maxdatarows;
+
       Grouping[1].cbTopic.text := 'symbolGroup';
       Grouping[1].cbTopic.Visible := true;
       Grouping[1].chkActive.Checked := true;
-
-
       doGroup();
-
-      dyngrid9.sortcol:='ActionID';
-      dyngrid9.sortdir:=0; //aufwärts
-      dyngrid9.doSorting;
+      DynGrid9.sortcol := 'tradesCount';
+      DynGrid9.sortdir := 1; // abwärts
+      DynGrid9.doSorting;
       try
-      s:=dyngrid9.sg.cells[0,1]+';'+dyngrid9.sg.cells[0,2]+';'+dyngrid9.sg.cells[0,3];
+        s := DynGrid9.SG.Cells[0, 1] + ' ' + DynGrid9.SG.Cells[0, 2] + ' ' + DynGrid9.SG.Cells[0, 3] + ' ' +
+          DynGrid9.SG.Cells[0, 4] + ' ' + DynGrid9.SG.Cells[0, 5] + ' ' + DynGrid9.SG.Cells[0, 6] + ' ' +
+          DynGrid9.SG.Cells[0, 7];
       except
-
       end;
-      //
-      Evals[d,b].mostSymbols:=s;
-      //-> Anzahl SymbolGruppen steht in der Überschrift
-      //aus sSort die ersten soundsovielen aussuchen
+      // -> Anzahl SymbolGruppen steht in der Überschrift
+      // aus sSort die ersten soundsovielen aussuchen
+      Evals[d, b].mostSymbols := s;
 
+      // nun die Einträge vornehmen
+      Ei[d, b].setValues(Evals[d, b]);
 
+      s1 := 'Ab Datum:' + FormatDateTime('dd/mm/yy', Evals[d, b].z1 + 1);
+      s2 := 'Bis Datum:' + FormatDateTime('dd/mm/yy', Evals[d, b].z2);
 
-      screen.Cursor := crHourGlass;
-      makeEvaluation(Evals[d,b], 'cwfilteredactions');
-//      btnShowEvaluation.Visible := true;
-//      btnShowEvaluationClick(nil);
-      //und nun die restlichen Werte der Evaluation befüllen
-
+      Ri[d].setValues(Tx[d], s1, s2);
       screen.Cursor := crDefault;
     end;
+    setPageIndex(10);
+  end;
+  setPageIndex(10);
   /// /test eine Sortierung 'fernzusteuern'
   // dyngrid2.sortcol:='ActionID';
   // dyngrid2.sortdir:=0; //aufwärts
@@ -2196,6 +2333,27 @@ begin
   /// / string
 
   // button13.test:=1; //das ist der abgeleitete TButton aus FTCOmmons der die Eigenschaft test hat !
+
+  // nicht nur beimReport sondern allgemein sollten diese alten Cachefiles entfernt werden
+  deleteTodaysOpenActionCacheFiles(now);
+  deleteTodaysOpenActionCacheFiles(now - 1);
+  deleteTodaysOpenActionCacheFiles(now - 2);
+
+  if (cw = true) then
+    showmessage(inttostr(GetTickCount - gt));
+raus:
+  // ganz wichtig das wieder anzuschalten!
+  reportStop := false;
+  btnReportStop.Visible := false;
+  btnReport.Visible := true;
+  pnlInspectorBedienung.enabled := true;
+  pnlInspectorWait.Visible := false;
+  DelFilesFromDir(ExtractFilePath(paramstr(0)) + cCacheFolder,'y*.bin',false);
+end;
+
+procedure TForm2.btnReportStopClick(Sender: TObject);
+begin
+  reportStop := true;
 
 end;
 
@@ -2313,6 +2471,8 @@ begin
     btnShowEvaluation.Visible := true;
     btnShowEvaluationClick(nil);
   end;
+  screen.Cursor := crDefault;
+
 end;
 
 procedure TForm2.machUserSelectionAusFilteredActions();
@@ -2611,7 +2771,7 @@ begin
             begin
               p[j] := cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId;
               s := inttostr(cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId); // oder der Name !
-              par[j] := cwSymbolsGroups[cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId].name + '/' + s;
+              par[j] := cwSymbolsGroups[cwSymbolsPlus[cwFilteredActions[i].symbolId].groupId].name; // + '/' + s;
               // oder der Name !
             end;
           2: // User nicht verwendet
@@ -2798,12 +2958,12 @@ begin
     ps := pos('$', sortIndex[i]);
     sortIndexOhne[i] := leftstr(sortIndex[i], ps - 1);
     try
-      isort[i] := strtoint(sortIndex[i].Substring(ps));
+      isort[i] := strtoint(sortIndex[i].substring(ps));
     except
       ps := ps;
     end;
   end;
-  lbDebug('$ Suche' + inttostr(GetTickCount - gt2));
+  lbdebug('$ Suche' + inttostr(GetTickCount - gt2));
 
   if (sumCt < 100000) then
   begin
@@ -2942,7 +3102,7 @@ begin
     end;
 
     gt := GetTickCount - gt;
-    lbDebug('UsersCount:' + inttostr(gt));
+    lbdebug('UsersCount:' + inttostr(gt));
   end;
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
@@ -3188,10 +3348,9 @@ weiter1:
   DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
     ' of ' + inttostr(length(cwActions));
   DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
-  lbDebug('dg2:' + inttostr(GetTickCount - gt));
+  lbdebug('dg2:' + inttostr(GetTickCount - gt));
 
   machUserSelectionAusFilteredActions;
-
 
   screen.Cursor := crDefault;
 end;
@@ -3242,6 +3401,7 @@ begin
             // wenn die Datei aber zB am 5.12 23:00 geschrieben wurde und u1=6.12. 00:00 dann gibt es für Orders zwischen 23 und 0 Uhr Fehler
             // >= 16.9 = OpenProfit von Ende 15.9 daher -1 was die letzten Daten vom 15.9. beinhaltet
           end;
+
         if (ok2 = false) then
           if (Filter[i].cbTopic.text = 'OpenDateTime') then
           begin
@@ -3252,6 +3412,8 @@ begin
             z2 := unixtodatetime(u2) - 1;
             // < 23.9 = OpenProfit von Ende 22.9 daher wieder -1 um an die Daten zu kommen
           end;
+
+        // das folgende gilt aber nur wenn lediglich EINER der Accounts im Topictext steht. Sonst werden sie ALLE abgerufen
         if (Filter[i].cbTopic.text = 'AccountId') then
         begin
           // open >
@@ -3270,6 +3432,34 @@ begin
           end;
 
         end;
+
+        // das folgende gilt aber nur wenn lediglich EINER der Accounts im Topictext steht. Sonst werden sie ALLE abgerufen
+        if (Filter[i].cbTopic.text = 'BrokerId') then
+        begin
+          // open >
+          acc := IndexStr(Filter[i].edValue.text, ['LCG', 'ActiveTrades']);
+          if (acc > -1) then
+          begin
+            if (acc = 0) then
+            begin
+              accVon := 1;
+              accBis := 2;
+            end;
+            if (acc = 1) then
+            begin
+              accVon := 3;
+              accBis := 7;
+            end;
+          end
+          else
+          begin
+            accVon := 1;
+            accBis := 7;
+
+          end;
+
+        end;
+
       end;
     end;
     // damit sind die beiden erforderlichen OpenActions-Dateien festgestellt die nun eingelesen werden müssen
@@ -3296,6 +3486,7 @@ begin
         // Actions die zum Zeitpunkt u1 bereits offen waren
         // B und C bekommen profit1 aus cwOpenActionsZ1
         j := BinSearchOpenActionsInt64(cwOpenActionsZ1, cwFilteredActions[i].actionId);
+        // Suche Order die vorher offen war nun in OpenZ1 wo diese stehen sollte
         if (j > -1) then
         begin
           ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
@@ -3308,7 +3499,7 @@ begin
         else
         begin
           inc(ps.ct1nix);
-          lbDebug('nF1 (open in z1):' + inttostr(cwFilteredActions[i].actionId));
+          lbdebug('nF1 (open in z1):' + inttostr(cwFilteredActions[i].actionId));
         end;
       end
       else
@@ -3346,7 +3537,7 @@ begin
         begin
           //
           inc(ps.ct2nix);
-          lbDebug('nF2 (open in z2):' + inttostr(cwFilteredActions[i].actionId));
+          lbdebug('nF2 (open in z2):' + inttostr(cwFilteredActions[i].actionId));
         end;;
       end;
       if (flag = false) then
@@ -4123,10 +4314,9 @@ begin
   Form2.Refresh;
 
   doFilter();
-    // Wegen grouping: Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
+  // Wegen grouping: Herstellen der Sortierfelder für die schnelle Usersuche in der Teilmenge der User in den Filteractions
   doGroup();
   // -> dynGrid9
-
 
 end;
 
@@ -4279,7 +4469,7 @@ var
 begin
   // Wechsel der Tabs
   // Ersatz für PageControl1.ActivePageIndex:=i
-  for j := 0 to 9 do
+  for j := 0 to 10 do
   begin
   end;
   if (TabSheet1.Visible = true) then
@@ -4321,6 +4511,10 @@ begin
   if (TabSheet10.Visible = true) then
     if (i <> 9) then
       TabSheet10.Visible := false;
+
+  if (TabSheet11.Visible = true) then
+    if (i <> 10) then
+      TabSheet11.Visible := false;
 
   case i of
     0:
@@ -4366,6 +4560,8 @@ begin
       TabSheet9.Visible := true;
     9:
       TabSheet10.Visible := true;
+    10:
+      TabSheet11.Visible := true;
 
   end;
   if (TabToResize[i] = true) then
@@ -4440,6 +4636,12 @@ var
   s: string;
   gt: cardinal;
 begin
+
+  // nicht nur beimReport sondern allgemein sollten diese alten Cachefiles entfernt werden
+  deleteTodaysOpenActionCacheFiles(now);
+  deleteTodaysOpenActionCacheFiles(now - 1);
+  deleteTodaysOpenActionCacheFiles(now - 2);
+
   cwActionsSorted := false;
   doUpdateCt := 0;
   fillCbLoadFilters; // die flt Dateien in die Combobox eintragen
@@ -4482,11 +4684,17 @@ begin
 
       // pw := InputBox('Password:', 'Password:', '');
 
-      if (pw = '2502') or (pw = '#') then
+      if (pw = '2502') or (pw = '##') then
       begin
+        cw := false;
+        if (pw = '##') then
+        begin
+          cw := true;
+          SpeedButton7.Visible := true;
+          SpeedButton8.Visible := true;
+        end;
         pwok := true;
         break;
-
       end
       else
         showmessage('Wrong password !');
@@ -4849,6 +5057,27 @@ begin
   doCacheGridCwInfo;
 end;
 
+procedure TForm2.deleteTodaysOpenActionCacheFiles(dt: TDateTime);
+var
+  fName: string;
+  serverTyp: integer;
+  folder, fileName: string;
+
+begin
+  for serverTyp := 1 to 7 do
+  begin
+    fName := 'year=' + FormatDateTime('YYYY', dt) + '&month=' + FormatDateTime('MM', dt) + '&day=' +
+      FormatDateTime('DD', dt) + '&accountId=' + inttostr(serverTyp);
+    folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
+    fileName := folder + '\' + fName + '.bin';
+    if fileExists(fileName) then
+    begin
+      deletefile(fileName);
+    end;
+
+  end;
+end;
+
 procedure TForm2.doCacheGridCwInfo;
 begin
   // pnlCacheCw.Caption := 'CacheGrid:' + inttostr(SGCache.RowCount - 1);
@@ -5029,7 +5258,7 @@ begin
       finally
         screen.Cursor := Cursor;
       end;
-      lbDebug('Zeit Gridsort:' + inttostr(timegettime - gt));
+      lbdebug('Zeit Gridsort:' + inttostr(timegettime - gt));
     end;
   end;
 
@@ -5072,14 +5301,14 @@ begin
           FastSort2ArrayDouble(da, ia, 'VUA');
         if (sortTyp = 1) then
           FastSort2ArrayDouble(da, ia, 'VDA');
-        lbDebug('Sort:' + inttostr(GetTickCount - gt));
+        lbdebug('Sort:' + inttostr(GetTickCount - gt));
         gt := GetTickCount();
         for k := 0 to CountItem - 1 do
         begin
           MyList.Add(genstrgrid.Rows[k].text);
           // MyList ist nun quasi die Kopie des StringGrids ab unterhalb der Überschrift
         end;
-        lbDebug('Mylist:' + inttostr(GetTickCount - gt));
+        lbdebug('Mylist:' + inttostr(GetTickCount - gt));
         gt := GetTickCount();
 
         for k := 1 to CountItem - 1 do
@@ -5090,7 +5319,7 @@ begin
           if k = 50 then
             genstrgrid.Repaint;
         end;
-        lbDebug('Grid neu:' + inttostr(GetTickCount - gt));
+        lbdebug('Grid neu:' + inttostr(GetTickCount - gt));
 
       end;
     finally
@@ -5131,13 +5360,18 @@ begin
 
   procedure TForm2.SpeedButton6Click(Sender: TObject);
   begin
-    setPageIndex(2); // Internal
+    setPageIndex(10); // Report
 
   end;
 
   procedure TForm2.SpeedButton7Click(Sender: TObject);
   begin
-    setPageIndex(3); // Internal
+    setPageIndex(3); // Report
+  end;
+
+  procedure TForm2.SpeedButton8Click(Sender: TObject);
+  begin
+    setPageIndex(2); // Internal
   end;
 
   procedure TForm2.SortStringGrid(var genstrgrid: FTCommons.TStringGridSorted; ThatCol: integer; sortTyp: integer);
@@ -5164,13 +5398,13 @@ begin
           MyList.Add(genstrgrid.Rows[i].Strings[ThatCol] + TheSeparator + genstrgrid.Rows[i].text);
 
         // Sort the List
-        lbDebug('Sort MyList:' + inttostr(timegettime - gt));
+        lbdebug('Sort MyList:' + inttostr(timegettime - gt));
         gt := timegettime;
         if (sortTyp = -1) then
           MyList.CustomSort(StringListSortComparefnDown);
         if (sortTyp = 1) then
           MyList.CustomSort(StringListSortComparefnUp);
-        lbDebug('Sort CustomSort:' + inttostr(timegettime - gt));
+        lbdebug('Sort CustomSort:' + inttostr(timegettime - gt));
 
         gt := timegettime;
 
@@ -5187,7 +5421,7 @@ begin
           MyList.Strings[(k - 1)] := Copy(MyList.Strings[(k - 1)], (ThePosition + 1), length(MyList.Strings[(k - 1)]));
           // TempString;
         end;
-        lbDebug('Sort MyList gen:' + inttostr(timegettime - gt));
+        lbdebug('Sort MyList gen:' + inttostr(timegettime - gt));
 
         // Refill the StringGrid       - ca 75% der Zeit hierfür
         gt := timegettime;
@@ -5201,7 +5435,7 @@ begin
         end;
         genstrgrid.rowcount := CountItem;
 
-        lbDebug('Sort ->Grid:' + inttostr(timegettime - gt));
+        lbdebug('Sort ->Grid:' + inttostr(timegettime - gt));
       end;
     finally
       // Free the List
@@ -5277,16 +5511,16 @@ begin
     lbadd(lb, 'soc.number' + #9 + cwUsers[k].socialNumber);
     lbadd(lb, 'comment' + #9 + cwUsers[k].comment);
     lbadd(lb, 'totalTrades' + #9 + inttostr(cwUsersPlus[k].totaltrades));
-    lbadd(lb, 'totalProfit' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalprofit));
-    lbadd(lb, 'totalBalance' + #9 + FormatFloat('#0.00', cwUsersPlus[k].totalbalance));
+    lbadd(lb, 'totalProfit' + #9 + FormatFloat('#,0.00', cwUsersPlus[k].totalprofit));
+    lbadd(lb, 'totalBalance' + #9 + FormatFloat('#,0.00', cwUsersPlus[k].totalbalance));
 
     lblUserInfo0.Caption := cwUsers[k].name;
     lblUserInfo1.Caption := 'Reg.Date:  ' + datetimetostr(unixtodatetime(cwUsers[k].registrationTime));
     lblUserInfo2.Caption := 'LastLogin: ' + datetimetostr(unixtodatetime(cwUsers[k].lastLoginTime));
-    lblUserInfo3.Caption := 'Balance:   ' + FormatFloat('#0.00', cwUsers[k].balance);
+    lblUserInfo3.Caption := 'Balance:   ' + FormatFloat('#,0.00', cwUsers[k].balance);
     lblUserInfo4.Caption := 'T.Trades:  ' + inttostr(cwUsersPlus[k].totaltrades);
-    lblUserInfo5.Caption := 'T.Balance: ' + FormatFloat('#0.00', cwUsersPlus[k].totalbalance);
-    lblUserInfo6.Caption := 'T.Profit:  ' + FormatFloat('#0.00', cwUsersPlus[k].totalprofit);
+    lblUserInfo5.Caption := 'T.Balance: ' + FormatFloat('#,0.00', cwUsersPlus[k].totalbalance);
+    lblUserInfo6.Caption := 'T.Profit:  ' + FormatFloat('#,0.00', cwUsersPlus[k].totalprofit);
     lblUserInfo7.Caption := inttostr(cwUsers[k].userId);
 
     lblUserInfo0.Hint := 'Users Name';
@@ -5661,8 +5895,8 @@ begin
     twoLblStart[6].l2.Caption := inttostr(info.newUsers1m); // ''/'New Users 1 month:';
     twoLblStart[7].l2.Caption := inttostr(info.newActions1d); // ''/'Actions new today:';
     twoLblStart[8].l2.Caption := inttostr(info.newActions1w); // ''/'Actions 1 week:';
-    twoLblStart[9].l2.Caption := FormatFloat('#0.00', info.profit1d); // ''/'Profit today:';
-    twoLblStart[10].l2.Caption := FormatFloat('#0.00', info.profit1w); // ''/'Profit 1 week:';
+    twoLblStart[9].l2.Caption := FormatFloat('#,0.00', info.profit1d); // ''/'Profit today:';
+    twoLblStart[10].l2.Caption := FormatFloat('#,0.00', info.profit1w); // ''/'Profit 1 week:';
     twoLblStart[11].l2.Caption := inttostr(info.logUsers1d); // ''/'Actions new today:';
     twoLblStart[12].l2.Caption := inttostr(info.logUsers1w); // ''/'Actions new today:';
     twoLblStart[13].l2.Caption := inttostr(info.logUsers1m); // ''/'Actions new today:';
