@@ -46,6 +46,10 @@ object Form2: TForm2
       ImageIndex = 1
       ParentFont = False
       OnResize = TabSheet2Resize
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object btnLadeDialog: TButton
         Left = 604
         Top = 671
@@ -274,6 +278,7 @@ object Form2: TForm2
               end
               inherited SpeedButton1: TSpeedButton
                 Top = 1
+                OnClick = DynGrid6SpeedButton1Click
                 ExplicitTop = 1
               end
             end
@@ -591,12 +596,23 @@ object Form2: TForm2
           Height = 1058
           Align = alLeft
           TabOrder = 0
+          object Splitter6: TSplitter
+            Left = 1
+            Top = 837
+            Width = 498
+            Height = 20
+            Cursor = crVSplit
+            Align = alBottom
+            ExplicitTop = 449
+          end
           object Panel13: TPanel
             Left = 1
             Top = 1
             Width = 498
             Height = 1
             Align = alTop
+            Color = clRed
+            ParentBackground = False
             TabOrder = 0
             object btnGetSingleUserActions: TButton
               Left = 8
@@ -621,13 +637,13 @@ object Form2: TForm2
             Left = 1
             Top = 2
             Width = 498
-            Height = 1055
+            Height = 835
             Align = alClient
             TabOrder = 1
             ExplicitLeft = 1
             ExplicitTop = 2
             ExplicitWidth = 498
-            ExplicitHeight = 1055
+            ExplicitHeight = 835
             inherited Panel1: TPanel
               Width = 498
               Align = alTop
@@ -652,36 +668,135 @@ object Form2: TForm2
               Left = 0
               Top = 41
               Width = 498
-              Height = 1014
+              Height = 794
               Align = alClient
               ExplicitLeft = 0
               ExplicitTop = 41
               ExplicitWidth = 498
-              ExplicitHeight = 1014
+              ExplicitHeight = 794
               inherited ScrollBar1: TScrollBar
                 Left = 481
-                Height = 1012
+                Height = 792
                 ExplicitLeft = 481
-                ExplicitHeight = 1012
+                ExplicitHeight = 792
               end
               inherited Panel3: TPanel
                 Width = 480
-                Height = 1012
+                Height = 792
                 ExplicitWidth = 480
-                ExplicitHeight = 1012
+                ExplicitHeight = 792
                 inherited SG: TStringGridSorted
                   Width = 478
-                  Height = 980
+                  Height = 760
                   ExplicitWidth = 478
-                  ExplicitHeight = 980
+                  ExplicitHeight = 760
                 end
                 inherited SGSum: TStringGridSorted
-                  Top = 981
+                  Top = 761
                   Width = 478
                   Font.Height = -12
-                  ExplicitTop = 981
+                  ExplicitTop = 761
                   ExplicitWidth = 478
                 end
+              end
+            end
+            inherited PopupMenu1: TPopupMenu
+              Left = 360
+              Top = 4
+            end
+            inherited PopupMenu2: TPopupMenu
+              Left = 316
+              Top = 4
+            end
+            inherited PopupMenu3: TPopupMenu
+              Left = 268
+              Top = 4
+            end
+            inherited PopupMenu4: TPopupMenu
+              Left = 224
+              Top = 4
+              inherited MenuItem8: TMenuItem
+                OnClick = DynGrid10MenuItem8Click
+              end
+              inherited MenuItem10: TMenuItem
+                Caption = 'Selection = 2ndGrid'
+                OnClick = DynGrid10MenuItem10Click
+              end
+              inherited Selection2ndGrid1: TMenuItem
+                OnClick = DynGrid10Selection2ndGrid1Click
+              end
+            end
+          end
+          inline DynGrid1: TDynGrid
+            Left = 1
+            Top = 857
+            Width = 498
+            Height = 200
+            Align = alBottom
+            TabOrder = 2
+            ExplicitLeft = 1
+            ExplicitTop = 857
+            ExplicitWidth = 498
+            ExplicitHeight = 200
+            inherited Panel1: TPanel
+              Width = 498
+              Align = alTop
+              ExplicitWidth = 498
+              inherited lblTime: TLabel
+                Width = 4
+                Height = 14
+                ExplicitWidth = 4
+                ExplicitHeight = 14
+              end
+              inherited lblSelection: TLabel
+                Width = 4
+                Height = 14
+                ExplicitWidth = 4
+                ExplicitHeight = 14
+              end
+              inherited SpeedButton1: TSpeedButton
+                OnClick = DynGrid1SpeedButton1Click
+              end
+            end
+            inherited Panel2: TPanel
+              Left = 0
+              Top = 41
+              Width = 498
+              Height = 159
+              Align = alClient
+              ExplicitLeft = 0
+              ExplicitTop = 41
+              ExplicitWidth = 498
+              ExplicitHeight = 159
+              inherited ScrollBar1: TScrollBar
+                Left = 481
+                Height = 157
+                ExplicitLeft = 481
+                ExplicitHeight = 157
+              end
+              inherited Panel3: TPanel
+                Width = 480
+                Height = 157
+                ExplicitWidth = 480
+                ExplicitHeight = 157
+                inherited SG: TStringGridSorted
+                  Width = 478
+                  Height = 125
+                  ExplicitWidth = 478
+                  ExplicitHeight = 125
+                end
+                inherited SGSum: TStringGridSorted
+                  Top = 126
+                  Width = 478
+                  Font.Height = -12
+                  ExplicitTop = 126
+                  ExplicitWidth = 478
+                end
+              end
+            end
+            inherited PopupMenu3: TPopupMenu
+              inherited RemoveSelection1: TMenuItem
+                OnClick = DynGrid1RemoveSelection1Click
               end
             end
           end
@@ -730,6 +845,9 @@ object Form2: TForm2
                 ExplicitWidth = 4
                 ExplicitHeight = 14
               end
+              inherited SpeedButton1: TSpeedButton
+                OnClick = DynGrid4SpeedButton1Click
+              end
             end
             inherited Panel2: TPanel
               Left = 0
@@ -765,6 +883,17 @@ object Form2: TForm2
                   ExplicitTop = 774
                   ExplicitWidth = 998
                 end
+              end
+            end
+            inherited PopupMenu2: TPopupMenu
+              inherited MenuItem2: TMenuItem
+                OnClick = DynGrid4MenuItem2Click
+              end
+              inherited MenuItem3: TMenuItem
+                OnClick = DynGrid4MenuItem3Click
+              end
+              inherited CSVExportSelection1: TMenuItem
+                OnClick = DynGrid4CSVExportSelection1Click
               end
             end
           end
@@ -1287,7 +1416,7 @@ object Form2: TForm2
             object lblFilteredDataInfo: TLabel
               Left = 1
               Top = 1
-              Width = 995
+              Width = 6
               Height = 19
               Align = alTop
               Alignment = taCenter
@@ -1298,7 +1427,6 @@ object Form2: TForm2
               Font.Name = 'Tahoma'
               Font.Style = []
               ParentFont = False
-              ExplicitWidth = 6
             end
           end
           inline DynGrid2: TDynGrid
@@ -2182,12 +2310,17 @@ object Form2: TForm2
         Height = 605
         ItemHeight = 19
         TabOrder = 3
+        Visible = False
       end
     end
     object TabSheet11: TTabSheet
       Caption = 'Report'
       ImageIndex = 10
       TabVisible = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel25: TPanel
         Left = 0
         Top = 0
@@ -3317,6 +3450,10 @@ object Form2: TForm2
     object TabSheet9: TTabSheet
       Caption = 'Gelber Sack'
       ImageIndex = 8
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel21: TPanel
         Left = 120
         Top = 12
@@ -3579,22 +3716,13 @@ object Form2: TForm2
           Visible = False
           OnClick = btnSymbolGroupsClick
         end
-        object Button10: TButton
-          Left = 313
-          Top = 42
-          Width = 161
-          Height = 25
-          Caption = 'Test getOpenActions'
-          TabOrder = 14
-          OnClick = Button10Click
-        end
         object Button11: TButton
           Left = 316
           Top = 16
           Width = 157
           Height = 21
           Caption = 'Button11'
-          TabOrder = 15
+          TabOrder = 14
           OnClick = Button11Click
         end
       end
@@ -4723,6 +4851,7 @@ object Form2: TForm2
         0707070707070707070707070707070707070707070707070707}
       Layout = blGlyphTop
       ParentFont = False
+      Visible = False
       StyleElements = []
       OnClick = SpeedButton7Click
     end
@@ -4912,21 +5041,21 @@ object Form2: TForm2
   object ApplicationEvents1: TApplicationEvents
     OnModalBegin = ApplicationEvents1ModalBegin
     OnModalEnd = ApplicationEvents1ModalEnd
-    Left = 322
-    Top = 65522
+    Left = 154
+    Top = 6
   end
   object StartTimer: TTimer
     Enabled = False
     OnTimer = StartTimerTimer
-    Left = 400
-    Top = 65520
+    Left = 188
+    Top = 8
   end
   object updateTimer: TTimer
     Enabled = False
     Interval = 900000
     OnTimer = updateTimerTimer
-    Left = 444
-    Top = 65524
+    Left = 224
+    Top = 8
   end
   object infoTimer: TTimer
     OnTimer = infoTimerTimer

@@ -180,7 +180,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu1: TPopupMenu
-    Left = 568
+    Left = 408
     Top = 8
     object Selectcolumns1: TMenuItem
       Caption = 'Column Selection'
@@ -192,7 +192,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu0: TPopupMenu
-    Left = 636
+    Left = 476
     Top = 8
     object MenuItem1: TMenuItem
       Caption = 'Column Selection'
@@ -200,7 +200,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu2: TPopupMenu
-    Left = 496
+    Left = 336
     Top = 8
     object MenuItem2: TMenuItem
       Caption = 'Column Selection'
@@ -216,7 +216,7 @@ object DynGrid: TDynGrid
     end
   end
   object PopupMenu3: TPopupMenu
-    Left = 448
+    Left = 264
     Top = 8
     object MenuItem4: TMenuItem
       Caption = 'Column Selection'
@@ -237,6 +237,54 @@ object DynGrid: TDynGrid
     object RemoveallbutSelection1: TMenuItem
       Caption = 'Remove all but Selection'
       OnClick = RemoveallbutSelection1Click
+    end
+  end
+  object PopupMenu4: TPopupMenu
+    Left = 200
+    Top = 8
+    object MenuItem7: TMenuItem
+      Caption = 'Column Selection'
+      OnClick = Selectcolumns1Click
+    end
+    object MenuItem8: TMenuItem
+      Caption = 'CSV-Export'
+      OnClick = CSVExport1Click
+    end
+    object MenuItem10: TMenuItem
+      Caption = 'Selection to 2ndGrid'
+      OnClick = MenuItem10Click
+    end
+    object Selection2ndGrid1: TMenuItem
+      Caption = 'Selection +-> 2nd Grid'
+      OnClick = Selection2ndGrid1Click
+    end
+  end
+  object PopupMenu5: TPopupMenu
+    Left = 132
+    Top = 8
+    object MenuItem9: TMenuItem
+      Caption = 'Column Selection'
+      OnClick = Selectcolumns1Click
+    end
+    object MenuItem11: TMenuItem
+      Caption = 'CSV-Export'
+      OnClick = CSVExport1Click
+    end
+    object MenuItem12: TMenuItem
+      Caption = 'CSV-Export Selection'
+      OnClick = CSVExport1Click
+    end
+    object MenuItem13: TMenuItem
+      Caption = 'Remove Selection'
+      OnClick = RemoveSelection1Click
+    end
+    object MenuItem14: TMenuItem
+      Caption = 'Remove all but Selection'
+      OnClick = RemoveallbutSelection1Click
+    end
+    object MarkSelection1: TMenuItem
+      Caption = 'Mark Selection'
+      OnClick = MarkSelection1Click
     end
   end
 end

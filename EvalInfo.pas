@@ -66,7 +66,11 @@ procedure TFrame11.setValues(e: EvaluationResult);
 begin
 self.init;
 label2.Caption:=formatFloat('#,0.00',e.profit2[1]);
-label4.Caption:=FormatFloat('#,0.00',e.profit2[1]-e.profit1[1]);
+if(e.profit1[1]=0) then
+  label4.Caption:='no data'
+else
+  label4.Caption:=FormatFloat('#,0.00',e.profit2[1]-e.profit1[1]);
+
 label6.Caption:=FormatFloat('#,0.00',e.profit[1]);
 label8.Caption:=FormatFloat('#,0.00',e.profit2[1]-e.profit1[1]+e.profit[1]);
 label10.Caption:=FormatFloat('#,0.00',e.volume/100);

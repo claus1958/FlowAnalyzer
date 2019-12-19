@@ -30,6 +30,7 @@ const
   fltTopicCloseDateTimeOrOpen = 19;
   fltTopicComment = 20;
   fltTopicActionInTimeRange = 21;
+  fltTopicUserMarker = 22;
 
   fltOpGleich = 1;
   fltOpUnGleich = 2;
@@ -68,6 +69,7 @@ type
     function findSymbolId(symbol: string): Integer;
     function findSymbol(symbolId: Integer): string;
     function findUserName(userId: Integer): string;
+    function findUserMarker(userId: Integer): string;
     function vergleichStringArray(var mit: array of string; was: string; op: Integer): boolean;
     function vergleichString(var mit, was: string; op: Integer): boolean;
     function vergleichIntegerArray(var mit: array of Integer; var was: Integer; op: Integer): boolean;
@@ -368,8 +370,7 @@ begin
     // chkLB1.Visible:=false;
     for i := 0 to length(cwsymbols) - 1 do
     begin
-      chkLB1.Items.Add(inttostr(cwsymbols[cwsymbolssortindex[i]].symbolId) + '=' + cwsymbols[cwsymbolssortindex[i]].name
-        + ' ' + brokerShort[cwsymbols[cwsymbolssortindex[i]].brokerId]);
+      chkLB1.Items.Add(inttostr(cwsymbols[cwsymbolssortindex[i]].symbolId) + '=' + cwsymbols[cwsymbolssortindex[i]].name + ' ' + brokerShort[cwsymbols[cwsymbolssortindex[i]].brokerId]);
     end;
 
     // chkLB1.Visible:=true;
@@ -488,7 +489,7 @@ begin
 
   end;
   // form2.dolockWindowUpdate(false);
-  cbOperator.itemindex:=0;
+  cbOperator.itemindex := 0;
 
 end;
 
@@ -539,8 +540,7 @@ begin
   begin
     for i := 0 to length(strArray) - 1 do
     begin
-      j := IndexStr(strArray[i], ['LCG A', 'LCG B', 'ActiveTrades A', 'ActiveTrades B', 'ActiveTrades C',
-        'ActiveTrades D', 'ActiveTrades E']);
+      j := IndexStr(strArray[i], ['LCG A', 'LCG B', 'ActiveTrades A', 'ActiveTrades B', 'ActiveTrades C', 'ActiveTrades D', 'ActiveTrades E']);
       if (j > -1) then
       begin
         vglICt := vglICt + 1;
@@ -649,8 +649,7 @@ begin
   begin
     for i := 0 to length(strArray) - 1 do
     begin
-      j := IndexStr(strArray[i], ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'BALANCE',
-        'CREDIT']);
+      j := IndexStr(strArray[i], ['BUY', 'SELL', 'BUY LIMIT', 'SELL LIMIT', 'BUY STOP', 'SELL STOP', 'BALANCE', 'CREDIT']);
       if (j > -1) then
       begin
         vglICt := vglICt + 1;
@@ -685,13 +684,17 @@ begin
     vString := edValue.Text;
   end;
 
+  if ctopic = fltTopicUserMarker then
+  begin
+    vString := edValue.Text;
+  end;
+
   if ctopic = fltTopicComment then
   begin
     vString := edValue.Text;
   end;
 
-  if (ctopic = fltTopicAccountDate) or (ctopic = fltTopicOpenDateTime) or (ctopic = fltTopicCloseDateTime) or
-    (ctopic = fltTopicCloseDateTimeOrOpen)
+  if (ctopic = fltTopicAccountDate) or (ctopic = fltTopicOpenDateTime) or (ctopic = fltTopicCloseDateTime) or (ctopic = fltTopicCloseDateTimeOrOpen)
 
   then
   begin
@@ -711,8 +714,7 @@ begin
       vInteger := datetimetounix(strtodatetime(vString));
   end;
 
-  if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) OR
-    (ctopic = fltTopicMarginRate) then
+  if (ctopic = fltTopicOpenPrice) or (ctopic = fltTopicVolume) OR (ctopic = fltTopicProfit) OR (ctopic = fltTopicMarginRate) then
     vDouble := mystringtofloat(edValue.Text);
 
   if (ctopic = fltTopicActionInTimeRange) then
@@ -953,11 +955,30 @@ begin
   end;
 end;
 
+function TFilterElemente.findUserMarker(userId: Integer): string;
+var
+  i: Integer;
+  p: Integer;
+begin
+  // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
+  // mit Binsearch2 sinds: 850  Super:-)
+  // Die Suche sucht aus 50001234=12345 binär schnell die 12345 heraus
+  // Das zweite Array enthält gleich die =12345 Werte damit diese nicht aus dem String 50001234=12345 mit StrToInt herausgelesen werden müssen
+  i := BinSearchString2(cwuserssortindex, cwuserssortindex2, userId);
+  if (i > -1) then
+  begin
+    p := pos('$', cwuserssortindex[i]);
+
+    result := cwusersPlus[strtoint(midstr(cwuserssortindex[i], p + 1, 255))].marker;
+  end
+  else
+    result := '?';
+end;
+
 function TFilterElemente.findUserName(userId: Integer): string;
 var
   i: Integer;
   p: Integer;
-
 begin
   // statt ca 10000 -> 2736  nicht die Welt aber besser als vorher
   // mit Binsearch2 sinds: 850  Super:-)
@@ -972,18 +993,17 @@ begin
   end
   else
     result := '?';
-
-  // NEU cwUsersSortIndex enthält sortiert die userId=index
-
-  // for i := 0 to length(cwusers) - 1 do
-  // begin
-  // if cwusers[i].userId = userId then
-  // begin
-  // result := cwusers[i].name;
-  // break;
-  // end;
-  // end;
 end;
+// NEU cwUsersSortIndex enthält sortiert die userId=index
+// die alte Suchroutine
+// for i := 0 to length(cwusers) - 1 do
+// begin
+// if cwusers[i].userId = userId then
+// begin
+// result := cwusers[i].name;
+// break;
+// end;
+// end;
 
 procedure TFilterElemente.FrameClick(Sender: TObject);
 begin
@@ -1048,10 +1068,10 @@ begin
     coperator := fltOpContains;
   if operators = 'begins' then
     coperator := fltOpBegins;
-  if operators='true' then
-    coperator:=fltOpTrue;
-  if operators='false' then
-    coperator:=fltOpFalse;
+  if operators = 'true' then
+    coperator := fltOpTrue;
+  if operators = 'false' then
+    coperator := fltOpFalse;
 
   topic := vorQuote(cbTopic.Text);
 
@@ -1095,6 +1115,8 @@ begin
     ctopic := fltTopicComment; // = 20
   if topic = 'Action in TimeRange' then
     ctopic := fltTopicActionInTimeRange; // = 21
+  if topic = 'UserMarker' then
+    ctopic := fltTopicUserMarker; // = 22;
 
   // Rest passiert beim Aufrufer
 end;
@@ -1355,23 +1377,28 @@ begin
     end;
     if ctopic = fltTopicActionInTimeRange then
     begin
-       if((a.openTime>=vinteger) and (a.openTime<=vinteger2))or((a.closeTime>=vinteger) and ((a.closeTime<>0)and(a.closeTime<=vinteger2))) then
-       begin
-           if (coperator = fltOpTrue) then
-             result:=true;
-           if (coperator = fltOpFalse) then
-             result:=false;
-       end
-       else
-       begin
-           if (coperator = fltOpTrue) then
-             result:=false;
-           if (coperator = fltOpFalse) then
-             result:=true;
+      if ((a.openTime >= vInteger) and (a.openTime <= vInteger2)) or ((a.closeTime >= vInteger) and ((a.closeTime <> 0) and (a.closeTime <= vInteger2))) then
+      begin
+        if (coperator = fltOpTrue) then
+          result := true;
+        if (coperator = fltOpFalse) then
+          result := false;
+      end
+      else
+      begin
+        if (coperator = fltOpTrue) then
+          result := false;
+        if (coperator = fltOpFalse) then
+          result := true;
 
-       end;
+      end;
 
-
+    end;
+    if ctopic = fltTopicUserMarker then
+    begin
+      s := findUserMarker(a.userId);
+      result := vergleichString(vString, s, coperator);
+      exit;
     end;
 
   except

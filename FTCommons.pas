@@ -7,7 +7,7 @@ uses
   Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
   RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
   psAPI, System.zip, Wininet, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,
-  System.NetEncoding, DateUtils,csCSV,SHELLAPI;
+  System.NetEncoding, DateUtils, csCSV, SHELLAPI, MMSYSTEM;
 
 const
 
@@ -277,7 +277,12 @@ type
     totalProfit: double;
     totalBalance: double;
     totalSwap: double;
+    lastOpenAction: integer;
+    deadSince: integer; // seit wann weder Action noch Login
     accountCurrency: integer; // 1=EUR 2=USD 3=CHF 4=GBP ... 0=unbekannt
+    silentDays: integer;
+    multi:integer;//zur freien Verwendung (bei cwusersX der Index aus cwusers)
+    marker:string;
   End;
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -432,7 +437,7 @@ function OrderTypes(cmd: integer): string;
 procedure saveCacheFileCw(fname: string; typ: string; lb: TListBox);
 function loadCacheFileCw(fname: string; typ: string; lb: TListBox): integer;
 procedure saveOpenActionsBuffer(fname: string; ba: byteArray);
-function loadOpenActionsBuffer(fname: string; var ba: byteArray):integer;
+function loadOpenActionsBuffer(fname: string; var ba: byteArray): integer;
 
 // A=Alpha V=Value U=Up D=Down
 procedure QuicksortAU(low, high: integer; var Ordliste: StringArray); // StringArray ist Array of String
@@ -529,7 +534,10 @@ function BinSearchInt64(var Ints: int64Array; v: int64): integer;
 function BinSearchOpenActionsInt64(var actions: DACwOpenActions; v: int64): integer;
 
 function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; k: integer; col: integer; such: string): integer;
+  var actions: DACwAction; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+function findUserparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var users: DAcwUser; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+
 function findUserName(userId: integer): string;
 function findUserIndex(userId: integer): integer;
 function findUserSelectionName(userId: integer): string;
@@ -551,7 +559,7 @@ function getStartOfMonth(dt: TDateTime): TDateTime;
 function getNextYear(dt: TDateTime): TDateTime;
 function getPreviousYear(dt: TDateTime): TDateTime;
 function Get_File_Size(sFileToExamine: string): integer;
-procedure DelFilesFromDir(Directory, FileMask: string; DelSubDirs: Boolean);
+procedure DeleteFiles(APath, AFileSpec: string);
 
 var
 
@@ -584,6 +592,8 @@ var
   cwUsersCt: integer;
   cwUsersSortIndex: StringArray;
   cwUsersSortIndex2: intArray;
+  cwUsersX: DAcwUser;//NEU 19.12.19 für eine User-Selektion
+  cwUsersXPlus:DACwUserPlus;
 
   cwUsersSelection: DAcwUser;
   cwUsersSelectionPlus: DACwUserPlus;
@@ -1798,7 +1808,7 @@ begin
           found2 := -1;
           for j := 0 to length(cwTradeRecords) - 1 do
           begin
-            //hinten an der ActionId eine Stelle wieder abschneiden, welche ich als BrokerAccount angehängt habe
+            // hinten an der ActionId eine Stelle wieder abschneiden, welche ich als BrokerAccount angehängt habe
             if (cwTradeRecords[j].order = int(actions[sort[k]].actionId / 10)) then
             begin
               found2 := j;
@@ -1807,10 +1817,10 @@ begin
           end;
           if (found2 > -1) then
           begin
-            lines[SGFieldCol[9]] := '!'+OrderTypes(cwTradeRecords[found2].cmd) + ' ' +
+            lines[SGFieldCol[9]] := '!' + OrderTypes(cwTradeRecords[found2].cmd) + ' ' +
               inttostr(cwTradeRecords[found2].cmd + 1);
-            lines[SGFieldCol[10]] := '!'+floattostr(cwTradeRecords[found2].open_price);
-            lines[SGFieldCol[11]] := '!'+FormatFloat(',#0.00', cwTradeRecords[found2].volume / 100);
+            lines[SGFieldCol[10]] := '!' + floattostr(cwTradeRecords[found2].open_price);
+            lines[SGFieldCol[11]] := '!' + FormatFloat(',#0.00', cwTradeRecords[found2].volume / 100);
           end
           else
           begin
@@ -2238,15 +2248,18 @@ procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger;
   var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer;
   justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 
+const
+  cols = 30;
 var
   k, l: integer;
   row: integer;
   fehler: string;
-  lines: array [0 .. 27] of string;
-  linesHide: array [0 .. 27] of Boolean;
+  lines: array [0 .. cols] of string;
+  linesHide: array [0 .. cols] of Boolean;
   toSL: Boolean;
   line: string;
   sep: string;
+
 begin
   toSL := false;
   if (sl <> nil) then
@@ -2290,9 +2303,12 @@ begin
       lines[SGFieldCol[25]] := 'totalbalance';
       lines[SGFieldCol[26]] := 'totalswap';
       lines[SGFieldCol[27]] := 'accountCurrency';
+      lines[SGFieldCol[28]] := 'lastOpenAction';
+      lines[SGFieldCol[29]] := 'silentDays';
+      lines[SGFieldCol[30]] := 'marker';
       if (toSL = false) then
       begin
-        for k := 0 to 27 do
+        for k := 0 to cols do
           SG.cells[k, 0] := lines[k];
         // Ausblenden was nicht erwünscht ist
         SG.Rows[0].endUpdate;
@@ -2301,7 +2317,7 @@ begin
       begin
         sl.clear;
         line := '';
-        for k := 0 to 27 do
+        for k := 0 to cols do
         begin
           if (SG.ColWidths[SGFieldCol[k]] = -1) then
             linesHide[SGFieldCol[k]] := true
@@ -2312,7 +2328,7 @@ begin
 
       if (toSL = true) then
       begin
-        for k := 0 to 27 do
+        for k := 0 to cols do
         begin
           if (linesHide[SGFieldCol[k]] = false) then
             line := line + lines[k] + sep;
@@ -2359,11 +2375,14 @@ begin
       lines[SGFieldCol[25]] := FormatFloat(',#0.00', usersPlus[sort[k]].totalBalance);
       lines[SGFieldCol[26]] := FormatFloat(',#0.00', usersPlus[sort[k]].totalSwap);
       lines[SGFieldCol[27]] := accountCurrency[usersPlus[sort[k]].accountCurrency];
+      lines[SGFieldCol[28]] := DateTimeToStr(UnixToDateTime(usersPlus[sort[k]].lastOpenAction));
+      lines[SGFieldCol[29]] := inttostr(usersPlus[sort[k]].silentDays);
+      lines[SGFieldCol[30]] := usersPlus[sort[k]].marker;
 
       if (toSL = false) then
       begin
         SG.Rows[row].BeginUpdate;
-        for l := 0 to 27 do
+        for l := 0 to cols do
           SG.cells[l, row] := lines[l];
         SG.Rows[row].endUpdate;
       end
@@ -2372,7 +2391,7 @@ begin
         if ((onlySelection = false) or (selSorted[sort[k]] = 1)) then
         begin
           line := '';
-          for l := 0 to 27 do
+          for l := 0 to cols do
           begin
             if (linesHide[SGFieldCol[l]] = false) then
               line := line + lines[l] + sep;
@@ -4065,7 +4084,7 @@ begin
 end;
 
 function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; k: integer; col: integer; such: string): integer;
+  var actions: DACwAction; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
 var
   suchlength: integer;
   len: integer;
@@ -4073,12 +4092,15 @@ var
   l, M: integer;
   res: string;
   suchtyp: integer;
+  Count: integer;
 label weiter;
 // ganz schlecht über eine Spalte über den Index zu suchen ...
 
 begin
+  Count := 0;
   suchtyp := 0; // normal ab Anfang
   such := uppercase(such);
+  res := '';
   if leftstr(such, 1) = '*' then
   begin
     suchtyp := 1;
@@ -4101,6 +4123,7 @@ begin
     end;
     for l := von to bis do
     begin
+
       if (col = 0) then
       begin
         res := inttostr(actions[sort[l]].actionId) + ' ' + inttostr(l);
@@ -4222,15 +4245,20 @@ begin
         goto weiter;
       end;
     weiter:
-      // prüfen
+      // prüfen auf Übereinstimmung
       res := uppercase(res);
 
       if suchtyp = 0 then
       begin
         if (leftstr(res, suchlength) = such) then
         begin
-          result := l;
-          break;
+          if (doCount = false) then
+          begin
+            result := l;
+            break;
+          end
+          else
+            Inc(Count);
         end;
       end;
 
@@ -4238,8 +4266,152 @@ begin
       begin
         if (pos(such, res) > 0) then
         begin
-          result := l;
-          break;
+          if (doCount = false) then
+          begin
+            result := l;
+            break;
+          end
+          else
+            Inc(Count);
+        end;
+      end;
+
+    end;
+    if (doCount = false) then
+      if result > -1 then
+        break;
+
+  end;
+  if ((doCount = false) and (result = -1)) or ((doCount = true) and (Count = 0)) then
+    PlaySound('APPGPFAULT', 0, SND_ASYNC);
+  if (doCount = true) then
+    result := Count;
+
+  // SYSTEMEXCLAMATION (Hinweis)
+  // SYSTEMHAND (Kritischer Abbruch)
+  // SYSTEMQUESTION (Frage)
+  // SYSTEMSTART (Windows-Start)
+  // SYSTEMEXIT (Windows-Shutdown)
+  // SYSTEMASTERIX (Stern)
+  // RESTOREUP (Vergrößern)
+  // RESTOREDOWN (Verkleinern)
+  // MENUCOMMAND (Menübefehl)
+  // MENUPOPUP (Pop-Up)
+  // MAXIMIZE (Maximieren)
+  // MINIMIZE (Minimieren)
+  // MAILBEEP (Neue Mail)
+  // OPEN (Programm öffnen)
+  // CLOSE (Programm schließen)
+  // APPGPFAULT (Programmfehler)
+end;
+
+function findUserparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
+  var users: DAcwUser; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+var
+  suchlength: integer;
+  len: integer;
+  von, bis: integer;
+  l, M: integer;
+  res: string;
+  suchtyp: integer;
+  Count: integer;
+label weiter;
+// ganz schlecht über eine Spalte über den Index zu suchen ...
+
+begin
+  Count := 0;
+  suchtyp := 0; // normal ab Anfang
+  such := uppercase(such);
+  if leftstr(such, 1) = '*' then
+  begin
+    suchtyp := 1;
+    such := midstr(such, 2, length(such) - 1);
+  end;
+  len := length(sort);
+  result := -1;
+  suchlength := length(such);
+  res := '';
+  for M := 0 to 1 do
+  begin
+    if M = 0 then
+    begin
+      von := k;
+      bis := len;
+    end;
+    if M = 1 then
+    begin
+      von := 0;
+      bis := k;
+    end;
+    for l := von to bis do
+    begin
+
+      if (col = 0) then
+      begin
+        res := inttostr(users[sort[l]].userId) + ' ' + inttostr(l);
+        goto weiter;
+      end;
+
+      if (col = 1) then
+      begin
+        res := inttostr(users[sort[l]].accountId);
+        goto weiter;
+      end;
+      if (col = 2) then
+      begin
+        res := users[sort[l]].name;
+        goto weiter;
+      end;
+      if (col = 3) then
+      begin
+        res := users[sort[l]].group;
+        goto weiter;
+      end;
+      if (col = 5) then
+      begin
+        res := DateTimeToStr(UnixToDateTime(users[sort[l]].registrationTime));
+        goto weiter;
+      end;
+      if (col = 6) then
+      begin
+        res := DateTimeToStr(UnixToDateTime(users[sort[l]].lastLoginTime));
+        goto weiter;
+      end;
+      if (col = 22) then
+      begin
+        res := users[sort[l]].comment;
+        goto weiter;
+      end;
+
+    weiter:
+      // prüfen
+      res := uppercase(res);
+
+      if suchtyp = 0 then
+      begin
+        if (leftstr(res, suchlength) = such) then
+        begin
+          if (doCount = false) then
+          begin
+            result := l;
+            break;
+          end
+          else
+            Inc(Count);
+        end;
+      end;
+
+      if suchtyp = 1 then
+      begin
+        if (pos(such, res) > 0) then
+        begin
+          if (doCount = false) then
+          begin
+            result := l;
+            break;
+          end
+          else
+            Inc(Count);
         end;
       end;
 
@@ -4248,6 +4420,11 @@ begin
       break;
 
   end;
+  // PlaySound('SYSTEMEXCLAMATION', 0, SND_ASYNC);
+  if ((doCount = false) and (result = -1)) or ((doCount = true) and (Count = 0)) then
+    PlaySound('APPGPFAULT', 0, SND_ASYNC);
+  if (doCount = true) then
+    result := Count;
 
 end;
 
@@ -4915,15 +5092,14 @@ var
   pm: integer;
   p, q: integer;
   td: TDateTime;
-  iNow:extended;//heute - aber am Samstag und Sonntag ist das immer der Freitag !!
+  iNow: extended; // heute - aber am Samstag und Sonntag ist das immer der Freitag !!
 begin
 
-  inow:=int(now);
-  if(dayofweek(now)=7) then //Samstag
-    inow:=inow-1;
-  if(dayofweek(now)=1) then //Sonntag
-    inow:=inow-2;
-
+  iNow := int(now);
+  if (dayofweek(now) = 7) then // Samstag
+    iNow := iNow - 1;
+  if (dayofweek(now) = 1) then // Sonntag
+    iNow := iNow - 2;
 
   s := ansiuppercase(s);
   pm := 0;
@@ -4979,7 +5155,7 @@ begin
 
   if (s = 'MONTAG') or (s = 'MONDAY') then
   begin
-    result := iNow;    //Sonntag=1 Mo=2 ... Samstag=7
+    result := iNow; // Sonntag=1 Mo=2 ... Samstag=7
     while (dayofweek(result) <> 2) do
       result := result - 1;
     result := result + pm;
@@ -5173,28 +5349,28 @@ var
   l: integer;
   gt, td: Cardinal;
 begin
-try
   try
-    gt := GetTickCount();
-    folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
-    createDir(folder);
-    fileName := folder + '\' + fname + '.bin';
-    fstream := TFileStream.Create(fileName, fmCreate);
+    try
+      gt := GetTickCount();
+      folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
+      createDir(folder);
+      fileName := folder + '\' + fname + '.bin';
+      fstream := TFileStream.Create(fileName, fmCreate);
 
-    l := length(ba);
-    fstream.WriteBuffer(ba[0], l);
+      l := length(ba);
+      fstream.WriteBuffer(ba[0], l);
 
-  finally
-    fstream.Free;
+    finally
+      fstream.Free;
+    end;
+  except
+    l := l;
   end;
-except
-  l:=l;
-end;
   td := GetTickCount - gt;
   lbDebug('Zeit SaveOpenActionsBuffer:' + inttostr(td));
 end;
 
-function loadOpenActionsBuffer(fname: string; var ba: byteArray):integer;
+function loadOpenActionsBuffer(fname: string; var ba: byteArray): integer;
 var
   folder: string;
   fileName: string;
@@ -5208,7 +5384,7 @@ begin
     folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
     createDir(folder);
 
-    fileName :=folder+'\'+ fname+'.bin';
+    fileName := folder + '\' + fname + '.bin';
     if fileexists(fileName) then
     begin
       fstream := TFileStream.Create(fileName, fmOpenRead or fmShareDenyNone);
@@ -5232,23 +5408,23 @@ begin
 
 end;
 
-procedure DelFilesFromDir(Directory, FileMask: string; DelSubDirs: Boolean);
+procedure DeleteFiles(APath, AFileSpec: string);
 var
-  SourceLst: string;
-  FOS: TSHFileOpStruct;
+  lSearchRec: TSearchRec;
+  lPath: string;
 begin
-  FillChar(FOS, SizeOf(FOS), 0);
-  FOS.Wnd := Application.MainForm.Handle;
-  FOS.wFunc := FO_DELETE;
-  SourceLst := Directory + '\' + FileMask + #0;
-  FOS.pFrom := PChar(SourceLst);
-  if not DelSubDirs then
-    FOS.fFlags := FOS.fFlags OR FOF_FILESONLY;
-  // Remove the next line if you want a confirmation dialog box
-  // FOS.fFlags := FOS.fFlags OR FOF_NOCONFIRMATION;
-  // Uncomment the next line for a "silent operation" (no progress box)
-  // FOS.fFlags := FOS.fFlags OR FOF_SILENT;
-  SHFileOperation(fos);
+  lPath := IncludeTrailingPathDelimiter(APath);
+
+  if FindFirst(lPath + AFileSpec, faAnyFile, lSearchRec) = 0 then
+  begin
+    try
+      repeat
+        SysUtils.DeleteFile(lPath + lSearchRec.name);
+      until SysUtils.FindNext(lSearchRec) <> 0;
+    finally
+      SysUtils.FindClose(lSearchRec); // Free resources on successful find
+    end;
+  end;
 end;
 
 end.

@@ -192,7 +192,6 @@ type
     Label13: TLabel;
     Button8: TButton;
     btnSample6: TButton;
-    Button10: TButton;
     Button11: TButton;
     btnSample7: TButton;
     Panel23: TPanel;
@@ -244,10 +243,11 @@ type
     btnReport: TButton;
     pnlInspectorWait: TPanel;
     btnReportStop: TButton;
+    DynGrid1: TDynGrid;
+    Splitter6: TSplitter;
     procedure doLoadAllData();
 
-    procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
-      var openActions: DACwOpenActions);
+    procedure getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string; var openActions: DACwOpenActions);
     procedure deleteTodaysOpenActionCacheFiles(dt: TDateTime);
     procedure GetLastServerUnixTime();
     function checkLastUpdate(): TDateTime;
@@ -281,8 +281,7 @@ type
     procedure btnClbBrokersDeSelectAllClick(Sender: TObject);
     procedure btnLoadDataClick(Sender: TObject);
     procedure LoadInfo(s: string);
-    procedure gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: integer; Button: TMouseButton;
-      Shift: TShiftState; source: string);
+    procedure gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: integer; Button: TMouseButton; Shift: TShiftState; source: string);
     procedure btnGetSingleUserActionsClick(Sender: TObject);
     procedure TabSheet2Resize(Sender: TObject);
     procedure btnDoFilterClick(Sender: TObject);
@@ -311,13 +310,10 @@ type
     procedure zeigUserInfo(id: integer; lb: TListBox);
     procedure btnSymbolGroupsClick(Sender: TObject);
     procedure btnOnePageClick(Sender: TObject);
-    procedure doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-      var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
-    procedure doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-      var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
+    procedure doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus; var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
+    procedure doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus; var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 
-    procedure doCountUsersInActions(var actions: DACwAction; var actionsPlus: DACwActionPlus;
-      var groups: DACwSymbolGroup; var groupsCt: integer);
+    procedure doCountUsersInActions(var actions: DACwAction; var actionsPlus: DACwActionPlus; var groups: DACwSymbolGroup; var groupsCt: integer);
 
     procedure CategoryPanel9CollapseExpand(Sender: TObject);
     procedure Button9Click(Sender: TObject);
@@ -335,14 +331,12 @@ type
     procedure machUserSelectionAusFilteredActions();
     procedure DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 
-    procedure dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer;
-      sCell, sCol, sRow: string);
+    procedure dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer; sCell, sCol, sRow: string);
     procedure btnLadeDialogClick(Sender: TObject);
     // procedure TrackBar1Change(Sender: TObject);   für semitransparentes Form verwendet
     procedure ApplicationEvents1ModalBegin(Sender: TObject);
     procedure ApplicationEvents1ModalEnd(Sender: TObject);
     procedure StartTimerTimer(Sender: TObject);
-    procedure Button10Click(Sender: TObject);
     procedure btnSaveCacheFileCwClick(Sender: TObject);
     procedure btnGetSymbolsUsersCommentsClick(Sender: TObject);
     procedure doFinalizeData;
@@ -370,8 +364,7 @@ type
     procedure Button8Click(Sender: TObject);
     procedure Button11Click(Sender: TObject);
     procedure btnShowEvaluationClick(Sender: TObject);
-    function GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions;
-      append: boolean = false; fromCache: boolean = false): integer;
+    function GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions; append: boolean = false; fromCache: boolean = false): integer;
     procedure getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions; accVon: integer; accBis: integer);
     function doHttpPutMemoryStreamToWorker(mStream: TMemoryStream; url: string): integer;
     procedure chkFilterWithOpenActionsClick(Sender: TObject);
@@ -395,6 +388,16 @@ type
     procedure Label3Click(Sender: TObject);
     procedure SpeedButton8Click(Sender: TObject);
     procedure btnReportStopClick(Sender: TObject);
+    procedure DynGrid6SpeedButton1Click(Sender: TObject);
+    procedure DynGrid4SpeedButton1Click(Sender: TObject);
+    procedure DynGrid4MenuItem2Click(Sender: TObject);
+    procedure DynGrid4MenuItem3Click(Sender: TObject);
+    procedure DynGrid4CSVExportSelection1Click(Sender: TObject);
+    procedure DynGrid10Selection2ndGrid1Click(Sender: TObject);
+    procedure DynGrid10MenuItem10Click(Sender: TObject);
+    procedure DynGrid10MenuItem8Click(Sender: TObject);
+    procedure DynGrid1SpeedButton1Click(Sender: TObject);
+    procedure DynGrid1RemoveSelection1Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -482,8 +485,7 @@ begin
   GetBinData(edGetUrlBin.text, typ, lbCSVError, chkGetBinAppend.Checked);
 end;
 
-function TForm2.GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions;
-  append: boolean = false; fromCache: boolean = false): integer;
+function TForm2.GetBinDataOpenActions(url, typ: string; lb: TListBox; var actions: DACwOpenActions; append: boolean = false; fromCache: boolean = false): integer;
 var
   ret: String;
   gt: cardinal;
@@ -1049,8 +1051,7 @@ begin
 
 end;
 
-procedure TForm2.gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: integer; Button: TMouseButton;
-  Shift: TShiftState; source: string);
+procedure TForm2.gridMouseClickHandler(grid: FTCommons.TStringGridSorted; col, row: integer; Button: TMouseButton; Shift: TShiftState; source: string);
 // die alte Routine für die normalen Grids
 var
   colHeader: string;
@@ -1061,7 +1062,7 @@ begin
   colHeader := grid.Cells[col, 0];
   // die dynGrid heissen alle SG
   // bei cwusers jeder Click in eine Zeile -> user actions anzeigen
-  if ((source = 'cwusers') or (source = 'cwusers2')) then
+  if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersX')) then
     if colHeader <> 'userId' then
       for i := 0 to grid.Colcount - 1 do
       begin
@@ -1095,8 +1096,7 @@ begin
 
 end;
 
-procedure TForm2.dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer;
-  sCell, sCol, sRow: string);
+procedure TForm2.dyngridMouseLeftClickHandler(topic: string; grid: FTCommons.TStringGridSorted; col, row: integer; sCell, sCol, sRow: string);
 // die alte Routine für die normalen Grids
 var
   colHeader: string;
@@ -1254,8 +1254,7 @@ begin
   doSymbolGroups('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, lbSymbolsGroupsInfo);
 
   // diese Berechnungen werden letztlich gar nicht verwendet
-  doSymbolGroupValues('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt,
-    lbSymbolsGroupsInfo);
+  doSymbolGroupValues('cwsymbolsgroups', cwActions, cwActionsPlus, cwSymbolsGroups, cwSymbolsGroupsCt, lbSymbolsGroupsInfo);
   // Dieses Grid wird zwar gefüllt, ist aber gar nicht anzeigbar
   DynGrid8.initGrid('cwsymbolsgroups', 'groupId', 1, cwSymbolsGroupsCt, 18);
 
@@ -1271,8 +1270,7 @@ begin
   // end;
 end;
 
-procedure TForm2.doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-  var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
+procedure TForm2.doSymbolGroups(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus; var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 // aus den actions (alle oder eine Teilmenge) werden Symbolgruppen gebildet mit ähnlichen Namen
 // die Symbolgruppe aller Actions ändert sich im Verlauf nicht
 // die Symbolgruppe der Teilmenge von Actions ändert sich
@@ -1403,8 +1401,7 @@ begin
   // die Anzahl verschiedener User
 end;
 
-procedure TForm2.doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus;
-  var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
+procedure TForm2.doSymbolGroupValues(quelle: string; var actions: DACwAction; var actionsPlus: DACwActionPlus; var groups: DACwSymbolGroup; var groupsCt: integer; lb: TListBox);
 var
   gt, gt2: cardinal;
 
@@ -1416,8 +1413,7 @@ begin
   doCountUsersInActions(actions, actionsPlus, groups, groupsCt);
 end;
 
-procedure TForm2.doCountUsersInActions(var actions: DACwAction; var actionsPlus: DACwActionPlus;
-  var groups: DACwSymbolGroup; var groupsCt: integer);
+procedure TForm2.doCountUsersInActions(var actions: DACwAction; var actionsPlus: DACwActionPlus; var groups: DACwSymbolGroup; var groupsCt: integer);
 var
   gt, gt2: cardinal;
   aba: array of Bytearray;
@@ -1471,6 +1467,24 @@ begin
 
 end;
 
+procedure TForm2.DynGrid10MenuItem10Click(Sender: TObject);
+begin
+  DynGrid10.MenuItem10Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid10MenuItem8Click(Sender: TObject);
+begin
+  DynGrid10.CSVExport1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid10Selection2ndGrid1Click(Sender: TObject);
+begin
+  DynGrid10.Selection2ndGrid1Click(Sender);
+
+end;
+
 procedure TForm2.DynGrid10SGMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: integer);
 var
   grid: FTCommons.TStringGridSorted;
@@ -1492,6 +1506,48 @@ end;
 procedure TForm2.DynGrid10SpeedButton1Click(Sender: TObject);
 begin
   DynGrid10.SpeedButton1Click(Sender);
+end;
+
+procedure TForm2.DynGrid1RemoveSelection1Click(Sender: TObject);
+begin
+  DynGrid1.RemoveSelection1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid1SpeedButton1Click(Sender: TObject);
+begin
+  DynGrid1.SpeedButton1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid4CSVExportSelection1Click(Sender: TObject);
+begin
+  DynGrid4.CSVExport1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid4MenuItem2Click(Sender: TObject);
+begin
+  DynGrid4.Selectcolumns1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid4MenuItem3Click(Sender: TObject);
+begin
+  DynGrid4.CSVExport1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid4SpeedButton1Click(Sender: TObject);
+begin
+  DynGrid4.SpeedButton1Click(Sender);
+
+end;
+
+procedure TForm2.DynGrid6SpeedButton1Click(Sender: TObject);
+begin
+  DynGrid6.SpeedButton1Click(Sender);
+
 end;
 
 procedure TForm2.DynGrid9Selectcolumns1Click(Sender: TObject);
@@ -1575,7 +1631,7 @@ begin
       begin
         // holt Symbols Users und Comments vom Cache oder wenn noch nicht vorhanden vom Server
         getSymbolsUsersComments(true);
-        btnLoadCacheFileCwClick(nil);
+        btnLoadCacheFileCwClick(nil); // die Actions
         LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
       end;
 
@@ -1630,16 +1686,14 @@ begin
       begin
         whichAccounts := whichAccounts + clbBrokers.Items[i] + '/';
         LoadInfo('Load Users...');
-        GetCsv('http://h2827643.stratoserver.net:' + cServerPort + '/csv/users?accountId=' + inttostr(i + 1), 'users',
-          lbCSVError, appendCSVUsers, false);
+        GetCsv('http://h2827643.stratoserver.net:' + cServerPort + '/csv/users?accountId=' + inttostr(i + 1), 'users', lbCSVError, appendCSVUsers, false);
         appendCSVUsers := true; // ab dem 2.mal anhängen !
         LoadInfo(inttostr(length(cwUsers)) + ' Users');
 
         // edGetUrlBin.text := 'http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' +
         // inttostr(i + 1);  unnötig
         LoadInfo('Load Actions...');
-        GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' + inttostr(i + 1),
-          'actions', lbCSVError, appendBinActions);
+        GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?accountId=' + inttostr(i + 1), 'actions', lbCSVError, appendBinActions);
         appendBinActions := true;
         // ab dem 2.mal anhängen . Die Actions des erste Accounts werden natürlich nicht angehängt aber dann die folgenden schon !
 
@@ -1657,8 +1711,7 @@ begin
 
   LoadInfo('Data preparation');
   whichAccounts := leftstr(whichAccounts, length(whichAccounts) - 1);
-  lblAllDataInfo.Caption := whichAccounts + #13#10 + ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
-    inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10;
+  lblAllDataInfo.Caption := whichAccounts + #13#10 + ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions)) + #13#10 + #13#10;
   // ifthen(length(cwActions) <= maxActionsPerGrid, '', '[In Grid:' + inttostr(maxActionsPerGrid) + ']');
 
   if (claus = true) then
@@ -1883,8 +1936,7 @@ begin
   loadCacheFileCw(cCacheFolder + '\actions.bin', 'actions', lbCSVError);
 
   doCacheGridCwInfo;
-  lblAllDataInfo.Caption := 'From Cache  Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' +
-    inttostr(length(cwSymbols)) + #13#10 + 'Actions:' + inttostr(length(cwActions));
+  lblAllDataInfo.Caption := 'From Cache  Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) + #13#10 + 'Actions:' + inttostr(length(cwActions));
 
 end;
 
@@ -1975,8 +2027,7 @@ begin
 
 end;
 
-procedure TForm2.getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string;
-  var openActions: DACwOpenActions);
+procedure TForm2.getOpenActions(dt: TDateTime; serverTyp: integer; doAppend: boolean; sZeit: string; var openActions: DACwOpenActions);
 var
   pstring: string;
   httpFehler: integer;
@@ -1990,11 +2041,9 @@ begin
   nochmal := true; // einmal immer
   while (nochmal = true) do
   begin
-    pstring := '?year=' + FormatDateTime('YYYY', dt2) + '&month=' + FormatDateTime('MM', dt2) + '&day=' +
-      FormatDateTime('DD', dt2) + '&accountId=' + inttostr(serverTyp);
+    pstring := '?year=' + FormatDateTime('YYYY', dt2) + '&month=' + FormatDateTime('MM', dt2) + '&day=' + FormatDateTime('DD', dt2) + '&accountId=' + inttostr(serverTyp);
     // httpFehler := doHttpPutMemoryStreamToWorker(mStream, edHTTPAddress.text + cServerPort + '/bin/openProfit' + pstring);
-    GetBinDataOpenActions('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit' + pstring,
-      'openActions' + sZeit, lbCSVError, openActions, doAppend, true);
+    GetBinDataOpenActions('http://h2827643.stratoserver.net:' + cServerPort + '/bin/openProfit' + pstring, 'openActions' + sZeit, lbCSVError, openActions, doAppend, true);
     // wenn sich die Länge nicht geändert hat - also keine Daten gefunden wurden - wird an Sonntagen und Samstagen jeweils rückwärts nochmal gesucht
     if (length(openActions) = lvorher) then
     begin
@@ -2017,16 +2066,7 @@ begin
 
 end;
 
-procedure TForm2.Button10Click(Sender: TObject);
-begin
-  // test getopenactions in dataLoading Panel
-  getAndSortOpenActions(now - 7, cwOpenActionsZ1, 1, 7);
-  getAndSortOpenActions(now, cwOpenActionsZ2, 1, 7);
-
-end;
-
-procedure TForm2.getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions; accVon: integer;
-  accBis: integer);
+procedure TForm2.getAndSortOpenActions(dt: TDateTime; var openActionsz: DACwOpenActions; accVon: integer; accBis: integer);
 var
   i: integer;
   actionId: int64Array;
@@ -2140,6 +2180,8 @@ var
 label raus;
 
 begin
+  // zuerst Cache löschen
+  deletefiles(ExtractFilePath(paramstr(0)) + cCacheFolder, 'y*.bin');
   gt := GetTickCount;
   btnReportStop.Visible := true;
   btnReport.Visible := false;
@@ -2302,9 +2344,7 @@ begin
       DynGrid9.sortdir := 1; // abwärts
       DynGrid9.doSorting;
       try
-        s := DynGrid9.SG.Cells[0, 1] + ' ' + DynGrid9.SG.Cells[0, 2] + ' ' + DynGrid9.SG.Cells[0, 3] + ' ' +
-          DynGrid9.SG.Cells[0, 4] + ' ' + DynGrid9.SG.Cells[0, 5] + ' ' + DynGrid9.SG.Cells[0, 6] + ' ' +
-          DynGrid9.SG.Cells[0, 7];
+        s := DynGrid9.SG.Cells[0, 1] + ' ' + DynGrid9.SG.Cells[0, 2] + ' ' + DynGrid9.SG.Cells[0, 3] + ' ' + DynGrid9.SG.Cells[0, 4] + ' ' + DynGrid9.SG.Cells[0, 5] + ' ' + DynGrid9.SG.Cells[0, 6] + ' ' + DynGrid9.SG.Cells[0, 7];
       except
       end;
       // -> Anzahl SymbolGruppen steht in der Überschrift
@@ -2314,8 +2354,8 @@ begin
       // nun die Einträge vornehmen
       Ei[d, b].setValues(Evals[d, b]);
 
-      s1 := 'Ab Datum:' + FormatDateTime('dd/mm/yy', Evals[d, b].z1 + 1);
-      s2 := 'Bis Datum:' + FormatDateTime('dd/mm/yy', Evals[d, b].z2);
+      s1 := 'Ab Datum: ' + FormatDateTime('dd/mm/yy', Evals[d, b].z1 + 1);
+      s2 := 'Bis Datum: ' + FormatDateTime('dd/mm/yy', Evals[d, b].z2);
 
       Ri[d].setValues(Tx[d], s1, s2);
       screen.Cursor := crDefault;
@@ -2348,7 +2388,7 @@ raus:
   btnReport.Visible := true;
   pnlInspectorBedienung.enabled := true;
   pnlInspectorWait.Visible := false;
-  DelFilesFromDir(ExtractFilePath(paramstr(0)) + cCacheFolder,'y*.bin',false);
+  deletefiles(ExtractFilePath(paramstr(0)) + cCacheFolder, 'y*.bin');
 end;
 
 procedure TForm2.btnReportStopClick(Sender: TObject);
@@ -2454,6 +2494,9 @@ var
   gt: cardinal;
   i, index: integer;
 begin
+  // immer zuerst Cache löschen
+  deletefiles(ExtractFilePath(paramstr(0)) + cCacheFolder, 'y*.bin');
+
   // manuelles Anklicken der Berechnung
   mynow := monthof(now) + 12 * yearof(now); // viel gebraucht und aus Speedgründen hier einmalig belegt
   FilterTopic := 'manual';
@@ -2542,10 +2585,10 @@ end;
 
 procedure TForm2.btnDoUsersAndSymbolsPlusClick(Sender: TObject);
 var
-  i, index, j, total: integer;
+  i, index, j, total, dt: integer;
   sum: double;
   gt: cardinal;
-
+  diff1, diff2: integer;
 begin
   // zusätzliche Berechnungen durchführen
   // das passiert gleich im Anschluss an das Laden der Actions
@@ -2560,20 +2603,17 @@ begin
     cwUsersPlus[i].totalprofit := 0;
     cwUsersPlus[i].totalsymbols := 0;
     cwUsersPlus[i].totalbalance := 0;
+    cwUsersPlus[i].totalSwap := 0; // 18.12.19 das hatte ich vergessen ;-)
   end;
 
   for i := 0 to length(cwActions) - 1 do
   begin
     inc(cwSymbolsPlus[cwActions[i].symbolId].TradesCount);
-    cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal +
-      cwActions[i].volume;
+    cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesVolumeTotal + cwActions[i].volume;
     // Die profits und swaps sind GEMISCHT in der Währung ! Hier werden über alle Symbole Summen gebildet
-    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal +
-      cwActions[i].profit;
-    cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal +
-      cwActions[i].swap;
-    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitSwapTotal := cwSymbolsPlus[cwActions[i].symbolId]
-      .TradesProfitSwapTotal + cwActions[i].profit + cwActions[i].swap;
+    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitTotal + cwActions[i].profit;
+    cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesSwapTotal + cwActions[i].swap;
+    cwSymbolsPlus[cwActions[i].symbolId].TradesProfitSwapTotal := cwSymbolsPlus[cwActions[i].symbolId].TradesProfitSwapTotal + cwActions[i].profit + cwActions[i].swap;
     // kann natürlich auch die Summe der Balances sein !
 
     // NEU: die schnelle Variante
@@ -2583,6 +2623,10 @@ begin
     if index > -1 then
     begin
       // cwusersplus[index].totalSymbols:=0;
+      dt := cwActions[i].openTime;
+      if (dt > cwUsersPlus[index].lastOpenAction) then
+        cwUsersPlus[index].lastOpenAction := dt;
+
       inc(cwUsersPlus[index].totaltrades);
       if (cwActions[i].typeId = 7) or (cwActions[i].typeId = 8) then
       // balance und credit werden als Balance aufsummiert
@@ -2596,10 +2640,20 @@ begin
         // evtl auch noch swap aber nicht Balance
         cwUsersPlus[index].totalSwap := cwUsersPlus[index].totalSwap + cwActions[i].swap;
       end;
-    end;
 
+    end;
   end;
   // showmessage(inttostr(GetTickCount - gt));
+  for i := 0 to cwusersct - 1 do
+  begin
+    // jeder User hat eine Kontowährung . Innerhalb des Users kommt nur eine Währung in diesen 4 Summen vor
+    diff1 := trunc(UnixToDateTime(cwUsersPlus[i].lastOpenAction));
+    diff2 := trunc(UnixToDateTime(cwUsers[i].lastLoginTime));
+    if (diff2 > diff1) then
+      diff1 := diff2;
+    cwUsersPlus[i].silentDays := trunc(now) - diff1;
+
+  end;
 end;
 
 procedure TForm2.doGroup();
@@ -2787,19 +2841,19 @@ begin
             end;
           4: // YearsOpen
             begin
-              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].openTime)));
-              par[j] := inttostr(yearof(unixtodatetime(cwFilteredActions[i].openTime)));
+              p[j] := trimYear(yearof(UnixToDateTime(cwFilteredActions[i].openTime)));
+              par[j] := inttostr(yearof(UnixToDateTime(cwFilteredActions[i].openTime)));
             end;
           5: // YearsClose
             begin
-              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
-              par[j] := inttostr(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+              p[j] := trimYear(yearof(UnixToDateTime(cwFilteredActions[i].closeTime)));
+              par[j] := inttostr(yearof(UnixToDateTime(cwFilteredActions[i].closeTime)));
             end;
           6: // dateSpecial
             begin
               // FEHLT NOCH
-              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
-              par[j] := inttostr(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+              p[j] := trimYear(yearof(UnixToDateTime(cwFilteredActions[i].closeTime)));
+              par[j] := inttostr(yearof(UnixToDateTime(cwFilteredActions[i].closeTime)));
             end;
           7: // brokerAccount
             begin
@@ -2810,8 +2864,7 @@ begin
           8: // months
             begin
               // FEHLT NOCH
-              p[j] := trimMonthYear(monthof(unixtodatetime(cwFilteredActions[i].closeTime)),
-                yearof(unixtodatetime(cwFilteredActions[i].closeTime)), par[j]);
+              p[j] := trimMonthYear(monthof(UnixToDateTime(cwFilteredActions[i].closeTime)), yearof(UnixToDateTime(cwFilteredActions[i].closeTime)), par[j]);
               // par[j] := inttostr(monthof(unixtodatetime(cwFilteredActions[i].closeTime))+'/'+yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
             end;
           9: // broker
@@ -2852,12 +2905,9 @@ begin
       // und aufsummiert
         cwFilteredActions[i].volume;
 
-      cw3summaries[p[0], p[1], p[2]].sTradesProfitTotal := cw3summaries[p[0], p[1], p[2]].sTradesProfitTotal +
-        cwFilteredActions[i].profit;
-      cw3summaries[p[0], p[1], p[2]].sTradesSwapTotal := cw3summaries[p[0], p[1], p[2]].sTradesSwapTotal +
-        cwFilteredActions[i].swap;
-      cw3summaries[p[0], p[1], p[2]].sTradesProfitSwapTotal := cw3summaries[p[0], p[1], p[2]].sTradesProfitSwapTotal +
-        cwFilteredActions[i].profit + cwFilteredActions[i].swap;
+      cw3summaries[p[0], p[1], p[2]].sTradesProfitTotal := cw3summaries[p[0], p[1], p[2]].sTradesProfitTotal + cwFilteredActions[i].profit;
+      cw3summaries[p[0], p[1], p[2]].sTradesSwapTotal := cw3summaries[p[0], p[1], p[2]].sTradesSwapTotal + cwFilteredActions[i].swap;
+      cw3summaries[p[0], p[1], p[2]].sTradesProfitSwapTotal := cw3summaries[p[0], p[1], p[2]].sTradesProfitSwapTotal + cwFilteredActions[i].profit + cwFilteredActions[i].swap;
 
       // cw3summaries[p[0], p[1], p[2]].sTradesUsers:=0;//das fehlt noch
 
@@ -3011,16 +3061,16 @@ begin
             end;
           4: // YearsOpen
             begin
-              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].openTime)));
+              p[j] := trimYear(yearof(UnixToDateTime(cwFilteredActions[i].openTime)));
             end;
           5: // YearsClose
             begin
-              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+              p[j] := trimYear(yearof(UnixToDateTime(cwFilteredActions[i].closeTime)));
             end;
           6: // dateSpecial
             begin
               // FEHLT NOCH
-              p[j] := trimYear(yearof(unixtodatetime(cwFilteredActions[i].closeTime)));
+              p[j] := trimYear(yearof(UnixToDateTime(cwFilteredActions[i].closeTime)));
             end;
           7: // brokerAccount
             begin
@@ -3029,8 +3079,7 @@ begin
           8: // months
             begin
               // FEHLT NOCH
-              p[j] := trimMonthYear(monthof(unixtodatetime(cwFilteredActions[i].closeTime)),
-                yearof(unixtodatetime(cwFilteredActions[i].closeTime)), par[j]);
+              p[j] := trimMonthYear(monthof(UnixToDateTime(cwFilteredActions[i].closeTime)), yearof(UnixToDateTime(cwFilteredActions[i].closeTime)), par[j]);
             end;
           9: // broker
             begin
@@ -3107,8 +3156,7 @@ begin
 
   // DynGrid9.initGrid('cw3summaries', 'par0', 1, max, 10);
   DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 1, ct + 1, 9);
-  DynGrid9.lblHeader.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt) + ' z:'
-    + inttostr(GetTickCount - gt1);
+  DynGrid9.lblHeader.Caption := 'Grouped Elements:' + inttostr(ct + 1) + ' from:' + inttostr(cwFilteredActionCt) + ' z:' + inttostr(GetTickCount - gt1);
 
 end;
 
@@ -3320,8 +3368,7 @@ begin
 
   end;
 
-  lblFilterResult.Caption := (inttostr(timegettime - gt) + ' ct1:' + inttostr(Filter[1].counter) + ' ct2:' +
-    inttostr(Filter[2].counter) + ' ct3:' + inttostr(Filter[3].counter));
+  lblFilterResult.Caption := (inttostr(timegettime - gt) + ' ct1:' + inttostr(Filter[1].counter) + ' ct2:' + inttostr(Filter[2].counter) + ' ct3:' + inttostr(Filter[3].counter));
 
   cwFilteredActionCt := fz + 1;
   setlength(cwFilteredActions, fz + 1);
@@ -3345,8 +3392,7 @@ weiter1:
   screen.Cursor := Cursor;
 
   gt := GetTickCount;
-  DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) +
-    ' of ' + inttostr(length(cwActions));
+  DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' + inttostr(length(cwActions));
   DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
   lbdebug('dg2:' + inttostr(GetTickCount - gt));
 
@@ -3374,7 +3420,7 @@ begin
   // Dann müssen die OpenProfit-Dateien auch für diese beiden Zeiträume vorhanden sein
   // Was ist wenn nicht - man könnte eventuell einen etwas älteren Open und einen etwas jüngeren Close Zeitpunkt vorschlagen
   // Dann werden die OpenProfit Dateien eingelesen. Um den Zugriff über die ActionID schnell zu cachen wäre es vorteilhaft, wenn
-  // diese Actions sortiert wären. Entweder man sortiert far nicht, sortiert 'on Demand' oder sortiert einmalig und speichert dies
+  // diese Actions sortiert wären. Entweder man sortiert gar nicht, sortiert 'on Demand' oder sortiert einmalig und speichert dies
   // Eigentlich genügt das on demand Sortieren vor der Verwendung , da sich diese OpenProfit-Tage nicht allzuoft wiederholen dürften
 
   // dSort sind die Werte der ActionIds
@@ -3397,7 +3443,7 @@ begin
             // closed >=16.9 oder 0=noch offen
             ok1 := true;
             u1 := getUnixTimefromstring(Filter[i].edValue.text); // Unix Zeit um 0 Uhr des Tages
-            z1 := unixtodatetime(u1) - 1; // Datums des Vortags = die Datei welche am nähesten kurz vor u1 liegt
+            z1 := UnixToDateTime(u1) - 1; // Datums des Vortags = die Datei welche am nähesten kurz vor u1 liegt
             // wenn die Datei aber zB am 5.12 23:00 geschrieben wurde und u1=6.12. 00:00 dann gibt es für Orders zwischen 23 und 0 Uhr Fehler
             // >= 16.9 = OpenProfit von Ende 15.9 daher -1 was die letzten Daten vom 15.9. beinhaltet
           end;
@@ -3409,7 +3455,7 @@ begin
             ok2 := true;
             // u2 := strtoint(Filter[i].edValue.text);
             u2 := getUnixTimefromstring(Filter[i].edValue.text);
-            z2 := unixtodatetime(u2) - 1;
+            z2 := UnixToDateTime(u2) - 1;
             // < 23.9 = OpenProfit von Ende 22.9 daher wieder -1 um an die Daten zu kommen
           end;
 
@@ -3417,8 +3463,7 @@ begin
         if (Filter[i].cbTopic.text = 'AccountId') then
         begin
           // open >
-          acc := IndexStr(Filter[i].edValue.text, ['LCG A', 'LCG B', 'ActiveTrades A', 'ActiveTrades B',
-            'ActiveTrades C', 'ActiveTrades D', 'ActiveTrades E']);
+          acc := IndexStr(Filter[i].edValue.text, ['LCG A', 'LCG B', 'ActiveTrades A', 'ActiveTrades B', 'ActiveTrades C', 'ActiveTrades D', 'ActiveTrades E']);
           if (acc > -1) then
           begin
             accVon := acc + 1;
@@ -3489,8 +3534,7 @@ begin
         // Suche Order die vorher offen war nun in OpenZ1 wo diese stehen sollte
         if (j > -1) then
         begin
-          ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
-            ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwOpenActionsZ1[j].profit;
+          ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] := ps.profit1[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwOpenActionsZ1[j].profit;
           ps.swap1 := ps.swap1 + cwOpenActionsZ1[j].swap;
           ps.volume1 := ps.volume1 + cwFilteredActions[i].volume;
           inc(ps.ct1);
@@ -3511,8 +3555,7 @@ begin
       begin
         // im Zeitabaschnitt geschlossen
         // B und D bekommen profit aus cwFilteredActions
-        ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
-          ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwFilteredActions[i].profit;
+        ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] := ps.profit[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwFilteredActions[i].profit;
         ps.swap := ps.swap + cwFilteredActions[i].swap;
         ps.volume := ps.volume + cwFilteredActions[i].volume;
         inc(ps.ct);
@@ -3525,8 +3568,7 @@ begin
         j := BinSearchOpenActionsInt64(cwOpenActionsZ2, cwFilteredActions[i].actionId);
         if (j > -1) then
         begin
-          ps.profit2[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] :=
-            ps.profit2[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwOpenActionsZ2[j].profit;
+          ps.profit2[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] := ps.profit2[cwUsersPlus[cwFilteredActionsPlus[i].userIndex].accountCurrency] + cwOpenActionsZ2[j].profit;
           ps.swap2 := ps.swap2 + cwOpenActionsZ2[j].swap;
           ps.volume2 := ps.volume2 + cwFilteredActions[i].volume;
           inc(ps.ct2);
@@ -3703,8 +3745,7 @@ procedure TForm2.GetLastServerUnixTime();
 var
   a: integer;
 begin
-  a := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/time', 'lastServerUnixTime', lbCSVError,
-    false, 0);
+  a := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/time', 'lastServerUnixTime', lbCSVError, false, 0);
   // schreibt den Wert direkt in die Variable lastServerUnixTime
 end;
 
@@ -3755,8 +3796,7 @@ begin
 
   // append=true Die Actions werden angehängt
   // showmessage('Abruf ab:' + datetimetostr(unixtodatetime(tt)) + ' Actions:' + inttostr(lold));
-  a1 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromModified=' + inttostr(tt),
-    'actions', lbCSVError, true, 500000);
+  a1 := GetBinData('http://h2827643.stratoserver.net:' + cServerPort + '/bin/actions?fromModified=' + inttostr(tt), 'actions', lbCSVError, true, 500000);
   if (a1 <> -1) then
   begin
     //
@@ -3953,8 +3993,7 @@ begin
     doFinalizeData;
     dosleep(CSleep);
 
-    lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols))
-      + #13#10 + ' Actions:' + inttostr(length(cwActions));
+    lblAllDataInfo.Caption := ' Users:' + inttostr(length(cwUsers)) + #13#10 + ' Symbols:' + inttostr(length(cwSymbols)) + #13#10 + ' Actions:' + inttostr(length(cwActions));
   end;
   // lbCSVDebug('Time Update:' + inttostr(GetTickCount - gtall) + 'new actions:' + inttostr(lnew - lold));
   // rest:
@@ -4637,6 +4676,8 @@ var
   gt: cardinal;
 begin
 
+  deletefiles(ExtractFilePath(paramstr(0)) + cCacheFolder, 'y*.bin');
+
   // nicht nur beimReport sondern allgemein sollten diese alten Cachefiles entfernt werden
   deleteTodaysOpenActionCacheFiles(now);
   deleteTodaysOpenActionCacheFiles(now - 1);
@@ -4828,11 +4869,9 @@ begin
     twoLblStart[i] := TTwoLabel.Create(self);
     twoLblStart[i].name := 'twoLblStart_' + inttostr(i); // muss sein
     if (i <= trunc(twoLblStartCt / 2)) then
-      twoLblStart[i].SetBounds(98, 35 + (i - 1 + 0) * twoLblStart[i].Height, twoLblStart[i].Width,
-        twoLblStart[i].Height)
+      twoLblStart[i].SetBounds(98, 35 + (i - 1 + 0) * twoLblStart[i].Height, twoLblStart[i].Width, twoLblStart[i].Height)
     else
-      twoLblStart[i].SetBounds(500, 35 + (i - 1 + 0 - trunc(twoLblStartCt / 2)) * twoLblStart[i].Height,
-        twoLblStart[i].Width, twoLblStart[i].Height);
+      twoLblStart[i].SetBounds(500, 35 + (i - 1 + 0 - trunc(twoLblStartCt / 2)) * twoLblStart[i].Height, twoLblStart[i].Width, twoLblStart[i].Height);
 
     twoLblStart[i].Parent := pnlStart;
 
@@ -4900,9 +4939,9 @@ procedure TForm2.btnCwusersToGridClick(Sender: TObject);
 begin
   doUsersGridCW(SGCwUsers, SGFieldCol, cwUsers, cwUsersPlus, length(cwUsers), maxActionsPerGrid, 1);
   autosizegrid(SGCwUsers, nil);
-  DynGrid6.initGrid('cwusers', 'userId', 1, length(cwUsers), 28);
+  DynGrid6.initGrid('cwusers', 'userId', 1, length(cwUsers), 31);
   DynGrid6.lblHeader.Caption := 'Users:' + inttostr(cwusersct);
-  DynGrid10.initGrid('cwusers2', 'userId', 1, length(cwUsers), 28);
+  DynGrid10.initGrid('cwusers2', 'userId', 1, length(cwUsers), 31);
   DynGrid10.lblHeader.Caption := 'Users:' + inttostr(cwusersct);
 
 end;
@@ -5066,8 +5105,7 @@ var
 begin
   for serverTyp := 1 to 7 do
   begin
-    fName := 'year=' + FormatDateTime('YYYY', dt) + '&month=' + FormatDateTime('MM', dt) + '&day=' +
-      FormatDateTime('DD', dt) + '&accountId=' + inttostr(serverTyp);
+    fName := 'year=' + FormatDateTime('YYYY', dt) + '&month=' + FormatDateTime('MM', dt) + '&day=' + FormatDateTime('DD', dt) + '&accountId=' + inttostr(serverTyp);
     folder := ExtractFilePath(paramstr(0)) + cCacheFolder;
     fileName := folder + '\' + fName + '.bin';
     if fileExists(fileName) then
@@ -5515,8 +5553,8 @@ begin
     lbadd(lb, 'totalBalance' + #9 + FormatFloat('#,0.00', cwUsersPlus[k].totalbalance));
 
     lblUserInfo0.Caption := cwUsers[k].name;
-    lblUserInfo1.Caption := 'Reg.Date:  ' + datetimetostr(unixtodatetime(cwUsers[k].registrationTime));
-    lblUserInfo2.Caption := 'LastLogin: ' + datetimetostr(unixtodatetime(cwUsers[k].lastLoginTime));
+    lblUserInfo1.Caption := 'Reg.Date:  ' + datetimetostr(UnixToDateTime(cwUsers[k].registrationTime));
+    lblUserInfo2.Caption := 'LastLogin: ' + datetimetostr(UnixToDateTime(cwUsers[k].lastLoginTime));
     lblUserInfo3.Caption := 'Balance:   ' + FormatFloat('#,0.00', cwUsers[k].balance);
     lblUserInfo4.Caption := 'T.Trades:  ' + inttostr(cwUsersPlus[k].totaltrades);
     lblUserInfo5.Caption := 'T.Balance: ' + FormatFloat('#,0.00', cwUsersPlus[k].totalbalance);

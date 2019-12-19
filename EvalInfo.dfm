@@ -194,7 +194,7 @@ object Frame11: TFrame11
   object Label16: TLabel
     Left = 140
     Top = 161
-    Width = 38
+    Width = 6
     Height = 13
     Caption = 'x'
     StyleElements = [seClient, seBorder]

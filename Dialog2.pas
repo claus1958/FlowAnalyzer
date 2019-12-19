@@ -110,7 +110,7 @@ procedure TDialog2.Timer2Timer(Sender: TObject);
 begin
   Timer2.Enabled := false;
   FDialog2.Top := form2.Top + form2.Height - FDialog2.Height - 4;
-  FDialog2.Left := form2.Left + form2.width - FDialog2.width - 4;
+  FDialog2.Left := form2.Left + form2.width - FDialog2.width - 4-40; //etwas nach links wegen Überdeckung der Scrollbars
 end;
 
 end.
