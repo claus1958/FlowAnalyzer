@@ -281,8 +281,8 @@ type
     deadSince: integer; // seit wann weder Action noch Login
     accountCurrency: integer; // 1=EUR 2=USD 3=CHF 4=GBP ... 0=unbekannt
     silentDays: integer;
-    multi:integer;//zur freien Verwendung (bei cwusersX der Index aus cwusers)
-    marker:string;
+    multi: integer; // zur freien Verwendung (bei cwusersX der Index aus cwusers)
+    marker: string;
   End;
 
   DACwUserPlus = array of cwUserPlus; // hier sind Elemente NICHT über Pointer[i] ansprechbar.
@@ -427,8 +427,7 @@ function MyStrToFloat(AString: string): double;
 procedure FillCharArray(var a: TStr12; const s: String);
 procedure SwapRowField(rf: array of integer; fr: array of integer; von, nach: integer);
 procedure generateMinutes(var ticks: array of TKurs; var mBars: DAKursOCHL; minutes: integer);
-procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
-  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream; append: Boolean);
+procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string; var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream; append: Boolean);
 procedure splitHeadLine(value: string; var headers: DAstring; var headerz: integer; delimiter: string);
 
 function getCwComment(id: integer): string;
@@ -480,49 +479,30 @@ procedure lbCSVDebug(s: string);
 procedure AutoSizeGrid(Grid, Grid2: FTCommons.TStringGridSorted);
 procedure dosleep(T: integer);
 
-procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwOpenActions; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
-  sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var actions: DACwOpenActions; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 
-procedure doOpenActionsOTRGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DATradeRecord; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
-  sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doOpenActionsOTRGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var actions: DATradeRecord; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 
-procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
-  total: integer; stp: integer = 1);
+procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer; total: integer; stp: integer = 1);
 
-procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
-  ct: integer; total: integer; stp: integer = 1);
+procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus; ct: integer; total: integer; stp: integer = 1);
 
-procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
-  commentsPlus: DACwCommentPlus; ct, total, stp: integer);
+procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment; commentsPlus: DACwCommentPlus; ct, total, stp: integer);
 
-procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
-  symbolsPlus: DACwSymbolPlus; ct: integer; total: integer; stp: integer = 1);
-procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup;
-  ct, total, stp: integer);
+procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol; symbolsPlus: DACwSymbolPlus; ct: integer; total: integer; stp: integer = 1);
+procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup; ct, total, stp: integer);
 
-procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; var actionsPlus: DACwActionPlus; var selSorted: byteArray; datafrom: integer;
-  datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var actions: DACwAction; var actionsPlus: DACwActionPlus; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil;
+  onlySelection: Boolean = false);
 
-procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var comments: DAcwComment; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
-  sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var comments: DAcwComment; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 
-procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer;
-  justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 
-procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer;
-  justone: Boolean = false);
-procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
-procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
-procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGSum: TStringGridSorted; var SGFieldCol: DAInteger;
-  var sort: intArray; var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGSum: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 
 function BinSearchStringGleich(var Strings: StringArray; var v: integer): integer;
 function BinSearchStringGleich2(var Strings: StringArray; var v: string): integer;
@@ -533,10 +513,8 @@ function BinSearchInt(var Ints: intArray; v: integer): integer;
 function BinSearchInt64(var Ints: int64Array; v: int64): integer;
 function BinSearchOpenActionsInt64(var actions: DACwOpenActions; v: int64): integer;
 
-function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
-function findUserparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var users: DAcwUser; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var sel: byteArray; var actions: DACwAction; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+function findUserparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var sel: byteArray; var users: DAcwUser; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
 
 function findUserName(userId: integer): string;
 function findUserIndex(userId: integer): integer;
@@ -592,8 +570,8 @@ var
   cwUsersCt: integer;
   cwUsersSortIndex: StringArray;
   cwUsersSortIndex2: intArray;
-  cwUsersX: DAcwUser;//NEU 19.12.19 für eine User-Selektion
-  cwUsersXPlus:DACwUserPlus;
+  cwUsersX: DAcwUser; // NEU 19.12.19 für eine User-Selektion
+  cwUsersXPlus: DACwUserPlus;
 
   cwUsersSelection: DAcwUser;
   cwUsersSelectionPlus: DACwUserPlus;
@@ -669,9 +647,8 @@ end;
 function cwRating.getJSON(): string;
 // wird aber nicht gebraucht
 begin
-  result := '{' + c34 + 'userId' + c34 + ':' + inttostr(userId) + ',' + c34 + 'balance' + c34 + ':' +
-    FloatToSQLStr(balance) + ',' + c34 + 'equity' + c34 + ':' + FloatToSQLStr(equity) + ',' + c34 + 'volume' + c34 + ':'
-    + inttostr(volume) + ',' + c34 + 'margin' + c34 + ':' + FloatToSQLStr(margin) + '}';
+  result := '{' + c34 + 'userId' + c34 + ':' + inttostr(userId) + ',' + c34 + 'balance' + c34 + ':' + FloatToSQLStr(balance) + ',' + c34 + 'equity' + c34 + ':' + FloatToSQLStr(equity) + ',' + c34 + 'volume' + c34 + ':' + inttostr(volume) + ',' + c34 + 'margin' + c34 + ':' +
+    FloatToSQLStr(margin) + '}';
 end;
 
 procedure lbDebug(s: string);
@@ -1158,8 +1135,7 @@ begin
 end;
 // ParseDelimited('symbols', lbDebug2, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms);
 
-procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string;
-  var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream; append: Boolean);
+procedure ParseDelimited(theme: string; const sl: TListBox; const value: AnsiString; const delimiter: string; var vu: DAcwUser; var vs: DACwSymbol; var vt: DACwTick; var vc: DAcwComment; const ms: TStream; append: Boolean);
 // von TMemoryStream auf TStream abgeändert ,damit auch TFileStream gelesen werden kann !
 var
   ns: string;
@@ -1316,8 +1292,7 @@ begin
 
               2:
                 try
-                  case IndexStr(s, ['SymbolId', 'BrokerId', 'Name', 'Description', 'Currency', 'MarginCurrency',
-                    'Digits', 'TradeMode', 'Expiration', 'ContractSize', 'TickValue', 'TickSize', 'Type']) of
+                  case IndexStr(s, ['SymbolId', 'BrokerId', 'Name', 'Description', 'Currency', 'MarginCurrency', 'Digits', 'TradeMode', 'Expiration', 'ContractSize', 'TickValue', 'TickSize', 'Type']) of
                     0:
                       vs[lc].symbolId := strtoint(values[i]);
                     1:
@@ -1360,10 +1335,8 @@ begin
               1:
                 try
 
-                  Case IndexStr(s, ['UserId', 'AccountId', 'Group', 'Enable', 'RegistrationTime', 'LastLoginTime',
-                    'Leverage', 'Balance', 'BalancePreviousMonth', 'BalancePreviousDay', 'Credit', 'InterestRate',
-                    'Taxes', 'Name', 'Country', 'City', 'State', 'Zipcode', 'Address', 'Phone', 'Email', 'SocialNumber',
-                    'Comment']) of
+                  Case IndexStr(s, ['UserId', 'AccountId', 'Group', 'Enable', 'RegistrationTime', 'LastLoginTime', 'Leverage', 'Balance', 'BalancePreviousMonth', 'BalancePreviousDay', 'Credit', 'InterestRate', 'Taxes', 'Name', 'Country', 'City', 'State', 'Zipcode', 'Address', 'Phone', 'Email',
+                    'SocialNumber', 'Comment']) of
                     0:
                       vu[lc].userId := strtoint(values[i]);
                     1:
@@ -1500,9 +1473,8 @@ begin
   end;
 end;
 
-procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; var actionsPlus: DACwActionPlus; var selSorted: byteArray; datafrom: integer;
-  datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var actions: DACwAction; var actionsPlus: DACwActionPlus; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil;
+  onlySelection: Boolean = false);
 var
   k, l: integer;
   row: integer;
@@ -1515,6 +1487,9 @@ var
   line: string;
   sep: string;
   makeLines: Boolean;
+  uid: integer;
+const
+  colmax = 28;
 begin
   gt := GetTickCount;
   toSL := false;
@@ -1561,13 +1536,15 @@ begin
       lines[SGFieldCol[22]] := 'conversionRate1';
       lines[SGFieldCol[23]] := 'marginRate';
       lines[SGFieldCol[24]] := 'symGroupId';
-      lines[SGFieldCol[25]] := ''; // 'openProfit';
-      lines[SGFieldCol[26]] := ''; // 'openSwap';
+      lines[SGFieldCol[25]] := '-'; // 'openProfit';
+      lines[SGFieldCol[26]] := '-'; // 'openSwap';
       lines[SGFieldCol[27]] := 'commentId'; // 'openSwap';
+      lines[SGFieldCol[28]] := 'userMarker'; // 'openSwap';
+      lines[SGFieldCol[29]] := '-'; // 'openSwap';
 
       if (toSL = false) then
       begin
-        for k := 0 to 27 do
+        for k := 0 to colmax do
           SG.cells[k, 0] := lines[k];
         // Ausblenden was nicht erwünscht ist
         SG.Rows[0].endUpdate;
@@ -1576,7 +1553,7 @@ begin
       begin
         sl.clear;
         line := '';
-        for k := 0 to 27 do
+        for k := 0 to colmax do
         begin
           if (SG.ColWidths[SGFieldCol[k]] = -1) then
             linesHide[SGFieldCol[k]] := true
@@ -1587,7 +1564,7 @@ begin
 
       if (toSL = true) then
       begin
-        for k := 0 to 27 do
+        for k := 0 to colmax do
         begin
           if (linesHide[SGFieldCol[k]] = false) then
             line := line + lines[k] + sep;
@@ -1638,6 +1615,8 @@ begin
           lines[SGFieldCol[22]] := floattostr(actions[sort[k]].conversionRate0);
           lines[SGFieldCol[23]] := floattostr(actions[sort[k]].marginRate);
           lines[SGFieldCol[27]] := inttostr(actions[sort[k]].commentId);
+          uid := findUserIndex(actions[sort[k]].userId);
+          lines[SGFieldCol[28]] := cwUsersPlus[uid].marker;
         end;
         if cwSymbolsGroupsCt > 0 then
           lines[SGFieldCol[24]] := cwSymbolsGroups[cwSymbolsPlus[actions[sort[k]].symbolId].groupId].name;
@@ -1646,7 +1625,7 @@ begin
         if (toSL = false) then
         begin
           SG.Rows[row].BeginUpdate;
-          for l := 0 to 27 do
+          for l := 0 to colmax do
             SG.cells[l, row] := lines[l];
           SG.Rows[row].endUpdate;
         end
@@ -1655,7 +1634,7 @@ begin
           if ((onlySelection = false) or (selSorted[sort[k]] = 1)) then
           begin
             line := '';
-            for l := 0 to 27 do
+            for l := 0 to colmax do
             begin
               if (linesHide[SGFieldCol[l]] = false) then
                 line := line + lines[l] + sep;
@@ -1678,9 +1657,7 @@ begin
   gt := GetTickCount - gt;
 end;
 
-procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwOpenActions; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
-  sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doOpenActionsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var actions: DACwOpenActions; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 const
   smax = 12;
 var
@@ -1695,6 +1672,7 @@ var
   sep: string;
   gt, gts: Cardinal;
   found: integer;
+  uid: integer;
 begin
   toSL := false;
   if (sl <> nil) then
@@ -1792,6 +1770,7 @@ begin
         row := row + 1;
         lines[SGFieldCol[0]] := inttostr(actions[sort[k]].actionId) + ' ' + inttostr(k);
         lines[SGFieldCol[1]] := inttostr(actions[sort[k]].userId);
+        uid := findUserIndex(actions[sort[k]].userId);
         lines[SGFieldCol[2]] := floattostr(actions[sort[k]].profit);
         lines[SGFieldCol[3]] := floattostr(actions[sort[k]].swap);
         found := findCwactionFromId(actions[sort[k]].actionId);
@@ -1817,8 +1796,7 @@ begin
           end;
           if (found2 > -1) then
           begin
-            lines[SGFieldCol[9]] := '!' + OrderTypes(cwTradeRecords[found2].cmd) + ' ' +
-              inttostr(cwTradeRecords[found2].cmd + 1);
+            lines[SGFieldCol[9]] := '!' + OrderTypes(cwTradeRecords[found2].cmd) + ' ' + inttostr(cwTradeRecords[found2].cmd + 1);
             lines[SGFieldCol[10]] := '!' + floattostr(cwTradeRecords[found2].open_price);
             lines[SGFieldCol[11]] := '!' + FormatFloat(',#0.00', cwTradeRecords[found2].volume / 100);
           end
@@ -1878,9 +1856,7 @@ begin
   gt := GetTickCount - gt;
 end;
 
-procedure doOpenActionsOTRGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DATradeRecord; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
-  sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doOpenActionsOTRGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var actions: DATradeRecord; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 const
   smax = 12;
 var
@@ -2006,9 +1982,7 @@ begin
   gt := GetTickCount - gt;
 end;
 
-procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var comments: DAcwComment; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false;
-  sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doCommentsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var comments: DAcwComment; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 const
   smax = 1;
 var
@@ -2111,8 +2085,7 @@ begin
   gt := GetTickCount - gt;
 end;
 
-procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummaries3GridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var summaries: DA3CwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 var
   k: integer;
   row: integer;
@@ -2178,8 +2151,7 @@ begin
   end;
 end;
 
-procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGSum: TStringGridSorted; var SGFieldCol: DAInteger;
-  var sort: intArray; var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSummariesGridCWDyn(var SG: TStringGridSorted; var SGSum: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var summaries: DACwSummary; datafrom: integer; datato: integer; justone: Boolean = false);
 var
   i, k: integer;
   row: integer;
@@ -2244,9 +2216,7 @@ begin
   end;
 end;
 
-procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer;
-  justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
+procedure doUsersGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var users: DAcwUser; usersPlus: DACwUserPlus; var selSorted: byteArray; datafrom: integer; datato: integer; justone: Boolean = false; sl: TStringList = nil; onlySelection: Boolean = false);
 
 const
   cols = 30;
@@ -2410,9 +2380,7 @@ begin
   end;
 end;
 
-procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer;
-  justone: Boolean = false);
+procedure doSymbolsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var symbols: DACwSymbol; var symbolsPlus: DACwSymbolPlus; datafrom: integer; datato: integer; justone: Boolean = false);
 var
   k: integer;
   row: integer;
@@ -2489,8 +2457,7 @@ begin
   end;
 end;
 
-procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
+procedure doSymbolsGroupsGridCWDyn(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var symbolsGroups: DACwSymbolGroup; datafrom: integer; datato: integer; justone: Boolean = false);
 var
   k: integer;
   row: integer;
@@ -2540,8 +2507,7 @@ begin
   end;
 end;
 
-procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer;
-  total: integer; stp: integer = 1);
+procedure doActionsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; actions: DACwAction; ct: integer; total: integer; stp: integer = 1);
 // nicht mehr verwendet
 // {$RANGECHECKS OFF}
 var
@@ -2681,9 +2647,13 @@ end;
 function getCwSymbol(id: integer): string;
 // Achtung wenn umsortiert ist das der Index aber nicht die symbolId
 begin
+try
   result := '';
   if id < cwSymbolsCt then
     result := cwSymbols[id].name;
+except
+  result:='';
+end;
 end;
 
 function OrderTypes(cmd: integer): string;
@@ -2712,8 +2682,7 @@ begin
   end;
 end;
 
-procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus;
-  ct: integer; total: integer; stp: integer = 1);
+procedure doUsersGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; users: DAcwUser; usersPlus: DACwUserPlus; ct: integer; total: integer; stp: integer = 1);
 // nicht mehr verwendet
 
 var
@@ -2841,8 +2810,7 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment;
-  commentsPlus: DACwCommentPlus; ct, total, stp: integer);
+procedure doCommentsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; comments: DAcwComment; commentsPlus: DACwCommentPlus; ct, total, stp: integer);
 // nicht mehr verwendet
 var
   k: integer;
@@ -2908,8 +2876,7 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol;
-  symbolsPlus: DACwSymbolPlus; ct, total, stp: integer);
+procedure doSymbolsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbols: DACwSymbol; symbolsPlus: DACwSymbolPlus; ct, total, stp: integer);
 // nicht mehr verwendet
 
 var
@@ -3011,8 +2978,7 @@ begin
   // {$RANGECHECKS ON}
 end;
 
-procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup;
-  ct, total, stp: integer);
+procedure doSymbolsGroupsGridCW(SG: TStringGridSorted; SGFieldCol: DAInteger; symbolsGroups: DACwSymbolGroup; ct, total, stp: integer);
 var
   k: integer;
   row: integer;
@@ -4083,8 +4049,7 @@ begin
   // lbstatisticsPumpAdd('sleep rum:' + inttostr(t));
 end;
 
-function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var actions: DACwAction; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+function findActionparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var sel: byteArray; var actions: DACwAction; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
 var
   suchlength: integer;
   len: integer;
@@ -4251,14 +4216,17 @@ begin
       if suchtyp = 0 then
       begin
         if (leftstr(res, suchlength) = such) then
+        // Treffer
         begin
           if (doCount = false) then
           begin
             result := l;
+            sel[sort[l]] := 1; // den Treffer selektieren
             break;
           end
           else
             Inc(Count);
+          sel[sort[l]] := 1
         end;
       end;
 
@@ -4269,10 +4237,12 @@ begin
           if (doCount = false) then
           begin
             result := l;
+            sel[sort[l]] := 1; // den Treffer selektieren
             break;
           end
           else
             Inc(Count);
+          sel[sort[l]] := 1; // den Treffer selektieren
         end;
       end;
 
@@ -4305,8 +4275,7 @@ begin
   // APPGPFAULT (Programmfehler)
 end;
 
-function findUserparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray;
-  var users: DAcwUser; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
+function findUserparameter(var SG: TStringGridSorted; var SGFieldCol: DAInteger; var sort: intArray; var sel: byteArray; var users: DAcwUser; k: integer; col: integer; such: string; doCount: Boolean = false): integer;
 var
   suchlength: integer;
   len: integer;
@@ -4394,10 +4363,12 @@ begin
           if (doCount = false) then
           begin
             result := l;
+            sel[sort[l]] := 1; // den Treffer selektieren
             break;
           end
           else
             Inc(Count);
+          sel[sort[l]] := 1; // den Treffer selektieren
         end;
       end;
 
@@ -4408,10 +4379,12 @@ begin
           if (doCount = false) then
           begin
             result := l;
+            sel[sort[l]] := 1; // den Treffer selektieren
             break;
           end
           else
             Inc(Count);
+          sel[sort[l]] := 1; // den Treffer selektieren
         end;
       end;
 
@@ -4812,12 +4785,9 @@ begin
   lb.items.add('SymbolGroups:' + #9 + inttostr(length(groups)));
   lb.items.add('BalanceActions:' + #9 + inttostr(groups[cwSymbolsPlus[0].groupId].TradesCount));
   lb.items.add('BalanceTotal:' + #9 + FormatFloat(',#0.00', groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
-  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', _TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId]
-    .TradesCount));
-  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', _TradesProfitTotal - groups[cwSymbolsPlus[0].groupId]
-    .TradesProfitTotal));
-  lb.items.add('Swap total:' + #9 + FormatFloat(',#0.00', _TradesSwapTotal - groups[cwSymbolsPlus[0].groupId]
-    .TradesSwapTotal));
+  lb.items.add('Volume total:' + #9 + FormatFloat(',#0', _TradesVolumeTotal / 1. - groups[cwSymbolsPlus[0].groupId].TradesCount));
+  lb.items.add('Profit total:' + #9 + FormatFloat(',#0.00', _TradesProfitTotal - groups[cwSymbolsPlus[0].groupId].TradesProfitTotal));
+  lb.items.add('Swap total:' + #9 + FormatFloat(',#0.00', _TradesSwapTotal - groups[cwSymbolsPlus[0].groupId].TradesSwapTotal));
 
 end;
 
@@ -4971,8 +4941,7 @@ var
   SystemTime: TSystemTime;
   FileTime: TFileTime;
 begin
-  Handle := CreateFile(PChar(fileName), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING,
-    FILE_ATTRIBUTE_NORMAL, 0);
+  Handle := CreateFile(PChar(fileName), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   if Handle = INVALID_HANDLE_VALUE then
     RaiseLastOSError;
   try

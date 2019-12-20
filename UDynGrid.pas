@@ -442,6 +442,7 @@ var
   i: integer;
   s: string;
   newMarker: string;
+  flag:boolean;
 begin
   // Mark Selection
   if source = 'cwusersX' then
@@ -451,14 +452,28 @@ begin
     newMarker := InputBox('Marker Input', 'Marker (1 Character):', '1');
     if (newMarker = '') then
       exit;
+    //wenn nix selektiert ist sollen alle verwendet werden
+    flag:=false;
+    for i := 0 to length(cwusersx) - 1 do
+    begin
+      if (selSorted[i] <> 0) then
+      begin
+        flag:=true;
+        break;
+      end;
+    end;
 
     for i := 0 to length(cwusersx) - 1 do
     begin
-      s := cwusersplus[cwusersxPlus[i].multi].marker;
-      if (pos(newMarker, s) = 0) then
+      if ((selSorted[i] <> 0)or(flag=false)) then
       begin
-        s := s + newMarker;
-        cwusersplus[cwusersxPlus[i].multi].marker := s;
+        s := cwusersplus[cwusersxPlus[i].multi].marker;
+        if (pos(newMarker, s) = 0) then
+        begin
+          s := s + newMarker;
+          cwusersplus[cwusersxPlus[i].multi].marker := s;
+          cwusersxPlus[i].marker:=s;
+        end;
       end;
     end;
   end;
@@ -515,7 +530,7 @@ begin
   end;
   setlength(cwusersx, j + 1);
   setlength(cwusersxPlus, j + 1);
-  form2.DynGrid1.initGrid('cwusersX', 'userId', 1, j + 1, 30);
+  form2.DynGrid1.initGrid('cwusersX', 'userId', 1, j + 1, 31);
   form2.DynGrid1.lblHeader.Caption := 'Users:' + inttostr(j + 1);
 end;
 
@@ -1361,6 +1376,7 @@ procedure TDynGrid.sortGridCwactions(source: string; sortCol: string; sortDir: i
 var
   dl, i, scol, smethode: integer;
   gt: cardinal;
+  uid: integer;
 begin
   gt := gettickcount;
 
@@ -1439,10 +1455,14 @@ begin
     // die beiden sind errechnete Werte
     if sortCol = 'symbol' then
       scol := 22;
+
     if sortCol = 'comment' then
       scol := 23;
 
-    if ((scol = 22) or (scol = 23)) then
+    if sortCol = 'userMarker' then
+      scol := 24;
+
+    if ((scol = 22) or (scol = 23) or (scol = 24)) then
     begin
       setlength(sSort, dl);
       smethode := 2;
@@ -1570,6 +1590,15 @@ begin
           sSort[i] := getcwcomment(actions[i].commentid);
           continue;
         end;
+
+        if scol = 24 then
+        begin
+          smethode := 2;
+          uid := finduserindex(actions[i].userId);
+          sSort[i] := cwusersplus[uid].marker;
+          continue;
+        end;
+
       end;
     end;
     // nun sortieren
@@ -1972,15 +2001,15 @@ begin
       // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
       showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
     if source = 'cwactions' then
-      found := findActionparameter(SG, SGFieldCol, ixSorted, cwActions, i, SGColField[mucol], such, doCount)
+      found := findActionparameter(SG, SGFieldCol, ixSorted,selsorted, cwActions, i, SGColField[mucol], such, doCount)
     else if source = 'cwfilteredactions' then
-      found := findActionparameter(SG, SGFieldCol, ixSorted, cwFilteredActions, i, SGColField[mucol], such, doCount)
+      found := findActionparameter(SG, SGFieldCol, ixSorted,selsorted, cwFilteredActions, i, SGColField[mucol], such, doCount)
     else if source = 'cwsingleuseractions' then
-      found := findActionparameter(SG, SGFieldCol, ixSorted, cwSingleUserActions, i, SGColField[mucol], such, doCount)
+      found := findActionparameter(SG, SGFieldCol, ixSorted,selsorted, cwSingleUserActions, i, SGColField[mucol], such, doCount)
     else if source = 'cwsymbols' then
       found := -2
     else if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersX')) then
-      found := findUserparameter(SG, SGFieldCol, ixSorted, cwusers, i, SGColField[mucol], such, doCount)
+      found := findUserparameter(SG, SGFieldCol, ixSorted,selsorted, cwusers, i, SGColField[mucol], such, doCount)
     else if source = 'cwcomments' then
       found := -2
     else if source = 'cwsymbolsgroups' then

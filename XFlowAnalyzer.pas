@@ -1168,7 +1168,7 @@ begin
   zeigUserInfo(id, lbUserInfo);
   showmemory(lbUserInfo);
 
-  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 28);
+  DynGrid4.initGrid('cwsingleuseractions', 'userId', 1, length(cwSingleUserActions), 30);
 
   // max := cwsingleuseractionsCt;
   // if max > maxActionsPerGrid then
@@ -1974,7 +1974,7 @@ begin
   // autosizegrid(SGCwCache);
   //
   // doCacheGridCwInfo;
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 30);
 end;
 
 procedure TForm2.btnPieChartClick(Sender: TObject);
@@ -3393,7 +3393,7 @@ weiter1:
 
   gt := GetTickCount;
   DynGrid2.lblHeader.Caption := #34 + FilterTopic + #34 + ' ' + 'Filtered actions:' + inttostr(cwFilteredActionCt) + ' of ' + inttostr(length(cwActions));
-  DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 28);
+  DynGrid2.initGrid('cwfilteredactions', 'userId', 1, length(cwFilteredActions), 30);
   lbdebug('dg2:' + inttostr(GetTickCount - gt));
 
   machUserSelectionAusFilteredActions;
@@ -4912,7 +4912,7 @@ procedure TForm2.btnCwactionsToGridClick(Sender: TObject);
 begin
   // doActionsGridCW(SGCwCache, SGFieldCol, cwActions, length(cwActions), maxActionsPerGrid, 1);
   // autosizegrid(SGCwCache);
-  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 28);
+  DynGrid3.initGrid('cwactions', 'userId', 1, length(cwActions), 30);
   DynGrid3.lblHeader.Caption := 'Actions:' + inttostr(length(cwActions));
 
 end;
