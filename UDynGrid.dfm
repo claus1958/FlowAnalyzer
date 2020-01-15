@@ -258,6 +258,10 @@ object DynGrid: TDynGrid
       Caption = 'Selection +-> 2nd Grid'
       OnClick = Selection2ndGrid1Click
     end
+    object MarkSelection2: TMenuItem
+      Caption = 'Mark Selection'
+      OnClick = MarkSelection2Click
+    end
   end
   object PopupMenu5: TPopupMenu
     Left = 132
@@ -285,6 +289,9 @@ object DynGrid: TDynGrid
     object MarkSelection1: TMenuItem
       Caption = 'Mark Selection'
       OnClick = MarkSelection1Click
+    end
+    object xxx1: TMenuItem
+      Caption = 'xxx'
     end
   end
 end

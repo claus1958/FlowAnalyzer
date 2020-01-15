@@ -4,8 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles, RSChartPanel, RSCharts,
-  RSBarCharts, StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
+  Dialogs, ManagerAPI, StdCtrls, ExtCtrls, Vcl.Grids, StrUtils, Vcl.ComCtrls, IniFiles,  StringGridSorted, Vcl.FileCtrl, Button1, System.generics.collections, Vcl.Buttons, IdHTTP, IdGlobal,
   psAPI, System.zip, Wininet, HTTPApp, IdBaseComponent, IdAntiFreezeBase, IdAntiFreeze, FTTypes,
   System.NetEncoding, DateUtils, csCSV, SHELLAPI, MMSYSTEM;
 
@@ -281,7 +280,7 @@ type
     deadSince: integer; // seit wann weder Action noch Login
     accountCurrency: integer; // 1=EUR 2=USD 3=CHF 4=GBP ... 0=unbekannt
     silentDays: integer;
-    multi: integer; // zur freien Verwendung (bei cwusersX der Index aus cwusers)
+    multi: integer; // zur freien Verwendung (bei cwusersx der Index aus cwusers)
     marker: string;
   End;
 
@@ -538,6 +537,8 @@ function getNextYear(dt: TDateTime): TDateTime;
 function getPreviousYear(dt: TDateTime): TDateTime;
 function Get_File_Size(sFileToExamine: string): integer;
 procedure DeleteFiles(APath, AFileSpec: string);
+procedure writeUserMarkers();
+procedure readUserMarkers();
 
 var
 
@@ -2647,13 +2648,13 @@ end;
 function getCwSymbol(id: integer): string;
 // Achtung wenn umsortiert ist das der Index aber nicht die symbolId
 begin
-try
-  result := '';
-  if id < cwSymbolsCt then
-    result := cwSymbols[id].name;
-except
-  result:='';
-end;
+  try
+    result := '';
+    if id < cwSymbolsCt then
+      result := cwSymbols[id].name;
+  except
+    result := '';
+  end;
 end;
 
 function OrderTypes(cmd: integer): string;
@@ -5394,6 +5395,71 @@ begin
       SysUtils.FindClose(lSearchRec); // Free resources on successful find
     end;
   end;
+end;
+
+procedure writeUserMarkers();
+var
+  myFile: TextFile;
+  text: string;
+  i: integer;
+begin
+  // Try to open the Test.txt file for writing to
+  AssignFile(myFile, 'UserMarkers.txt');
+  ReWrite(myFile);
+  for i := 0 to length(cwUsers) - 1 do
+  begin
+    // Write a couple of well known words to this file
+    if (cwUsersPlus[i].marker <> '') then
+      WriteLn(myFile, inttostr(cwUsers[i].userId) + ';' + cwUsersPlus[i].marker);
+
+  end;
+  // Close the file
+  CloseFile(myFile);
+
+end;
+
+procedure readUserMarkers();
+
+var
+  myFile: TextFile;
+  text: string;
+  p, i: integer;
+  id, ix: integer;
+  mark: string;
+  gt:cardinal;
+begin
+  // Reopen the file for reading
+  if(length(cwusers))=0 then exit;
+  gt:=gettickcount;
+  if (fileexists('UserMarkers.txt')) then
+  begin
+    AssignFile(myFile, 'UserMarkers.txt');
+    try
+      Reset(myFile);
+
+      // Display the file contents
+      while not Eof(myFile) do
+      begin
+        ReadLn(myFile, text);
+        // aufsplitten
+        p := pos(';', text);
+        id := strtoint(text.substring(0, p - 1));
+        mark := text.substring(p);
+        ix := findUserIndex(id);
+        if(ix>-1) then
+          cwUsersPlus[ix].marker := mark;
+      end;
+
+    finally
+      // Close the file for the last time
+      try
+      CloseFile(myFile);
+      finally
+
+      end;
+    end;
+  end;
+  //showmessage(inttostr(gettickcount-gt));
 end;
 
 end.

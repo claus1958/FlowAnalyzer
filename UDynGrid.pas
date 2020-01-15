@@ -47,6 +47,8 @@ type
     MenuItem13: TMenuItem;
     MenuItem14: TMenuItem;
     MarkSelection1: TMenuItem;
+    MarkSelection2: TMenuItem;
+    xxx1: TMenuItem;
     constructor Create(AOwner: TComponent); override;
     procedure saveInit();
     procedure suchInSpalte(dorepeat: boolean = false; doCount: boolean = false);
@@ -97,6 +99,9 @@ type
     procedure MenuItem10Click(Sender: TObject);
     procedure doRemoveSelectionUsersX(allBut: boolean);
     procedure MarkSelection1Click(Sender: TObject);
+    procedure doMarkSelection(users: DACwUser; usersplus: DACwUserPlus);
+    procedure MarkSelection2Click(Sender: TObject);
+    procedure doMarkFilteredActionsSelection();
   private
   { Private-Deklarationen }
     const
@@ -438,46 +443,197 @@ begin
 end;
 
 procedure TDynGrid.MarkSelection1Click(Sender: TObject);
+begin
+  if (source = 'cwusersx') then
+    doMarkSelection(cwusersx, cwusersxplus);
+  if (source = 'cwfilteredactions') then
+    doMarkSelection(cwusers, cwusersplus);
+
+end;
+
+procedure TDynGrid.MarkSelection2Click(Sender: TObject);
+begin
+  doMarkSelection(cwusers, cwusersplus);
+end;
+
+procedure TDynGrid.doMarkFilteredActionsSelection;
 var
-  i: integer;
+  i, p: integer;
   s: string;
   newMarker: string;
-  flag:boolean;
+  flag: boolean;
+  typ: integer;
+  doDelete: boolean;
+begin
+  //
+  if (source = 'cwfilteredactions') then
+  begin
+
+  end;
+end;
+
+procedure TDynGrid.doMarkSelection(users: DACwUser; usersplus: DACwUserPlus);
+// text=-> marker
+// -text= text wird aus Marker entfernt
+// -- Marker wird gelöscht
+var
+  i, p: integer;
+  s: string;
+  newMarker: string;
+  flag: boolean;
+  uix, typ: integer;
+  doDelete: boolean;
+  gt: cardinal;
+  ba: array of byte;
 begin
   // Mark Selection
-  if source = 'cwusersX' then
+  if (source = 'cwusers2') then
+    typ := 1;
+  if (source = 'cwusersx') then
+    typ := 2;
+  if (source = 'cwfilteredactions') then
+    typ := 3;
+
+  if ((source = 'cwusers2') or (source = 'cwusersx') or (source = 'cwfilteredactions')) then
   begin
-    // Eingabe eines Markers - dann werden alle cwUsersPlus.Marker mit diesem Marker versehen
+    // Eingabe eines Markers - dann werden alle usersPlus.Marker mit diesem Marker versehen
     newMarker := 's';
-    newMarker := InputBox('Marker Input', 'Marker (1 Character):', '1');
+    newMarker := InputBox('Marker Input', 'Marker (-X=delete X --=delete Marker):', '1');
     if (newMarker = '') then
       exit;
-    //wenn nix selektiert ist sollen alle verwendet werden
-    flag:=false;
-    for i := 0 to length(cwusersx) - 1 do
+    // wenn nix selektiert ist sollen alle verwendet werden
+
+    gt := gettickcount;
+    doDelete := false;
+    if (newMarker[1] = '-') then
     begin
-      if (selSorted[i] <> 0) then
-      begin
-        flag:=true;
-        break;
-      end;
+      doDelete := true;
+      newMarker := newMarker.subString(1);
     end;
 
-    for i := 0 to length(cwusersx) - 1 do
+    if (typ = 3) then
     begin
-      if ((selSorted[i] <> 0)or(flag=false)) then
+      flag := false;
+      setlength(ba, length(cwusers));
+      for i := 0 to length(cwFilteredActions) - 1 do
       begin
-        s := cwusersplus[cwusersxPlus[i].multi].marker;
-        if (pos(newMarker, s) = 0) then
+        if (selSorted[i] <> 0) then
         begin
-          s := s + newMarker;
-          cwusersplus[cwusersxPlus[i].multi].marker := s;
-          cwusersxPlus[i].marker:=s;
+          flag := true;
+          break;
+        end;
+      end;
+      for i := 0 to length(cwFilteredActions) - 1 do
+      begin
+        if ((selSorted[i] <> 0) or (flag = false)) then
+        begin
+          // falsch
+          uix := finduserindex(cwFilteredActions[i].userId);
+          if (ba[uix] = 0) then
+          begin
+            ba[uix]:=1;
+            s := usersplus[uix].marker;
+            if (doDelete = false) then
+            begin
+              if (pos(newMarker, s) = 0) then
+              begin
+                s := s + newMarker;
+                cwusersplus[uix].marker := s;
+              end;
+            end;
+            if (doDelete = true) then
+            begin
+              if (newMarker = '-') then
+              begin
+                cwusersplus[uix].marker := '';
+              end
+              else
+              begin
+                p := pos(newMarker, s); // 0=nix 1..len   ungewöhnliche Zählung
+                if (p > 0) then
+                begin
+                  s := s.subString(0, p - 1) + s.subString(p - 1 + length(newMarker));
+                  cwusersplus[uix].marker := s;
+                end;
+              end;
+            end;
+          end;
         end;
       end;
     end;
-  end;
+    if ((typ = 1) or (typ = 2)) then
+    begin
+      flag := false;
+      for i := 0 to length(users) - 1 do
+      begin
+        if (selSorted[i] <> 0) then
+        begin
+          flag := true;
+          break;
+        end;
+      end;
+      for i := 0 to length(users) - 1 do
+      begin
+        if ((selSorted[i] <> 0) or (flag = false)) then
+        begin
+          if (typ = 1) then
+            s := usersplus[i].marker;
+          if (typ = 2) then
+            s := cwusersplus[usersplus[i].multi].marker;
+          if (doDelete = false) then
+          begin
+            if (pos(newMarker, s) = 0) then
+            begin
+              s := s + newMarker;
+              if (typ = 2) then
+                cwusersplus[usersplus[i].multi].marker := s;
+              usersplus[i].marker := s;
+            end;
+          end;
+          if (doDelete = true) then
+          begin
+            if (newMarker = '-') then
+            begin
+              if (typ = 2) then
+                cwusersplus[usersplus[i].multi].marker := '';
+              usersplus[i].marker := '';
+            end
+            else
+            begin
+              p := pos(newMarker, s); // 0=nix 1..len   ungewöhnliche Zählung
+              if (p > 0) then
+              begin
+                s := s.subString(0, p - 1) + s.subString(p - 1 + length(newMarker));
+                if (typ = 2) then
+                  cwusersplus[usersplus[i].multi].marker := s;
+                usersplus[i].marker := s;
+              end;
+            end;
+          end;
 
+        end;
+      end;
+    end;
+    // und auf die Platte schreiben !
+    writeUserMarkers();
+    if (typ = 1) then
+    // in diesem Fall von den gerade geänderten cwusers/cwusersplus nach cwusersx/cwusersxplus kopieren
+    begin
+      for i := 0 to length(cwusersx) - 1 do
+      begin
+        cwusersxplus[i].marker := cwusersplus[cwusersxplus[i].multi].marker;
+      end;
+      form2.dyngrid1.Panel2Resize(self);
+
+    end;
+  end;
+  // jeweils beide Grids müssen bei Änderung der Marker neu gezeichnet werden
+  // die Aufrufe explizit mit Nennung der Instanz sind natürlich haarsträubend ;-)
+  if (typ = 2) then
+    form2.dyngrid10.Panel2Resize(self);
+  Panel2Resize(self);
+  gt := gettickcount - gt;
+  lbdebug('z:' + inttostr(gt));
 end;
 
 procedure TDynGrid.MenuItem10Click(Sender: TObject);
@@ -486,7 +642,7 @@ begin
 end;
 
 procedure TDynGrid.UserSelectionTo2ndGrid(Sender: TObject; doClear: boolean = true);
-// spezielle Funktion nur im cwusers2 Grid die Selektion nach cwusersX zu bringen
+// spezielle Funktion nur im cwusers2 Grid die Selektion nach cwusersx zu bringen
 var
   i, j: integer;
   lmax: integer;
@@ -502,11 +658,11 @@ begin
     i := 0;
   for j := 0 to i - 1 do
   begin
-    hilf[cwusersxPlus[j].multi] := 1;
+    hilf[cwusersxplus[j].multi] := 1;
   end;
 
   setlength(cwusersx, lmax);
-  setlength(cwusersxPlus, lmax);
+  setlength(cwusersxplus, lmax);
 
   j := -1;
   for i := 0 to length(selSorted) - 1 do
@@ -524,14 +680,14 @@ begin
     begin
       inc(j);
       cwusersx[j] := cwusers[i];
-      cwusersxPlus[j] := cwusersplus[i];
-      cwusersxPlus[j].multi := i;
+      cwusersxplus[j] := cwusersplus[i];
+      cwusersxplus[j].multi := i;
     end;
   end;
   setlength(cwusersx, j + 1);
-  setlength(cwusersxPlus, j + 1);
-  form2.DynGrid1.initGrid('cwusersX', 'userId', 1, j + 1, 31);
-  form2.DynGrid1.lblHeader.Caption := 'Users:' + inttostr(j + 1);
+  setlength(cwusersxplus, j + 1);
+  form2.dyngrid1.initGrid('cwusersx', 'userId', 1, j + 1, 31);
+  form2.dyngrid1.lblHeader.Caption := 'Users:' + inttostr(j + 1);
 end;
 
 procedure TDynGrid.SGTopLeftChanged(Sender: TObject);
@@ -619,6 +775,7 @@ var
   grid: FTCommons.TStringGridSorted;
   col, row: integer;
   btn: TMouseButton;
+  i:integer;
 begin
   //
   grid := Sender as FTCommons.TStringGridSorted;
@@ -637,6 +794,10 @@ begin
     // gridHandler(nil);
     // form2.repaint;
     // end;
+    36: //POS1
+       begin
+         i:=0;
+       end;
     114:
 
       // F3
@@ -742,7 +903,7 @@ begin
     doRemoveSelection(2);
   if (source = 'cwopenactionsOTR') then
     doRemoveSelectionOTR(2);
-  if (source = 'cwusersX') then
+  if (source = 'cwusersx') then
     doRemoveSelectionUsersX(true); // false=die Selektierten entfernen
 end;
 
@@ -752,7 +913,7 @@ begin
     doRemoveSelection(1);
   if (source = 'cwopenactionsOTR') then
     doRemoveSelectionOTR(1);
-  if (source = 'cwusersX') then
+  if (source = 'cwusersx') then
     doRemoveSelectionUsersX(false); // false=die Selektierten entfernen
 end;
 
@@ -1041,7 +1202,7 @@ var
   lmax: integer;
   hilf: array of integer;
 begin
-  // die Selektion im cwusersX Grid entfernen
+  // die Selektion im cwusersx Grid entfernen
 
   lmax := length(cwusers);
   setlength(hilf, lmax);
@@ -1049,22 +1210,22 @@ begin
   i := length(cwusersx);
   for j := 0 to i - 1 do
   begin
-    hilf[cwusersxPlus[j].multi] := 1;
+    hilf[cwusersxplus[j].multi] := 1;
   end;
 
   setlength(cwusersx, lmax);
-  setlength(cwusersxPlus, lmax);
+  setlength(cwusersxplus, lmax);
 
   j := -1;
   for i := 0 to length(selSorted) - 1 do
   begin
     if (allBut = false) and (selSorted[i] <> 0) then
     begin
-      hilf[cwusersxPlus[i].multi] := 0;
+      hilf[cwusersxplus[i].multi] := 0;
     end;
     if (allBut = true) and (selSorted[i] = 0) then
     begin
-      hilf[cwusersxPlus[i].multi] := 0;
+      hilf[cwusersxplus[i].multi] := 0;
     end;
   end;
 
@@ -1075,14 +1236,14 @@ begin
     begin
       inc(j);
       cwusersx[j] := cwusers[i];
-      cwusersxPlus[j] := cwusersplus[i];
-      cwusersxPlus[j].multi := i;
+      cwusersxplus[j] := cwusersplus[i];
+      cwusersxplus[j].multi := i;
     end;
   end;
   setlength(cwusersx, j + 1);
-  setlength(cwusersxPlus, j + 1);
-  form2.DynGrid1.initGrid('cwusersX', 'userId', 1, j + 1, 31);
-  form2.DynGrid1.lblHeader.Caption := 'Users:' + inttostr(j + 1);
+  setlength(cwusersxplus, j + 1);
+  form2.dyngrid1.initGrid('cwusersx', 'userId', 1, j + 1, 31);
+  form2.dyngrid1.lblHeader.Caption := 'Users:' + inttostr(j + 1);
 end;
 
 procedure TDynGrid.doSorting();
@@ -1104,8 +1265,8 @@ begin
     sortGridCwSymbols(source, sortCol, sortDir, cwSymbols, cwsymbolsplus);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
     sortGridCwUsers(source, sortCol, sortDir, cwusers, cwusersplus);
-  if ((source = 'cwusersX')) then
-    sortGridCwUsers(source, sortCol, sortDir, cwusersx, cwusersxPlus);
+  if ((source = 'cwusersx')) then
+    sortGridCwUsers(source, sortCol, sortDir, cwusersx, cwusersxplus);
   if source = 'cwcomments' then
     sortGridCwComments(source, sortCol, sortDir, cwComments);
   if source = 'cwsymbolsgroups' then
@@ -1643,7 +1804,7 @@ begin
   setlength(ixSorted, dl);
   smethode := 1; // double  2=String
   scol := 1;
-  if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersX')) then
+  if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersx')) then
 
   begin
     If sortCol = 'userId' then
@@ -1933,12 +2094,12 @@ begin
   if source = 'cwactions' then
     m := 2;
   if source = 'cwfilteredactions' then
-    m := 3;
+    m := 5;
   if source = 'cwsingleuseractions' then
     m := 2;
   if source = 'cwusers2' then // neu 28.10.19
     m := 4;
-  if source = 'cwusersX' then // neu 28.10.19
+  if source = 'cwusersx' then // neu 28.10.19
     m := 5;
   if source = 'cwopenactions1' then
     m := 2;
@@ -1948,7 +2109,10 @@ begin
     m := 3;
 
   if (m = 5) then
+  begin
+    xxx1.Visible := false;
     PopupMenu5.Popup(p.X, p.Y); // Columnselection und CSV-Export  und Mark Selection
+  end;
   if (m = 4) then
     PopupMenu4.Popup(p.X, p.Y); // Columnselection und CSV-Export  if (m = 3) then
   if (m = 3) then
@@ -2001,15 +2165,15 @@ begin
       // found := findActionparameter(SG, SGFieldCol, ixSorted, cwOpenActionsZ2, i, SGColField[mucol], such)
       showmessage('Suchfunktion in' + source + ' noch nicht implementiert');;
     if source = 'cwactions' then
-      found := findActionparameter(SG, SGFieldCol, ixSorted,selsorted, cwActions, i, SGColField[mucol], such, doCount)
+      found := findActionparameter(SG, SGFieldCol, ixSorted, selSorted, cwActions, i, SGColField[mucol], such, doCount)
     else if source = 'cwfilteredactions' then
-      found := findActionparameter(SG, SGFieldCol, ixSorted,selsorted, cwFilteredActions, i, SGColField[mucol], such, doCount)
+      found := findActionparameter(SG, SGFieldCol, ixSorted, selSorted, cwFilteredActions, i, SGColField[mucol], such, doCount)
     else if source = 'cwsingleuseractions' then
-      found := findActionparameter(SG, SGFieldCol, ixSorted,selsorted, cwSingleUserActions, i, SGColField[mucol], such, doCount)
+      found := findActionparameter(SG, SGFieldCol, ixSorted, selSorted, cwSingleUserActions, i, SGColField[mucol], such, doCount)
     else if source = 'cwsymbols' then
       found := -2
-    else if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersX')) then
-      found := findUserparameter(SG, SGFieldCol, ixSorted,selsorted, cwusers, i, SGColField[mucol], such, doCount)
+    else if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersx')) then
+      found := findUserparameter(SG, SGFieldCol, ixSorted, selSorted, cwusers, i, SGColField[mucol], such, doCount)
     else if source = 'cwcomments' then
       found := -2
     else if source = 'cwsymbolsgroups' then
@@ -2714,7 +2878,7 @@ begin
     maxDataRows := length(cwSymbols);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
     maxDataRows := length(cwusers);
-  if ((source = 'cwusersX')) then
+  if ((source = 'cwusersx')) then
     maxDataRows := length(cwusersx);
   if source = 'cwcomments' then
     maxDataRows := length(cwComments);
@@ -2762,8 +2926,8 @@ begin
     doSymbolsGridCWDyn(SG, SGFieldCol, ixSorted, cwSymbols, cwsymbolsplus, vScrollvon, vscrollbis - 1);
   if ((source = 'cwusers') or (source = 'cwusers2')) then
     doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwusers, cwusersplus, selSorted, vScrollvon, vscrollbis - 1, false, sl, exp.onlySelection);
-  if ((source = 'cwusersX')) then
-    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwusersx, cwusersxPlus, selSorted, vScrollvon, vscrollbis - 1, false, sl, exp.onlySelection);
+  if ((source = 'cwusersx')) then
+    doUsersGridCWDyn(SG, SGFieldCol, ixSorted, cwusersx, cwusersxplus, selSorted, vScrollvon, vscrollbis - 1, false, sl, exp.onlySelection);
 
   if source = 'cwcomments' then
     doCommentsGridCWDyn(SG, SGFieldCol, ixSorted, cwComments, selSorted, vScrollvon, vscrollbis - 1, false, sl, exp.onlySelection);
@@ -2806,16 +2970,16 @@ var
   header: string;
 begin
   if (Button = mbleft) then
-    LbDebug('MD left')
+    lbdebug('MD left')
   else if (Button = mbright) then
-    LbDebug('MD right')
+    lbdebug('MD right')
   else
-    LbDebug('MD wedernoch');
+    lbdebug('MD wedernoch');
   gt := gettickcount;
-  LbDebug('Zwischenzeit:' + inttostr(gt - lastMouseDown));
+  lbdebug('Zwischenzeit:' + inttostr(gt - lastMouseDown));
   if ((gt - lastMouseDown) < mouseDownPause) then
   begin
-    LbDebug('zu schnell MouseDown - Abbruch');
+    lbdebug('zu schnell MouseDown - Abbruch');
     if (Button = mbleft) then
     begin
       grid := Sender as FTCommons.TStringGridSorted; // das ist gleichzeitig SG
@@ -2910,9 +3074,9 @@ begin
         Screen.Cursor := Cursor;
       end;
     except
-      LbDebug('Fehler:');
+      lbdebug('Fehler:');
     end;
-    LbDebug('MD:Zeit Gridsort:' + inttostr(timegettime - gt));
+    lbdebug('MD:Zeit Gridsort:' + inttostr(timegettime - gt));
   end;
 end;
 
@@ -3107,7 +3271,7 @@ procedure TDynGrid.workSelection(mdrow, murow: integer; Button: TMouseButton; Sh
 var
   nr, anr, fall, i, seltop, selbottom: integer;
 begin
-  // Dieser Bereich gehört in eine eigene Procedure die dannauch über die Key Tasten angesteuert werden kann
+  // Dieser Bereich gehört in eine eigene Procedure die dann auch über die Key Tasten angesteuert werden kann
   // Selektion bearbeiten
   // type TShiftState = set of (ssShift, ssAlt, ssCtrl, ssLeft, ssRight, ssMiddle, ssDouble);
 
@@ -3131,6 +3295,10 @@ begin
     begin
       fall := 3;
     end;
+    if (ssCtrl in Shift) and (ssShift in shift)  then
+    begin
+      fall := 4;
+    end;
   end;
   case fall of
     1:
@@ -3150,19 +3318,19 @@ begin
         begin
           if selSorted[ixSorted[i]] = 1 then
           begin
-            if seltop = -1 then
+            if seltop = -1 then  //der erste selektierte Eintrag von oben nach unten
               seltop := i;
-            selbottom := i;
+            selbottom := i;   //der letzte selektierte Eintrag nach unten
           end;
         end;
-        if nr < seltop then
+        if nr < seltop then  //es wurde über dem obersten selektierten Eintrag geklickt
         begin
           for i := nr to seltop - 1 do
           begin
             selSorted[ixSorted[i]] := 1;
           end;
         end;
-        if nr > selbottom then
+        if nr > selbottom then   //es wurde unter dem untersten selektierten Eintrag geklickt
         begin
           for i := selbottom + 1 to nr do
           begin
@@ -3170,7 +3338,7 @@ begin
           end;
 
         end;
-        if (nr >= seltop) and (nr <= selbottom) then
+        if (nr >= seltop) and (nr <= selbottom) then //es wurde zwischen dem obersten und dem untersten selektierten Eintrag geklickt
         begin
           selSorted[ixSorted[nr]] := selSorted[ixSorted[nr]] xor 1;
           for i := nr + 1 to length(selSorted) - 1 do
@@ -3183,6 +3351,8 @@ begin
       end;
     3:
       selSorted[anr] := selSorted[anr] xor 1;
+    4: //shift+Ctrl
+      ;
     0:
       // könnte einfach Linksclick oder auch Size-Änderung der Colwidth sein
       // col kann aber auch links oder rechts vom Col-Trenner liegen je nachdem wo halt die Maus losgelassen wurde

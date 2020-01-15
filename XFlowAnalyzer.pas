@@ -398,6 +398,7 @@ type
     procedure DynGrid10MenuItem8Click(Sender: TObject);
     procedure DynGrid1SpeedButton1Click(Sender: TObject);
     procedure DynGrid1RemoveSelection1Click(Sender: TObject);
+    procedure DynGrid2SpeedButton1Click(Sender: TObject);
 
   private
     { Private-Deklarationen }
@@ -814,6 +815,7 @@ begin
 
   ok := false;
   if (tryCache = true) then
+  //zuerst mal aus dem Cache laden
   begin
     fileName := ExtractFilePath(paramstr(0)) + cCacheFolder + '\' + typ + '.csv';
     if (fileExists(fileName) = true) then
@@ -955,7 +957,6 @@ begin
       ParseDelimited('users', lb, s, #13 + #10, cwUsers, cwSymbols, cwTicks, cwComments, ms, append);
       cwusersct := length(cwUsers);
       setlength(cwUsersPlus, cwusersct);
-
     end;
     if typ = 'comments' then
     begin
@@ -1045,9 +1046,9 @@ begin
       end;
     end;
     // showmessage(inttostr(GetTickCount - gt));
-
   end;
   ms.free;
+
 
 end;
 
@@ -1062,7 +1063,7 @@ begin
   colHeader := grid.Cells[col, 0];
   // die dynGrid heissen alle SG
   // bei cwusers jeder Click in eine Zeile -> user actions anzeigen
-  if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersX')) then
+  if ((source = 'cwusers') or (source = 'cwusers2') or (source = 'cwusersx')) then
     if colHeader <> 'userId' then
       for i := 0 to grid.Colcount - 1 do
       begin
@@ -1520,6 +1521,12 @@ begin
 
 end;
 
+procedure TForm2.DynGrid2SpeedButton1Click(Sender: TObject);
+begin
+  DynGrid2.SpeedButton1Click(Sender);
+
+end;
+
 procedure TForm2.DynGrid4CSVExportSelection1Click(Sender: TObject);
 begin
   DynGrid4.CSVExport1Click(Sender);
@@ -1630,14 +1637,14 @@ begin
       if cbLoadActionsFromCache.Checked = true then
       begin
         // holt Symbols Users und Comments vom Cache oder wenn noch nicht vorhanden vom Server
-        getSymbolsUsersComments(true);
+        getSymbolsUsersComments(true);//true=from cache
         btnLoadCacheFileCwClick(nil); // die Actions
         LoadInfo(inttostr(length(cwActions)) + ' Actions loaded from Cache');
       end;
 
     if ((cbLoadActionsFromCache.Checked = false) or (length(cwActions) = 0)) then
     begin
-      getSymbolsUsersComments(false); // holt vom Server
+      getSymbolsUsersComments(false); // holt vom Server und nicht vom Cache
       GetLastServerUnixTime; // -> lastServerUnixTime
       lastUpdateServerUnixTime := lastServerUnixTime;
       faIni.WriteInteger('lastUpdateServerUnixTime:', 'unixTime', lastUpdateServerUnixTime);
@@ -1840,6 +1847,8 @@ begin
   machActionsUserIndex(); // einmalig die Userindices aus den Useraccountnummern berechnen
   dosleep(CSleep);
 
+
+
   btnDoUsersAndSymbolsPlusClick(nil);
   // zusätzliche berechnete Felder für cwusers erstellen in cwusersplus  und cwsymbolsplus
   dosleep(CSleep);
@@ -1852,6 +1861,9 @@ begin
 
   btnSymbolGroupsClick(nil); // Symbolgruppen erzeugen und anschliessend Werte berechnen
   dosleep(CSleep);
+
+  //jetzt sollten die Marks wieder auf die cwUsersPlus geschrieben werden
+  readUserMarkers;
 
   lbCSVDebug('Sym/Users prepare:' + inttostr(GetTickCount - gt));
   gt := GetTickCount;
@@ -2687,8 +2699,13 @@ var
   ps: integer;
 begin
   if (cwFilteredActionCt = 0) then
+  begin
+    DynGrid9.initGrid('cwsummaries', cwgrouping.element[0].styp, 0, 0, 0);
+    DynGrid9.lblHeader.Caption := '-';
+
     exit;
 
+  end;
   gt1 := GetTickCount;
   gt := GetTickCount;
   gct := 0;
@@ -6108,5 +6125,6 @@ begin
     showmessage('MyExHandler Error:' + s);
     s := '';
   end;
+
 
 end.
